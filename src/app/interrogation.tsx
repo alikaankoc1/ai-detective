@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -28,6 +29,7 @@ import {
 } from "@expo-google-fonts/outfit";
 import { askSuspect, fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
+import { getCaseCover } from "@/constants/images";
 import type { Case, Suspect } from "@/types/case";
 
 type ChatRole = "player" | "suspect" | "system";
@@ -411,6 +413,22 @@ export default function InterrogationScreen() {
         locations={[0, 0.55, 1]}
         style={StyleSheet.absoluteFill}
       />
+      {caseData ? (
+        <View style={styles.coverLayer} pointerEvents="none">
+          <Image
+            source={getCaseCover(caseData.meta.id)}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={500}
+          />
+          <LinearGradient
+            colors={["rgba(5, 7, 13, 0.68)", "rgba(5, 7, 13, 0.94)", t.colors.void]}
+            locations={[0, 0.6, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      ) : null}
+
       <LinearGradient
         colors={["rgba(201, 162, 39, 0.07)", "transparent"]}
         style={styles.topGlow}
@@ -448,6 +466,13 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  coverLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "28%",
   },
   topGlow: {
     position: "absolute",

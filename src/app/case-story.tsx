@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
@@ -30,6 +31,7 @@ import {
 } from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
+import { getCaseCover } from "@/constants/images";
 import type { Case } from "@/types/case";
 
 function CaseBadge({ id }: { id: string }) {
@@ -270,6 +272,26 @@ export default function CaseStoryScreen() {
         style={StyleSheet.absoluteFill}
       />
 
+      {caseData ? (
+        <View style={styles.coverLayer} pointerEvents="none">
+          <Image
+            source={getCaseCover(caseData.meta.id)}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={500}
+          />
+          <LinearGradient
+            colors={[
+              "rgba(5, 7, 13, 0.35)",
+              "rgba(5, 7, 13, 0.75)",
+              t.colors.void,
+            ]}
+            locations={[0, 0.6, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      ) : null}
+
       {/* Atmospheric vignette layers */}
       <LinearGradient
         colors={["rgba(201, 162, 39, 0.08)", "transparent", "transparent"]}
@@ -311,6 +333,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: t.colors.void,
+  },
+  coverLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "52%",
   },
   topGlow: {
     position: "absolute",

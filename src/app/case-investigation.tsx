@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
@@ -26,6 +27,7 @@ import {
 } from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
+import { getCaseCover } from "@/constants/images";
 import type { Case, Evidence, Suspect } from "@/types/case";
 
 function SectionHeader({
@@ -217,10 +219,19 @@ function InvestigationContent({
       <Animated.View entering={FadeInUp.delay(160).duration(700)}>
         <SectionHeader index="01" title="Vaka Özeti" />
         <View style={styles.summaryCard}>
+          <Image
+            source={getCaseCover(data.meta.id)}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={400}
+          />
           <LinearGradient
-            colors={["rgba(201, 162, 39, 0.14)", "rgba(18, 28, 51, 0.9)"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            colors={[
+              "rgba(5, 7, 13, 0.62)",
+              "rgba(10, 18, 36, 0.9)",
+              "rgba(8, 14, 28, 0.97)",
+            ]}
+            locations={[0, 0.55, 1]}
             style={StyleSheet.absoluteFill}
           />
           <Text style={styles.summaryLead}>{data.meta.summary}</Text>
@@ -337,6 +348,22 @@ export default function CaseInvestigationScreen() {
         locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFill}
       />
+      {caseData ? (
+        <View style={styles.coverLayer} pointerEvents="none">
+          <Image
+            source={getCaseCover(caseData.meta.id)}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={500}
+          />
+          <LinearGradient
+            colors={["rgba(5, 7, 13, 0.55)", "rgba(5, 7, 13, 0.9)", t.colors.void]}
+            locations={[0, 0.65, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      ) : null}
+
       <LinearGradient
         colors={["rgba(201, 162, 39, 0.06)", "transparent"]}
         style={styles.topGlow}
@@ -377,6 +404,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: t.colors.void,
+  },
+  coverLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "34%",
   },
   topGlow: {
     position: "absolute",
