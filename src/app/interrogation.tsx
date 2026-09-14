@@ -29,19 +29,21 @@ import {
   Outfit_500Medium,
   Outfit_600SemiBold,
 } from "@expo-google-fonts/outfit";
-import { askSuspect, fetchCase001 } from "@/services/cases";
+import { askSuspect, checkContradiction, fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
 import type { Case, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
+import type { PlayerSafeContradiction } from "@/types/contradiction";
 
-type ChatRole = "player" | "suspect" | "system";
+type ChatRole = "player" | "suspect" | "system" | "contradiction" | "no_contradiction";
 
 type ChatMessage = {
   id: string;
   role: ChatRole;
   text: string;
+  contradiction?: PlayerSafeContradiction;
 };
 
 function LoadingState() {
@@ -165,7 +167,60 @@ function DossierPanel({
   );
 }
 
+function severityLabel(severity: PlayerSafeContradiction["severity"]): string {
+  switch (severity) {
+    case "critical":
+      return "KRİTİK";
+    case "high":
+      return "YÜKSEK";
+    case "medium":
+      return "ORTA";
+    case "low":
+      return "DÜŞÜK";
+  }
+}
+
 function MessageBubble({ message }: { message: ChatMessage }) {
+  if (message.role === "contradiction" && message.contradiction) {
+    return (
+      <Animated.View entering={FadeInUp.duration(500)}>
+        <View style={styles.contradictionCard}>
+          <LinearGradient
+            colors={["rgba(201, 162, 39, 0.22)", "rgba(18, 28, 51, 0.95)"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.contradictionHeader}>
+            <View style={styles.contradictionBadge}>
+              <Ionicons name="alert-circle" size={14} color={t.colors.void} />
+              <Text style={styles.contradictionBadgeText}>ÇELİŞKİ YAKALANDI</Text>
+            </View>
+            <View style={styles.severityPill}>
+              <Text style={styles.severityText}>
+                {severityLabel(message.contradiction.severity)}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.contradictionBody}>
+            {message.contradiction.contradictionDescription}
+          </Text>
+        </View>
+      </Animated.View>
+    );
+  }
+
+  if (message.role === "no_contradiction") {
+    return (
+      <Animated.View entering={FadeIn.duration(400)}>
+        <View style={styles.noContradictionCard}>
+          <Ionicons name="remove-circle-outline" size={16} color={t.colors.mist} />
+          <Text style={styles.noContradictionText}>{message.text}</Text>
+        </View>
+      </Animated.View>
+    );
+  }
+
   const isPlayer = message.role === "player";
   const isSystem = message.role === "system";
 
@@ -384,6 +439,48 @@ function InterrogationRoom({
         text: result.reply,
       };
       setMessages((prev) => [...prev, reply]);
+
+      try {
+        const check = await checkContradiction({
+          caseId: caseData.meta.id,
+          suspectId: suspect.id,
+          evidenceId: evidence.id,
+        });
+
+        if (check.found && check.contradiction) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `c-${Date.now()}`,
+              role: "contradiction",
+              text: check.contradiction.contradictionDescription,
+              contradiction: check.contradiction,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `nc-${Date.now()}`,
+              role: "no_contradiction",
+              text: "Bu delil şu an bir çelişki ortaya çıkarmadı.",
+            },
+          ]);
+        }
+      } catch (checkErr: unknown) {
+        const checkMessage =
+          checkErr instanceof Error
+            ? checkErr.message
+            : "Çelişki kontrolü yapılamadı.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `cerr-${Date.now()}`,
+            role: "system",
+            text: `İfade alındı; çelişki kontrolü başarısız: ${checkMessage}`,
+          },
+        ]);
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Yüzleştirme başarısız.";
@@ -827,6 +924,76 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: t.colors.mist,
     textAlign: "center",
+  },
+  contradictionCard: {
+    borderRadius: t.radius.lg,
+    borderWidth: 1,
+    borderColor: t.colors.gold,
+    padding: t.spacing.md,
+    overflow: "hidden",
+    marginVertical: 4,
+  },
+  contradictionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: t.spacing.sm,
+    marginBottom: t.spacing.sm,
+  },
+  contradictionBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: t.colors.gold,
+  },
+  contradictionBadgeText: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: t.colors.void,
+  },
+  severityPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: "rgba(5, 7, 13, 0.45)",
+  },
+  severityText: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: t.colors.goldSoft,
+  },
+  contradictionBody: {
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 22,
+    color: t.colors.cream,
+  },
+  noContradictionCard: {
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    maxWidth: "95%",
+    paddingHorizontal: t.spacing.md,
+    paddingVertical: t.spacing.sm + 2,
+    borderRadius: t.radius.md,
+    borderWidth: 1,
+    borderColor: "rgba(243, 237, 224, 0.14)",
+    backgroundColor: "rgba(18, 28, 51, 0.7)",
+  },
+  noContradictionText: {
+    flex: 1,
+    fontFamily: t.typography.body,
+    fontSize: 12,
+    lineHeight: 18,
+    color: t.colors.mist,
   },
   typingRow: {
     flexDirection: "row",

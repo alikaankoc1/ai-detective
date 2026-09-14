@@ -3,7 +3,8 @@ import { config } from "dotenv";
 import path from "path";
 import { runGeminiTest } from "./gemini";
 import { case001 } from "./cases/case001";
-import { runInterrogation } from "./interrogation";
+import { getSupportedCase, runInterrogation } from "./interrogation";
+import { checkContradiction } from "./contradictions";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -121,6 +122,62 @@ const server = http.createServer(async (req, res) => {
         message.includes("zorunludur") ||
         message.includes("Geçersiz JSON") ||
         message.includes("çok uzun") ||
+        message.includes("çok büyük")
+      ) {
+        statusCode = 400;
+      } else if (
+        message.includes("desteklenmiyor") ||
+        message.includes("bulunamadı")
+      ) {
+        statusCode = 404;
+      }
+
+      sendJson(res, statusCode, { error: message });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/contradiction/check") {
+    try {
+      const body = (await readJsonBody(req)) as {
+        caseId?: string;
+        suspectId?: string;
+        evidenceId?: string;
+      };
+
+      const caseId = body.caseId?.trim() ?? "";
+      const suspectId = body.suspectId?.trim() ?? "";
+      const evidenceId = body.evidenceId?.trim() ?? "";
+
+      if (!caseId || !suspectId || !evidenceId) {
+        throw new Error("caseId, suspectId ve evidenceId zorunludur.");
+      }
+
+      const caseData = getSupportedCase(caseId);
+      if (!caseData) {
+        throw new Error("Bu vaka henüz desteklenmiyor. Şimdilik yalnızca case-001.");
+      }
+
+      const suspectExists = caseData.suspects.some((s) => s.id === suspectId);
+      if (!suspectExists) {
+        throw new Error("Şüpheli bu vakada bulunamadı.");
+      }
+
+      const evidenceExists = caseData.evidence.some((e) => e.id === evidenceId);
+      if (!evidenceExists) {
+        throw new Error("Delil bu vakada bulunamadı.");
+      }
+
+      const result = checkContradiction(caseId, suspectId, evidenceId);
+      sendJson(res, 200, result);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected contradiction error.";
+
+      let statusCode = 500;
+      if (
+        message.includes("zorunludur") ||
+        message.includes("Geçersiz JSON") ||
         message.includes("çok büyük")
       ) {
         statusCode = 400;
