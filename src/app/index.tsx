@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,12 +8,25 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { BlurTargetView, BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  FadeInRight,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
   CormorantGaramond_600SemiBold,
@@ -26,15 +39,60 @@ import {
   Outfit_500Medium,
   Outfit_600SemiBold,
 } from "@expo-google-fonts/outfit";
-import { fetchCase001 } from "@/services/cases";
+import {
+  fetchCase001,
+  fetchInvestigationState,
+} from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
-import { fallbackCover, gameImages, getCaseCover } from "@/constants/images";
+import { gameImages, getCaseCover } from "@/constants/images";
 import type { Case } from "@/types/case";
+import type { InvestigationState } from "@/types/investigation";
 
-/** Yakında eklenecek vakalar — kilitli kartlar. */
-const upcomingCases = [
-  { id: "case-002", label: "Vaka #002", title: "Kayıp Paket", difficulty: 2 },
-  { id: "case-003", label: "Vaka #003", title: "Son Tren", difficulty: 3 },
+/** Yerel demo profil — gerçek auth/DB yok. */
+const PLAYER = {
+  name: "Dedektif",
+  rank: "Acemi Dedektif",
+  level: 3,
+  xp: 240,
+  xpToNext: 500,
+} as const;
+
+type TabId = "home" | "cases" | "profile" | "shop";
+
+type TabItem = {
+  id: TabId;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
+  href?: "/case-story";
+};
+
+const TABS: TabItem[] = [
+  {
+    id: "home",
+    label: "Ana Sayfa",
+    icon: "home-outline",
+    iconActive: "home",
+  },
+  {
+    id: "cases",
+    label: "Vakalar",
+    icon: "folder-open-outline",
+    iconActive: "folder-open",
+    href: "/case-story",
+  },
+  {
+    id: "profile",
+    label: "Profil",
+    icon: "person-outline",
+    iconActive: "person",
+  },
+  {
+    id: "shop",
+    label: "Mağaza",
+    icon: "storefront-outline",
+    iconActive: "storefront",
+  },
 ];
 
 function Stars({ value, max = 5 }: { value: number; max?: number }) {
@@ -44,7 +102,7 @@ function Stars({ value, max = 5 }: { value: number; max?: number }) {
         <Ionicons
           key={index}
           name={index < value ? "star" : "star-outline"}
-          size={12}
+          size={11}
           color={index < value ? t.colors.gold : t.colors.mist}
         />
       ))}
@@ -52,182 +110,53 @@ function Stars({ value, max = 5 }: { value: number; max?: number }) {
   );
 }
 
-function HeroBanner({ height }: { height: number }) {
-  const insets = useSafeAreaInsets();
+function LivePulse() {
+  const opacity = useSharedValue(0.45);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.4, { duration: 900, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      false
+    );
+  }, [opacity]);
+
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return <Animated.View style={[styles.liveDot, style]} />;
+}
+
+function XpBar({ progress }: { progress: number }) {
+  const width = useSharedValue(0);
+
+  useEffect(() => {
+    width.value = withDelay(
+      450,
+      withTiming(Math.max(0.06, Math.min(progress, 1)), {
+        duration: 1100,
+        easing: Easing.out(Easing.cubic),
+      })
+    );
+  }, [progress, width]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${width.value * 100}%`,
+  }));
 
   return (
-    <View style={[styles.hero, { height }]}>
-      <Image
-        source={gameImages.homeHeader}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-        transition={400}
-      />
-      <LinearGradient
-        colors={["rgba(5, 7, 13, 0.72)", "rgba(5, 7, 13, 0.35)", t.colors.void]}
-        locations={[0, 0.45, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-
-      <View style={[styles.heroTop, { paddingTop: insets.top + t.spacing.md }]}>
-        <View style={styles.profileRow}>
-          <View style={styles.avatarRing}>
-            <Image
-              source={gameImages.splash}
-              style={styles.avatarImage}
-              contentFit="cover"
-            />
-          </View>
-          <View>
-            <Text style={styles.greeting}>Merhaba,</Text>
-            <View style={styles.nameRow}>
-              <Text style={styles.detectiveName}>Dedektif</Text>
-              <View style={styles.levelPill}>
-                <Text style={styles.levelPillText}>Lv. 1</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <Pressable style={styles.iconButton} hitSlop={10}>
-          <Ionicons name="settings-outline" size={20} color={t.colors.creamMuted} />
-        </Pressable>
-      </View>
-
-      <Animated.View entering={FadeIn.delay(200).duration(900)} style={styles.heroTitleWrap}>
-        <Text style={styles.heroKicker}>AI DEDEKTİF</Text>
-        <Text style={styles.heroTagline}>Her gün yeni bir gizem, sen çöz.</Text>
+    <View style={styles.xpTrack}>
+      <Animated.View style={[styles.xpFillWrap, fillStyle]}>
+        <LinearGradient
+          colors={[t.colors.gold, t.colors.goldSoft, "#F0DF9A"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
       </Animated.View>
     </View>
-  );
-}
-
-function FeaturedCaseCard({
-  data,
-  onPlay,
-}: {
-  data: Case;
-  onPlay: () => void;
-}) {
-  return (
-    <Animated.View entering={FadeInUp.delay(120).duration(700)}>
-      <Pressable
-        onPress={onPlay}
-        style={({ pressed }) => [
-          styles.featuredCard,
-          pressed && styles.pressedCard,
-        ]}
-      >
-        <Image
-          source={getCaseCover(data.meta.id)}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          transition={300}
-        />
-        <LinearGradient
-          colors={["rgba(5, 7, 13, 0.45)", "rgba(5, 7, 13, 0.88)", "rgba(3, 5, 10, 0.97)"]}
-          locations={[0, 0.5, 1]}
-          style={StyleSheet.absoluteFill}
-        />
-
-        <View style={styles.featuredBody}>
-          <View style={styles.featuredEyebrowRow}>
-            <Ionicons name="calendar-outline" size={13} color={t.colors.gold} />
-            <Text style={styles.featuredEyebrow}>GÜNÜN VAKASI</Text>
-          </View>
-
-          <Text style={styles.featuredTitle}>{data.meta.title}</Text>
-          <Text style={styles.featuredSummary} numberOfLines={3}>
-            {data.meta.summary}
-          </Text>
-
-          <View style={styles.featuredFooter}>
-            <View>
-              <Text style={styles.difficultyLabel}>Zorluk</Text>
-              <Stars value={4} />
-            </View>
-
-            <View style={styles.playButton}>
-              <LinearGradient
-                colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.playGradient}
-              >
-                <Text style={styles.playLabel}>VAKAYI OYNA</Text>
-                <Ionicons name="chevron-forward" size={16} color={t.colors.void} />
-              </LinearGradient>
-            </View>
-          </View>
-        </View>
-      </Pressable>
-    </Animated.View>
-  );
-}
-
-function UpcomingCaseCard({
-  label,
-  title,
-  difficulty,
-  width,
-  delay,
-}: {
-  label: string;
-  title: string;
-  difficulty: number;
-  width: number;
-  delay: number;
-}) {
-  return (
-    <Animated.View
-      entering={FadeInUp.delay(delay).duration(650)}
-      style={[styles.upcomingCard, { width }]}
-    >
-      <View style={styles.upcomingThumb}>
-        <Image
-          source={fallbackCover}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          transition={250}
-        />
-        <LinearGradient
-          colors={["rgba(5, 7, 13, 0.2)", "rgba(5, 7, 13, 0.85)"]}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.lockBadge}>
-          <Ionicons name="lock-closed" size={12} color={t.colors.goldSoft} />
-        </View>
-      </View>
-
-      <Text style={styles.upcomingLabel}>{label}</Text>
-      <Text style={styles.upcomingTitle} numberOfLines={1}>
-        {title}
-      </Text>
-      <Stars value={difficulty} />
-    </Animated.View>
-  );
-}
-
-function LevelPanel() {
-  return (
-    <Animated.View entering={FadeInUp.delay(320).duration(700)} style={styles.levelPanel}>
-      <View style={styles.levelBadge}>
-        <Ionicons name="ribbon-outline" size={22} color={t.colors.goldSoft} />
-      </View>
-      <View style={styles.levelInfo}>
-        <Text style={styles.levelTitle}>Dedektif Seviyesi</Text>
-        <Text style={styles.levelValue}>Lv. 1</Text>
-        <View style={styles.progressTrack}>
-          <LinearGradient
-            colors={[t.colors.gold, t.colors.goldSoft]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.progressFill, { width: "18%" }]}
-          />
-        </View>
-      </View>
-      <Text style={styles.xpText}>90 / 500 XP</Text>
-    </Animated.View>
   );
 }
 
@@ -235,7 +164,7 @@ function LoadingState() {
   return (
     <View style={styles.stateCenter}>
       <ActivityIndicator color={t.colors.gold} size="large" />
-      <Text style={styles.stateHint}>Dosyalar hazırlanıyor…</Text>
+      <Text style={styles.stateHint}>Dedektif merkezi açılıyor…</Text>
     </View>
   );
 }
@@ -249,12 +178,67 @@ function ErrorState({
 }) {
   return (
     <View style={styles.stateCenter}>
-      <Ionicons name="cloud-offline-outline" size={40} color={t.colors.gold} />
-      <Text style={styles.errorTitle}>Merkez sunucuya ulaşılamıyor</Text>
+      <Ionicons name="cloud-offline-outline" size={42} color={t.colors.gold} />
+      <Text style={styles.errorTitle}>Merkez bağlantısı yok</Text>
       <Text style={styles.errorBody}>{message}</Text>
       <Pressable onPress={onRetry} style={styles.retryButton}>
         <Text style={styles.retryText}>Yeniden dene</Text>
       </Pressable>
+    </View>
+  );
+}
+
+function BottomNav({
+  active,
+  onSelect,
+  bottomInset,
+  blurTarget,
+}: {
+  active: TabId;
+  onSelect: (tab: TabItem) => void;
+  bottomInset: number;
+  blurTarget: RefObject<View | null>;
+}) {
+  return (
+    <View style={[styles.navShell, { paddingBottom: Math.max(bottomInset, 10) }]}>
+      <BlurView
+        intensity={42}
+        tint="dark"
+        blurTarget={blurTarget}
+        blurMethod="dimezisBlurViewSdk31Plus"
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(5, 7, 13, 0.55)", "rgba(10, 18, 36, 0.88)"]}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.navRow}>
+        {TABS.map((tab) => {
+          const isActive = tab.id === active;
+          return (
+            <Pressable
+              key={tab.id}
+              onPress={() => onSelect(tab)}
+              style={({ pressed }) => [
+                styles.navItem,
+                pressed && { opacity: 0.75 },
+              ]}
+            >
+              {isActive ? <View style={styles.navActiveGlow} /> : null}
+              <Ionicons
+                name={isActive ? tab.iconActive : tab.icon}
+                size={20}
+                color={isActive ? t.colors.goldSoft : t.colors.mist}
+              />
+              <Text
+                style={[styles.navLabel, isActive && styles.navLabelActive]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -274,23 +258,36 @@ export default function HomeScreen() {
   });
 
   const [caseData, setCaseData] = useState<Case | null>(null);
+  const [investigation, setInvestigation] =
+    useState<InvestigationState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabId>("home");
+  const blurTargetRef = useRef<View | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setError(null);
     setCaseData(null);
+    setInvestigation(null);
 
-    fetchCase001()
-      .then((data) => {
-        if (!cancelled) setCaseData(data);
-      })
-      .catch((err: unknown) => {
+    (async () => {
+      try {
+        const data = await fetchCase001();
+        if (cancelled) return;
+        setCaseData(data);
+        try {
+          const state = await fetchInvestigationState(data.meta.id);
+          if (!cancelled) setInvestigation(state);
+        } catch {
+          if (!cancelled) setInvestigation(null);
+        }
+      } catch (err: unknown) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Bilinmeyen hata");
         }
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -298,66 +295,461 @@ export default function HomeScreen() {
   }, [reloadKey]);
 
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
-  const heroHeight = Math.min(Math.max(height * 0.3, 220), 320);
-  const upcomingWidth = Math.min((width - horizontal * 2 - t.spacing.sm) / 2.2, 190);
+  const heroHeight = Math.min(Math.max(height * 0.42, 280), 420);
+  const xpProgress = PLAYER.xp / PLAYER.xpToNext;
+  const navHeight = 64 + Math.max(insets.bottom, 10);
+
+  const progress = useMemo(() => {
+    const totalEvidence = caseData?.evidence.length ?? 0;
+    const totalSuspects = caseData?.suspects.length ?? 0;
+    return {
+      evidence: investigation?.discoveredEvidenceIds.length ?? 0,
+      suspects: investigation?.interrogatedSuspectIds.length ?? 0,
+      contradictions: investigation?.discoveredContradictionIds.length ?? 0,
+      totalEvidence,
+      totalSuspects,
+    };
+  }, [caseData, investigation]);
+
+  const hasActiveInvestigation =
+    (investigation?.discoveredEvidenceIds.length ?? 0) > 0 ||
+    (investigation?.interrogatedSuspectIds.length ?? 0) > 0;
+
+  const onTabSelect = (tab: TabItem) => {
+    setActiveTab(tab.id);
+    if (tab.id === "home") return;
+    if (tab.href) {
+      router.push(tab.href);
+      return;
+    }
+    // Profil / Mağaza — henüz route yok; UI yerinde kalır
+  };
 
   return (
     <View style={styles.root}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
+      <Image
+        source={gameImages.homeHeader}
+        style={styles.bgImage}
+        contentFit="cover"
+        blurRadius={18}
+      />
       <LinearGradient
-        colors={[t.colors.navyDeep, t.colors.void, "#02040A"]}
-        locations={[0, 0.5, 1]}
+        colors={[
+          "rgba(5, 7, 13, 0.55)",
+          "rgba(5, 7, 13, 0.82)",
+          t.colors.void,
+          "#02040A",
+        ]}
+        locations={[0, 0.28, 0.62, 1]}
         style={StyleSheet.absoluteFill}
       />
 
       {!fontsLoaded || (!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
-        <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
+        <ErrorState
+          message={error}
+          onRetry={() => setReloadKey((k) => k + 1)}
+        />
       ) : caseData ? (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={{ paddingBottom: insets.bottom + t.spacing.xxl }}
-          showsVerticalScrollIndicator={false}
-        >
-          <HeroBanner height={heroHeight} />
-
-          <View style={{ paddingHorizontal: horizontal }}>
-            <FeaturedCaseCard
-              data={caseData}
-              onPlay={() => router.push("/case-story")}
-            />
-
-            <Animated.View
-              entering={FadeInDown.delay(220).duration(600)}
-              style={styles.sectionRow}
-            >
-              <Text style={styles.sectionTitle}>DEVAM EDİLEN VAKALAR</Text>
-              <Text style={styles.sectionAction}>Tümünü Gör</Text>
-            </Animated.View>
-
+        <>
+          <BlurTargetView ref={blurTargetRef} style={styles.scroll}>
             <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.upcomingRow}
+              style={styles.scroll}
+              contentContainerStyle={{
+                paddingBottom: navHeight + t.spacing.xl,
+              }}
+              showsVerticalScrollIndicator={false}
             >
-              {upcomingCases.map((item, index) => (
-                <UpcomingCaseCard
-                  key={item.id}
-                  label={item.label}
-                  title={item.title}
-                  difficulty={item.difficulty}
-                  width={upcomingWidth}
-                  delay={260 + index * 80}
-                />
-              ))}
-            </ScrollView>
+            {/* Full-bleed opening plane */}
+            <View style={[styles.heroPlane, { height: heroHeight }]}>
+              <Image
+                source={getCaseCover(caseData.meta.id)}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+                transition={500}
+              />
+              <LinearGradient
+                colors={[
+                  "rgba(5, 7, 13, 0.72)",
+                  "rgba(5, 7, 13, 0.25)",
+                  "rgba(5, 7, 13, 0.55)",
+                  t.colors.void,
+                ]}
+                locations={[0, 0.35, 0.7, 1]}
+                style={StyleSheet.absoluteFill}
+              />
 
-            <LevelPanel />
-          </View>
-        </ScrollView>
+              <View
+                style={[
+                  styles.heroTop,
+                  {
+                    paddingTop: insets.top + t.spacing.md,
+                    paddingHorizontal: horizontal,
+                  },
+                ]}
+              >
+                <Animated.View entering={FadeIn.duration(700)}>
+                  <Text style={styles.brandMark}>AI DETECTIVE</Text>
+                  <Text style={styles.brandSub}>Noir soruşturma birimi</Text>
+                </Animated.View>
+
+                <View style={styles.heroActions}>
+                  <View style={styles.statusChip}>
+                    <LivePulse />
+                    <Text style={styles.statusChipText}>ONLINE</Text>
+                  </View>
+                </View>
+              </View>
+
+              <Animated.View
+                entering={FadeInUp.delay(180).duration(800)}
+                style={[styles.heroBrandBlock, { paddingHorizontal: horizontal }]}
+              >
+                <Text style={styles.heroEyebrow}>GECE VARDİYASI</Text>
+                <Text style={styles.heroTitle}>Gizemi çöz.</Text>
+                <Text style={styles.heroLead}>
+                  Kadıköy’ün yağmurlu sokaklarında bir dosya seni bekliyor.
+                </Text>
+              </Animated.View>
+            </View>
+
+            <View style={{ paddingHorizontal: horizontal, marginTop: -56 }}>
+              {/* Rank / XP */}
+              <Animated.View
+                entering={FadeInUp.delay(220).duration(700)}
+                style={[styles.rankPanel, t.shadow.deep]}
+              >
+                <BlurView intensity={28} tint="dark" style={StyleSheet.absoluteFill} />
+                <LinearGradient
+                  colors={[
+                    "rgba(201, 162, 39, 0.16)",
+                    "rgba(18, 28, 51, 0.92)",
+                    "rgba(8, 14, 28, 0.96)",
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.rankTop}>
+                  <View style={styles.avatarRing}>
+                    <Image
+                      source={gameImages.splash}
+                      style={styles.avatarImage}
+                      contentFit="cover"
+                    />
+                  </View>
+                  <View style={styles.rankIdentity}>
+                    <Text style={styles.rankHello}>Merhaba,</Text>
+                    <Text style={styles.rankName}>{PLAYER.name}</Text>
+                    <Text style={styles.rankTitle}>{PLAYER.rank}</Text>
+                  </View>
+                  <View style={styles.levelSeal}>
+                    <Text style={styles.levelSealLabel}>LV</Text>
+                    <Text style={styles.levelSealValue}>{PLAYER.level}</Text>
+                  </View>
+                </View>
+                <View style={styles.xpMeta}>
+                  <Text style={styles.xpLabel}>DENEYİM</Text>
+                  <Text style={styles.xpValue}>
+                    {PLAYER.xp} / {PLAYER.xpToNext} XP
+                  </Text>
+                </View>
+                <XpBar progress={xpProgress} />
+              </Animated.View>
+
+              {/* Günün Vakası */}
+              <Animated.View
+                entering={FadeInUp.delay(320).duration(750)}
+                style={styles.sectionHead}
+              >
+                <View>
+                  <Text style={styles.sectionKicker}>01 · ÖNE ÇIKAN</Text>
+                  <Text style={styles.sectionTitle}>Günün Vakası</Text>
+                </View>
+                <View style={styles.difficultyPill}>
+                  <Text style={styles.difficultyPillText}>ZOR</Text>
+                  <Stars value={4} />
+                </View>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInUp.delay(360).duration(750)}
+                style={t.shadow.deep}
+              >
+                <Pressable
+                  onPress={() => router.push("/case-story")}
+                  style={({ pressed }) => [
+                    styles.dayCase,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Image
+                    source={getCaseCover(caseData.meta.id)}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                    transition={350}
+                  />
+                  <LinearGradient
+                    colors={[
+                      "rgba(5, 7, 13, 0.15)",
+                      "rgba(5, 7, 13, 0.55)",
+                      "rgba(3, 5, 10, 0.97)",
+                    ]}
+                    locations={[0, 0.4, 1]}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.dayCaseTop}>
+                    <View style={styles.dayBadge}>
+                      <Ionicons
+                        name="moon"
+                        size={12}
+                        color={t.colors.void}
+                      />
+                      <Text style={styles.dayBadgeText}>GÜNÜN VAKASI</Text>
+                    </View>
+                    <Text style={styles.dayCaseId}>
+                      {caseData.meta.id.toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.dayCaseBody}>
+                    <Text style={styles.dayCaseTitle}>{caseData.meta.title}</Text>
+                    <Text style={styles.dayCaseSummary} numberOfLines={3}>
+                      {caseData.meta.summary}
+                    </Text>
+                    <View style={styles.dayCaseMeta}>
+                      <View style={styles.metaChip}>
+                        <Ionicons
+                          name="location-outline"
+                          size={12}
+                          color={t.colors.gold}
+                        />
+                        <Text style={styles.metaChipText} numberOfLines={1}>
+                          {caseData.scene.name}
+                        </Text>
+                      </View>
+                      <View style={styles.metaChip}>
+                        <Ionicons
+                          name="time-outline"
+                          size={12}
+                          color={t.colors.gold}
+                        />
+                        <Text style={styles.metaChipText}>
+                          {caseData.time.timeOfCrime}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.ctaRow}>
+                      <LinearGradient
+                        colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.primaryCta}
+                      >
+                        <Text style={styles.primaryCtaText}>VAKAYI AÇ</Text>
+                        <Ionicons
+                          name="arrow-forward"
+                          size={16}
+                          color={t.colors.void}
+                        />
+                      </LinearGradient>
+                    </View>
+                  </View>
+                </Pressable>
+              </Animated.View>
+
+              {/* Devam eden soruşturma */}
+              <Animated.View
+                entering={FadeInUp.delay(440).duration(700)}
+                style={styles.sectionHead}
+              >
+                <View>
+                  <Text style={styles.sectionKicker}>02 · AKTİF</Text>
+                  <Text style={styles.sectionTitle}>Devam Eden Soruşturma</Text>
+                </View>
+              </Animated.View>
+
+              <Animated.View entering={FadeInRight.delay(480).duration(700)}>
+                <Pressable
+                  onPress={() => router.push("/case-investigation")}
+                  style={({ pressed }) => [
+                    styles.continuePlane,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <LinearGradient
+                    colors={[
+                      "rgba(26, 39, 68, 0.95)",
+                      "rgba(10, 18, 36, 0.98)",
+                    ]}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.continueAccent} />
+                  <View style={styles.continueBody}>
+                    <View style={styles.continueTop}>
+                      <Text style={styles.continueStatus}>
+                        {hasActiveInvestigation
+                          ? "DEVAM EDİYOR"
+                          : "HAZIR · BAŞLANMADI"}
+                      </Text>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={t.colors.goldSoft}
+                      />
+                    </View>
+                    <Text style={styles.continueTitle}>{caseData.meta.title}</Text>
+                    <Text style={styles.continueLead} numberOfLines={2}>
+                      {hasActiveInvestigation
+                        ? "Dosyaya dön; şüpheliler ve deliller seni bekliyor."
+                        : "Soruşturmayı başlat — ifadeler, deliller ve çelişkiler seni bekliyor."}
+                    </Text>
+                    <View style={styles.progressGrid}>
+                      <View style={styles.progressCell}>
+                        <Text style={styles.progressValue}>
+                          {progress.evidence}/{progress.totalEvidence}
+                        </Text>
+                        <Text style={styles.progressLabel}>DELİL</Text>
+                      </View>
+                      <View style={styles.progressDivider} />
+                      <View style={styles.progressCell}>
+                        <Text style={styles.progressValue}>
+                          {progress.suspects}/{progress.totalSuspects}
+                        </Text>
+                        <Text style={styles.progressLabel}>SORGU</Text>
+                      </View>
+                      <View style={styles.progressDivider} />
+                      <View style={styles.progressCell}>
+                        <Text style={styles.progressValue}>
+                          {progress.contradictions}
+                        </Text>
+                        <Text style={styles.progressLabel}>ÇELİŞKİ</Text>
+                      </View>
+                    </View>
+                  </View>
+                </Pressable>
+              </Animated.View>
+
+              {/* Hızlı erişim */}
+              <Animated.View
+                entering={FadeInUp.delay(540).duration(700)}
+                style={styles.sectionHead}
+              >
+                <View>
+                  <Text style={styles.sectionKicker}>03 · ERİŞİM</Text>
+                  <Text style={styles.sectionTitle}>Hızlı Erişim</Text>
+                </View>
+              </Animated.View>
+
+              <View style={styles.quickGrid}>
+                <Animated.View
+                  entering={FadeInUp.delay(580).duration(600)}
+                  style={styles.quickWideWrap}
+                >
+                  <Pressable
+                    onPress={() => router.push("/case-investigation")}
+                    style={({ pressed }) => [
+                      styles.quickWide,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Image
+                      source={gameImages.homeHeader}
+                      style={StyleSheet.absoluteFill}
+                      contentFit="cover"
+                    />
+                    <LinearGradient
+                      colors={[
+                        "rgba(5, 7, 13, 0.35)",
+                        "rgba(10, 18, 36, 0.92)",
+                      ]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Ionicons
+                      name="search"
+                      size={22}
+                      color={t.colors.goldSoft}
+                    />
+                    <Text style={styles.quickWideTitle}>Soruşturma</Text>
+                    <Text style={styles.quickWideHint}>
+                      Şüpheliler · Deliller
+                    </Text>
+                  </Pressable>
+                </Animated.View>
+
+                <Animated.View
+                  entering={FadeInUp.delay(640).duration(600)}
+                  style={styles.quickHalf}
+                >
+                  <Pressable
+                    onPress={() => router.push("/case-story")}
+                    style={({ pressed }) => [
+                      styles.quickTile,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={["rgba(26, 39, 68, 0.98)", "rgba(8, 14, 28, 1)"]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Ionicons
+                      name="book-outline"
+                      size={20}
+                      color={t.colors.gold}
+                    />
+                    <Text style={styles.quickTileTitle}>Hikaye</Text>
+                    <Text style={styles.quickTileHint}>Dosyayı oku</Text>
+                  </Pressable>
+                </Animated.View>
+
+                <Animated.View
+                  entering={FadeInUp.delay(700).duration(600)}
+                  style={styles.quickHalf}
+                >
+                  <Pressable
+                    onPress={() => router.push("/case-solve")}
+                    style={({ pressed }) => [
+                      styles.quickTile,
+                      styles.quickTileAccent,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={[
+                        "rgba(201, 162, 39, 0.22)",
+                        "rgba(18, 28, 51, 0.98)",
+                      ]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Ionicons name="flash" size={20} color={t.colors.goldSoft} />
+                    <Text style={styles.quickTileTitle}>Vakayı Çöz</Text>
+                    <Text style={styles.quickTileHint}>Suçlamayı kilitle</Text>
+                  </Pressable>
+                </Animated.View>
+              </View>
+
+              <Animated.View
+                entering={FadeIn.delay(780).duration(700)}
+                style={styles.footerSeal}
+              >
+                <View style={styles.footerLine} />
+                <Text style={styles.footerText}>AI DETECTIVE · CASE UNIT</Text>
+                <View style={styles.footerLine} />
+              </Animated.View>
+            </View>
+          </ScrollView>
+          </BlurTargetView>
+
+          <BottomNav
+            active={activeTab}
+            onSelect={onTabSelect}
+            bottomInset={insets.bottom}
+            blurTarget={blurTargetRef}
+          />
+        </>
       ) : null}
     </View>
   );
@@ -368,278 +760,494 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: t.colors.void,
   },
+  bgImage: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    opacity: 0.35,
+  },
   scroll: {
     flex: 1,
   },
-  hero: {
+  heroPlane: {
     width: "100%",
     justifyContent: "space-between",
-    marginBottom: t.spacing.lg,
   },
   heroTop: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingHorizontal: t.spacing.lg,
   },
-  profileRow: {
+  brandMark: {
+    fontFamily: t.typography.label,
+    fontSize: 13,
+    letterSpacing: 4.5,
+    color: t.colors.goldSoft,
+  },
+  brandSub: {
+    marginTop: 4,
+    fontFamily: t.typography.displayItalic,
+    fontSize: 13,
+    color: t.colors.creamMuted,
+  },
+  heroActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: t.spacing.sm + 2,
+    gap: t.spacing.sm,
+  },
+  statusChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: "rgba(5, 7, 13, 0.55)",
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: t.colors.gold,
+  },
+  statusChipText: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: t.colors.goldSoft,
+  },
+  heroBrandBlock: {
+    paddingBottom: 72,
+  },
+  heroEyebrow: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 3,
+    color: t.colors.gold,
+    marginBottom: 8,
+  },
+  heroTitle: {
+    fontFamily: t.typography.title,
+    fontSize: 46,
+    lineHeight: 48,
+    color: t.colors.cream,
+  },
+  heroLead: {
+    marginTop: 10,
+    maxWidth: 280,
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 21,
+    color: t.colors.creamMuted,
+  },
+  rankPanel: {
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    padding: t.spacing.md,
+    marginBottom: t.spacing.xl,
+  },
+  rankTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.spacing.md,
+    marginBottom: t.spacing.md,
   },
   avatarRing: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderWidth: 1,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
     borderColor: t.colors.gold,
     overflow: "hidden",
+    ...t.shadow.glow,
   },
   avatarImage: {
     width: "100%",
     height: "100%",
   },
-  greeting: {
+  rankIdentity: {
+    flex: 1,
+    gap: 1,
+  },
+  rankHello: {
     fontFamily: t.typography.body,
-    fontSize: 12,
-    color: t.colors.creamMuted,
+    fontSize: 11,
+    color: t.colors.mist,
   },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.spacing.sm,
-  },
-  detectiveName: {
+  rankName: {
     fontFamily: t.typography.display,
     fontSize: 22,
     color: t.colors.cream,
   },
-  levelPill: {
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: t.colors.goldDim,
-    backgroundColor: t.colors.goldFaint,
-  },
-  levelPillText: {
-    fontFamily: t.typography.label,
-    fontSize: 10,
-    letterSpacing: 0.8,
+  rankTitle: {
+    fontFamily: t.typography.bodyMedium,
+    fontSize: 12,
     color: t.colors.goldSoft,
   },
-  iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  levelSeal: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: t.colors.gold,
+    backgroundColor: t.colors.goldFaint,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(243, 237, 224, 0.16)",
-    backgroundColor: "rgba(5, 7, 13, 0.45)",
   },
-  heroTitleWrap: {
-    paddingHorizontal: t.spacing.lg,
-    paddingBottom: t.spacing.lg,
-  },
-  heroKicker: {
+  levelSealLabel: {
     fontFamily: t.typography.label,
+    fontSize: 9,
+    letterSpacing: 1.5,
+    color: t.colors.mist,
+  },
+  levelSealValue: {
+    fontFamily: t.typography.title,
+    fontSize: 22,
+    color: t.colors.goldSoft,
+    marginTop: -2,
+  },
+  xpMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  xpLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.8,
+    color: t.colors.mist,
+  },
+  xpValue: {
+    fontFamily: t.typography.bodyMedium,
     fontSize: 12,
-    letterSpacing: 4,
+    color: t.colors.creamMuted,
+  },
+  xpTrack: {
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: t.colors.smoke,
+    overflow: "hidden",
+  },
+  xpFillWrap: {
+    height: "100%",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  sectionHead: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    marginBottom: t.spacing.md,
+    marginTop: t.spacing.sm,
+  },
+  sectionKicker: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 2,
     color: t.colors.gold,
     marginBottom: 4,
   },
-  heroTagline: {
-    fontFamily: t.typography.displayItalic,
-    fontSize: 17,
-    color: t.colors.creamMuted,
+  sectionTitle: {
+    fontFamily: t.typography.display,
+    fontSize: 26,
+    color: t.colors.cream,
   },
-  featuredCard: {
-    height: 300,
-    borderRadius: t.radius.lg,
+  difficultyPill: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  difficultyPillText: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.6,
+    color: t.colors.mist,
+  },
+  starRow: {
+    flexDirection: "row",
+    gap: 2,
+  },
+  dayCase: {
+    height: 340,
+    borderRadius: t.radius.xl,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: t.colors.line,
-    overflow: "hidden",
-    justifyContent: "flex-end",
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
+    justifyContent: "space-between",
+    marginBottom: t.spacing.lg,
   },
-  pressedCard: {
-    opacity: 0.94,
-    transform: [{ scale: 0.99 }],
+  dayCaseTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: t.spacing.md,
   },
-  featuredBody: {
-    padding: t.spacing.lg,
-  },
-  featuredEyebrowRow: {
+  dayBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginBottom: t.spacing.sm,
+    backgroundColor: t.colors.gold,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  featuredEyebrow: {
+  dayBadgeText: {
     fontFamily: t.typography.label,
     fontSize: 10,
-    letterSpacing: 2.2,
-    color: t.colors.gold,
+    letterSpacing: 1.3,
+    color: t.colors.void,
   },
-  featuredTitle: {
+  dayCaseId: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: t.colors.creamMuted,
+  },
+  dayCaseBody: {
+    padding: t.spacing.lg,
+    gap: 10,
+  },
+  dayCaseTitle: {
     fontFamily: t.typography.title,
-    fontSize: 30,
+    fontSize: 32,
     lineHeight: 36,
     color: t.colors.cream,
-    marginBottom: t.spacing.sm,
   },
-  featuredSummary: {
+  dayCaseSummary: {
     fontFamily: t.typography.body,
     fontSize: 13,
     lineHeight: 20,
     color: t.colors.creamMuted,
-    marginBottom: t.spacing.md,
   },
-  featuredFooter: {
+  dayCaseMeta: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: t.spacing.md,
+    flexWrap: "wrap",
+    gap: 8,
   },
-  difficultyLabel: {
+  metaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    maxWidth: "100%",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(243, 237, 224, 0.14)",
+    backgroundColor: "rgba(5, 7, 13, 0.45)",
+  },
+  metaChipText: {
+    fontFamily: t.typography.body,
+    fontSize: 11,
+    color: t.colors.creamMuted,
+    maxWidth: 180,
+  },
+  ctaRow: {
+    marginTop: 4,
+    alignItems: "flex-start",
+  },
+  primaryCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+    borderRadius: 999,
+    ...t.shadow.glow,
+  },
+  primaryCtaText: {
+    fontFamily: t.typography.label,
+    fontSize: 12,
+    letterSpacing: 1.8,
+    color: t.colors.void,
+  },
+  continuePlane: {
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    flexDirection: "row",
+    marginBottom: t.spacing.lg,
+    minHeight: 168,
+  },
+  continueAccent: {
+    width: 4,
+    backgroundColor: t.colors.gold,
+  },
+  continueBody: {
+    flex: 1,
+    padding: t.spacing.md,
+    gap: 8,
+  },
+  continueTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  continueStatus: {
     fontFamily: t.typography.label,
     fontSize: 10,
     letterSpacing: 1.6,
-    color: t.colors.mist,
-    marginBottom: 6,
-  },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
-  playButton: {
-    borderRadius: 999,
-    overflow: "hidden",
-  },
-  playGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: t.spacing.md,
-    paddingVertical: 12,
-  },
-  playLabel: {
-    fontFamily: t.typography.label,
-    fontSize: 12,
-    letterSpacing: 1.6,
-    color: t.colors.void,
-  },
-  sectionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: t.spacing.xl,
-    marginBottom: t.spacing.md,
-  },
-  sectionTitle: {
-    fontFamily: t.typography.label,
-    fontSize: 11,
-    letterSpacing: 2.4,
-    color: t.colors.cream,
-  },
-  sectionAction: {
-    fontFamily: t.typography.bodyMedium,
-    fontSize: 12,
     color: t.colors.gold,
   },
-  upcomingRow: {
-    gap: t.spacing.sm + 2,
-    paddingRight: t.spacing.md,
-  },
-  upcomingCard: {
-    gap: 6,
-  },
-  upcomingThumb: {
-    height: 120,
-    borderRadius: t.radius.md,
-    borderWidth: 1,
-    borderColor: t.colors.line,
-    overflow: "hidden",
-    marginBottom: 4,
-  },
-  lockBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(5, 7, 13, 0.7)",
-    borderWidth: 1,
-    borderColor: t.colors.goldDim,
-  },
-  upcomingLabel: {
-    fontFamily: t.typography.body,
-    fontSize: 11,
-    color: t.colors.mist,
-  },
-  upcomingTitle: {
+  continueTitle: {
     fontFamily: t.typography.display,
-    fontSize: 16,
+    fontSize: 22,
     color: t.colors.cream,
   },
-  levelPanel: {
+  continueLead: {
+    fontFamily: t.typography.body,
+    fontSize: 13,
+    lineHeight: 19,
+    color: t.colors.creamMuted,
+  },
+  progressGrid: {
+    marginTop: 4,
     flexDirection: "row",
     alignItems: "center",
-    gap: t.spacing.md,
-    marginTop: t.spacing.xl,
-    padding: t.spacing.md,
-    borderRadius: t.radius.md,
-    borderWidth: 1,
-    borderColor: t.colors.line,
-    backgroundColor: "rgba(18, 28, 51, 0.6)",
+    borderTopWidth: 1,
+    borderTopColor: t.colors.line,
+    paddingTop: t.spacing.sm,
   },
-  levelBadge: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: t.colors.goldDim,
-    backgroundColor: t.colors.goldFaint,
-  },
-  levelInfo: {
+  progressCell: {
     flex: 1,
+    alignItems: "center",
+    gap: 2,
   },
-  levelTitle: {
-    fontFamily: t.typography.body,
-    fontSize: 12,
-    color: t.colors.mist,
+  progressDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: t.colors.line,
   },
-  levelValue: {
+  progressValue: {
     fontFamily: t.typography.display,
     fontSize: 18,
     color: t.colors.cream,
-    marginBottom: 6,
   },
-  progressTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "rgba(243, 237, 224, 0.12)",
+  progressLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 9,
+    letterSpacing: 1.2,
+    color: t.colors.mist,
+  },
+  quickGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: t.spacing.sm,
+  },
+  quickWideWrap: {
+    width: "100%",
+  },
+  quickWide: {
+    height: 118,
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    padding: t.spacing.md,
+    justifyContent: "flex-end",
+    gap: 2,
+  },
+  quickWideTitle: {
+    fontFamily: t.typography.display,
+    fontSize: 24,
+    color: t.colors.cream,
+  },
+  quickWideHint: {
+    fontFamily: t.typography.body,
+    fontSize: 12,
+    color: t.colors.creamMuted,
+  },
+  quickHalf: {
+    width: "48.5%",
+    flexGrow: 1,
+  },
+  quickTile: {
+    minHeight: 112,
+    borderRadius: t.radius.md,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    padding: t.spacing.md,
+    justifyContent: "flex-end",
+    gap: 4,
+  },
+  quickTileAccent: {
+    borderColor: t.colors.goldDim,
+  },
+  quickTileTitle: {
+    fontFamily: t.typography.display,
+    fontSize: 18,
+    color: t.colors.cream,
+  },
+  quickTileHint: {
+    fontFamily: t.typography.body,
+    fontSize: 11,
+    color: t.colors.mist,
+  },
+  footerSeal: {
+    marginTop: t.spacing.xl,
+    marginBottom: t.spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.spacing.sm,
+  },
+  footerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: t.colors.line,
+  },
+  footerText: {
+    fontFamily: t.typography.label,
+    fontSize: 9,
+    letterSpacing: 2,
+    color: t.colors.mist,
+  },
+  pressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
+  },
+  navShell: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopWidth: 1,
+    borderTopColor: t.colors.line,
     overflow: "hidden",
   },
-  progressFill: {
-    height: "100%",
-    borderRadius: 3,
+  navRow: {
+    flexDirection: "row",
+    paddingTop: 10,
+    paddingHorizontal: 8,
   },
-  xpText: {
-    fontFamily: t.typography.label,
+  navItem: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 6,
+  },
+  navActiveGlow: {
+    position: "absolute",
+    top: 0,
+    width: 28,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: t.colors.gold,
+  },
+  navLabel: {
+    fontFamily: t.typography.bodyMedium,
     fontSize: 10,
-    letterSpacing: 0.8,
     color: t.colors.mist,
+  },
+  navLabelActive: {
+    color: t.colors.goldSoft,
+    fontFamily: t.typography.label,
   },
   stateCenter: {
     flex: 1,
