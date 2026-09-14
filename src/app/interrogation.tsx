@@ -1,0 +1,728 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "expo-status-bar";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
+import {
+  CormorantGaramond_600SemiBold,
+  CormorantGaramond_600SemiBold_Italic,
+  CormorantGaramond_700Bold,
+  useFonts,
+} from "@expo-google-fonts/cormorant-garamond";
+import {
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+} from "@expo-google-fonts/outfit";
+import { fetchCase001 } from "@/services/cases";
+import { detectiveTheme as t } from "@/constants/theme";
+import type { Case, Suspect } from "@/types/case";
+
+type ChatRole = "player" | "suspect" | "system";
+
+type ChatMessage = {
+  id: string;
+  role: ChatRole;
+  text: string;
+};
+
+const LOCAL_REPLIES = [
+  "Bu soruya net cevap vermek istemiyorum. O geceyi… farklı hatırlıyorum.",
+  "Bunu daha önce de sordular. Size söylediğimden fazlasını bilmiyorum.",
+  "Kerem'le aramızda iş vardı, cinayet değil. Bu kadarını anlayın.",
+  "İsterseniz mazeretimi tekrar edeyim. Başka bir şey eklemeyeceğim.",
+  "Sizin delilleriniz var, benim de gerçeklerim. İkisi aynı şey değil.",
+  "O saatte başka yerdeydim. Telefon kayıtları her şeyi göstermez.",
+];
+
+function buildLocalReply(suspectName: string, question: string): string {
+  const trimmed = question.trim();
+  const seed = trimmed.length + suspectName.length;
+  const base = LOCAL_REPLIES[seed % LOCAL_REPLIES.length];
+  return `${base}\n\n— ${suspectName}`;
+}
+
+function LoadingState() {
+  return (
+    <View style={styles.stateCenter}>
+      <ActivityIndicator color={t.colors.gold} size="large" />
+      <Text style={styles.stateHint}>Sorgu odası hazırlanıyor…</Text>
+    </View>
+  );
+}
+
+function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <View style={styles.stateCenter}>
+      <Text style={styles.errorTitle}>Sorgu açılamadı</Text>
+      <Text style={styles.errorBody}>{message}</Text>
+      <Pressable onPress={onRetry} style={styles.retryButton}>
+        <Text style={styles.retryText}>Yeniden dene</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function EmptySuspectState({ onBack }: { onBack: () => void }) {
+  return (
+    <View style={styles.stateCenter}>
+      <Text style={styles.errorTitle}>Şüpheli bulunamadı</Text>
+      <Text style={styles.errorBody}>
+        Seçilen dosya bu vakada yok. Soruşturma ekranına dönün.
+      </Text>
+      <Pressable onPress={onBack} style={styles.retryButton}>
+        <Text style={styles.retryText}>Geri dön</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function DossierPanel({
+  caseData,
+  suspect,
+}: {
+  caseData: Case;
+  suspect: Suspect;
+}) {
+  const relatedEvidence = caseData.evidence.filter((item) =>
+    item.relatedSuspectIds.includes(suspect.id)
+  );
+  const knownStatements = caseData.statements.filter(
+    (item) => item.suspectId === suspect.id
+  );
+
+  return (
+    <Animated.View entering={FadeInDown.delay(80).duration(650)}>
+      <View style={styles.dossierCard}>
+        <LinearGradient
+          colors={["rgba(26, 39, 68, 0.98)", "rgba(8, 14, 28, 0.96)"]}
+          style={StyleSheet.absoluteFill}
+        />
+
+        <View style={styles.dossierHeader}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {suspect.name
+                .split(" ")
+                .map((part) => part[0])
+                .slice(0, 2)
+                .join("")}
+            </Text>
+          </View>
+          <View style={styles.dossierIdentity}>
+            <Text style={styles.dossierKicker}>SORGU ALTINDA</Text>
+            <Text style={styles.dossierName}>{suspect.name}</Text>
+            <Text style={styles.dossierMeta}>
+              {suspect.occupation}
+              {suspect.age ? ` · ${suspect.age}` : ""}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.dossierBio}>{suspect.biography}</Text>
+
+        <View style={styles.infoBlock}>
+          <Text style={styles.infoLabel}>KURBANLA BAĞ</Text>
+          <Text style={styles.infoValue}>{suspect.relationshipToVictim}</Text>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <Text style={styles.infoLabel}>BİLİNEN MAZERET</Text>
+          <Text style={styles.infoQuote}>“{suspect.claimedAlibi}”</Text>
+        </View>
+
+        {relatedEvidence.length > 0 ? (
+          <View style={styles.infoBlock}>
+            <Text style={styles.infoLabel}>İLİŞKİLİ DELİLLER</Text>
+            {relatedEvidence.map((item) => (
+              <Text key={item.id} style={styles.bullet}>
+                • {item.name}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+
+        {knownStatements.length > 0 ? (
+          <View style={styles.infoBlock}>
+            <Text style={styles.infoLabel}>DOSYADAKİ İFADELER</Text>
+            {knownStatements.map((item) => (
+              <Text key={item.id} style={styles.infoQuote}>
+                “{item.text}”
+              </Text>
+            ))}
+          </View>
+        ) : null}
+      </View>
+    </Animated.View>
+  );
+}
+
+function MessageBubble({ message }: { message: ChatMessage }) {
+  const isPlayer = message.role === "player";
+  const isSystem = message.role === "system";
+
+  if (isSystem) {
+    return (
+      <View style={styles.systemBubble}>
+        <Text style={styles.systemText}>{message.text}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      style={[
+        styles.bubble,
+        isPlayer ? styles.playerBubble : styles.suspectBubble,
+      ]}
+    >
+      <Text style={styles.bubbleRole}>
+        {isPlayer ? "SEN" : "İFADE"}
+      </Text>
+      <Text style={styles.bubbleText}>{message.text}</Text>
+    </View>
+  );
+}
+
+function InterrogationRoom({
+  caseData,
+  suspect,
+}: {
+  caseData: Case;
+  suspect: Suspect;
+}) {
+  const insets = useSafeAreaInsets();
+  const [question, setQuestion] = useState("");
+  const [sending, setSending] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    {
+      id: "sys-1",
+      role: "system",
+      text: `${suspect.name} karşınızda. Sorularınız kayda geçecek. (Geçici yanıt modu — Gemini henüz bağlı değil.)`,
+    },
+  ]);
+
+  const canAsk = question.trim().length > 0 && !sending;
+
+  const ask = () => {
+    const trimmed = question.trim();
+    if (!trimmed || sending) return;
+
+    const playerMessage: ChatMessage = {
+      id: `p-${Date.now()}`,
+      role: "player",
+      text: trimmed,
+    };
+
+    setMessages((prev) => [...prev, playerMessage]);
+    setQuestion("");
+    setSending(true);
+
+    // Geçici local cevap — Gemini sonraki adımda bağlanacak
+    setTimeout(() => {
+      const reply: ChatMessage = {
+        id: `s-${Date.now()}`,
+        role: "suspect",
+        text: buildLocalReply(suspect.name, trimmed),
+      };
+      setMessages((prev) => [...prev, reply]);
+      setSending(false);
+    }, 650);
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
+    >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={{
+          paddingTop: insets.top + 56,
+          paddingBottom: t.spacing.md,
+          paddingHorizontal: t.spacing.lg,
+        }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View entering={FadeIn.duration(500)}>
+          <Text style={styles.caseChip}>
+            {caseData.meta.id.toUpperCase()} · {caseData.meta.title}
+          </Text>
+          <Text style={styles.screenTitle}>İfade Odası</Text>
+        </Animated.View>
+
+        <DossierPanel caseData={caseData} suspect={suspect} />
+
+        <Animated.View entering={FadeInUp.delay(180).duration(600)}>
+          <Text style={styles.sectionLabel}>SORGU KAYDI</Text>
+        </Animated.View>
+
+        <View style={styles.transcript}>
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          {sending ? (
+            <View style={styles.typingRow}>
+              <ActivityIndicator color={t.colors.gold} size="small" />
+              <Text style={styles.typingText}>İfade bekleniyor…</Text>
+            </View>
+          ) : null}
+        </View>
+      </ScrollView>
+
+      <View
+        style={[
+          styles.composer,
+          { paddingBottom: Math.max(insets.bottom, 12) },
+        ]}
+      >
+        <LinearGradient
+          colors={["transparent", "rgba(5, 7, 13, 0.95)", t.colors.void]}
+          style={styles.composerFade}
+          pointerEvents="none"
+        />
+        <View style={styles.inputRow}>
+          <TextInput
+            value={question}
+            onChangeText={setQuestion}
+            placeholder="Sorunu yaz…"
+            placeholderTextColor={t.colors.mist}
+            style={styles.input}
+            multiline
+            maxLength={280}
+            editable={!sending}
+            onSubmitEditing={ask}
+            blurOnSubmit
+          />
+          <Pressable
+            onPress={ask}
+            disabled={!canAsk}
+            style={({ pressed }) => [
+              styles.askButton,
+              !canAsk && styles.askButtonDisabled,
+              pressed && canAsk && styles.askButtonPressed,
+            ]}
+          >
+            <LinearGradient
+              colors={
+                canAsk
+                  ? [t.colors.goldSoft, t.colors.gold, "#A8841A"]
+                  : ["#3A3F4D", "#2A2F3C"]
+              }
+              style={styles.askGradient}
+            >
+              <Text
+                style={[styles.askLabel, !canAsk && styles.askLabelDisabled]}
+              >
+                SOR
+              </Text>
+            </LinearGradient>
+          </Pressable>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+export default function InterrogationScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ suspectId?: string | string[] }>();
+  const suspectId = Array.isArray(params.suspectId)
+    ? params.suspectId[0]
+    : params.suspectId;
+
+  const [fontsLoaded] = useFonts({
+    CormorantGaramond_600SemiBold,
+    CormorantGaramond_600SemiBold_Italic,
+    CormorantGaramond_700Bold,
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+  });
+
+  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError(null);
+    setCaseData(null);
+
+    fetchCase001()
+      .then((data) => {
+        if (!cancelled) setCaseData(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Bilinmeyen hata");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  const suspect = useMemo(() => {
+    if (!caseData || !suspectId) return null;
+    return caseData.suspects.find((item) => item.id === suspectId) ?? null;
+  }, [caseData, suspectId]);
+
+  return (
+    <View style={styles.root}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar style="light" />
+
+      <LinearGradient
+        colors={[t.colors.navyDeep, t.colors.void, "#02040A"]}
+        locations={[0, 0.55, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(201, 162, 39, 0.07)", "transparent"]}
+        style={styles.topGlow}
+        pointerEvents="none"
+      />
+
+      <Pressable
+        onPress={() => router.back()}
+        style={[styles.backButton, { top: insets.top + 8 }]}
+        hitSlop={12}
+      >
+        <Text style={styles.backText}>←</Text>
+      </Pressable>
+
+      {!fontsLoaded || (!caseData && !error) ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState
+          message={error}
+          onRetry={() => setReloadKey((key) => key + 1)}
+        />
+      ) : !suspectId || !suspect ? (
+        <EmptySuspectState onBack={() => router.back()} />
+      ) : (
+        <InterrogationRoom caseData={caseData!} suspect={suspect} />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: t.colors.void,
+  },
+  flex: {
+    flex: 1,
+  },
+  topGlow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 180,
+  },
+  backButton: {
+    position: "absolute",
+    left: t.spacing.md,
+    zIndex: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: "rgba(10, 18, 36, 0.75)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backText: {
+    color: t.colors.goldSoft,
+    fontSize: 18,
+    marginTop: -2,
+  },
+  caseChip: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 1.6,
+    color: t.colors.gold,
+    marginBottom: t.spacing.sm,
+  },
+  screenTitle: {
+    fontFamily: t.typography.title,
+    fontSize: 32,
+    color: t.colors.cream,
+    marginBottom: t.spacing.lg,
+  },
+  dossierCard: {
+    borderRadius: t.radius.lg,
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    padding: t.spacing.lg,
+    overflow: "hidden",
+    marginBottom: t.spacing.xl,
+  },
+  dossierHeader: {
+    flexDirection: "row",
+    gap: t.spacing.md,
+    marginBottom: t.spacing.md,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: t.colors.gold,
+    backgroundColor: t.colors.goldFaint,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontFamily: t.typography.label,
+    fontSize: 15,
+    letterSpacing: 1,
+    color: t.colors.goldSoft,
+  },
+  dossierIdentity: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  dossierKicker: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 2,
+    color: t.colors.gold,
+    marginBottom: 4,
+  },
+  dossierName: {
+    fontFamily: t.typography.display,
+    fontSize: 24,
+    color: t.colors.cream,
+  },
+  dossierMeta: {
+    fontFamily: t.typography.bodyMedium,
+    fontSize: 13,
+    color: t.colors.creamMuted,
+    marginTop: 2,
+  },
+  dossierBio: {
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 22,
+    color: t.colors.creamMuted,
+    marginBottom: t.spacing.md,
+  },
+  infoBlock: {
+    marginBottom: t.spacing.md,
+  },
+  infoLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.8,
+    color: t.colors.gold,
+    marginBottom: 6,
+  },
+  infoValue: {
+    fontFamily: t.typography.bodyMedium,
+    fontSize: 14,
+    lineHeight: 21,
+    color: t.colors.cream,
+  },
+  infoQuote: {
+    fontFamily: t.typography.displayItalic,
+    fontSize: 15,
+    lineHeight: 24,
+    color: t.colors.cream,
+    marginBottom: 8,
+  },
+  bullet: {
+    fontFamily: t.typography.body,
+    fontSize: 13,
+    lineHeight: 20,
+    color: t.colors.creamMuted,
+    marginBottom: 4,
+  },
+  sectionLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 2.6,
+    color: t.colors.gold,
+    marginBottom: t.spacing.md,
+  },
+  transcript: {
+    gap: t.spacing.sm,
+    paddingBottom: 110,
+  },
+  bubble: {
+    borderRadius: t.radius.md,
+    padding: t.spacing.md,
+    borderWidth: 1,
+    maxWidth: "92%",
+  },
+  playerBubble: {
+    alignSelf: "flex-end",
+    backgroundColor: "rgba(201, 162, 39, 0.14)",
+    borderColor: t.colors.goldDim,
+  },
+  suspectBubble: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(18, 28, 51, 0.9)",
+    borderColor: t.colors.line,
+  },
+  bubbleRole: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.6,
+    color: t.colors.gold,
+    marginBottom: 6,
+  },
+  bubbleText: {
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 22,
+    color: t.colors.cream,
+  },
+  systemBubble: {
+    alignSelf: "center",
+    paddingHorizontal: t.spacing.md,
+    paddingVertical: t.spacing.sm,
+    borderRadius: 999,
+    backgroundColor: "rgba(18, 28, 51, 0.65)",
+    borderWidth: 1,
+    borderColor: "rgba(201, 162, 39, 0.2)",
+    marginBottom: t.spacing.sm,
+  },
+  systemText: {
+    fontFamily: t.typography.body,
+    fontSize: 12,
+    lineHeight: 18,
+    color: t.colors.mist,
+    textAlign: "center",
+  },
+  typingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 6,
+  },
+  typingText: {
+    fontFamily: t.typography.body,
+    fontSize: 12,
+    color: t.colors.mist,
+  },
+  composer: {
+    paddingHorizontal: t.spacing.lg,
+    paddingTop: t.spacing.md,
+  },
+  composerFade: {
+    ...StyleSheet.absoluteFill,
+    top: -36,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: t.spacing.sm,
+  },
+  input: {
+    flex: 1,
+    minHeight: 52,
+    maxHeight: 110,
+    borderRadius: t.radius.md,
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    backgroundColor: "rgba(18, 28, 51, 0.92)",
+    paddingHorizontal: t.spacing.md,
+    paddingVertical: Platform.OS === "ios" ? 14 : 10,
+    color: t.colors.cream,
+    fontFamily: t.typography.body,
+    fontSize: 15,
+  },
+  askButton: {
+    borderRadius: t.radius.md,
+    overflow: "hidden",
+  },
+  askButtonDisabled: {
+    opacity: 0.7,
+  },
+  askButtonPressed: {
+    transform: [{ scale: 0.97 }],
+  },
+  askGradient: {
+    minWidth: 76,
+    minHeight: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  askLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 14,
+    letterSpacing: 2,
+    color: t.colors.void,
+  },
+  askLabelDisabled: {
+    color: t.colors.mist,
+  },
+  stateCenter: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: t.spacing.xl,
+  },
+  stateHint: {
+    marginTop: t.spacing.md,
+    fontFamily: t.typography.bodyMedium,
+    fontSize: 14,
+    color: t.colors.mist,
+  },
+  errorTitle: {
+    fontFamily: t.typography.title,
+    fontSize: 28,
+    color: t.colors.cream,
+    marginBottom: t.spacing.sm,
+  },
+  errorBody: {
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 22,
+    color: t.colors.creamMuted,
+    textAlign: "center",
+    marginBottom: t.spacing.lg,
+  },
+  retryButton: {
+    paddingHorizontal: t.spacing.lg,
+    paddingVertical: t.spacing.sm + 2,
+    borderRadius: t.radius.sm,
+    borderWidth: 1,
+    borderColor: t.colors.gold,
+    backgroundColor: t.colors.goldFaint,
+  },
+  retryText: {
+    fontFamily: t.typography.label,
+    fontSize: 13,
+    letterSpacing: 1.5,
+    color: t.colors.goldSoft,
+  },
+});

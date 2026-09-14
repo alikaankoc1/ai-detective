@@ -56,14 +56,22 @@ function SuspectCard({
   suspect,
   order,
   delay,
+  onPress,
 }: {
   suspect: Suspect;
   order: number;
   delay: number;
+  onPress: () => void;
 }) {
   return (
     <Animated.View entering={FadeInUp.delay(delay).duration(650)}>
-      <View style={styles.suspectCard}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.suspectCard,
+          pressed && styles.suspectCardPressed,
+        ]}
+      >
         <LinearGradient
           colors={["rgba(26, 39, 68, 0.98)", "rgba(8, 14, 28, 0.96)"]}
           style={StyleSheet.absoluteFill}
@@ -79,7 +87,9 @@ function SuspectCard({
             </Text>
           </View>
           <View style={styles.suspectIdentity}>
-            <Text style={styles.suspectOrder}>ŞÜPHELİ {order.toString().padStart(2, "0")}</Text>
+            <Text style={styles.suspectOrder}>
+              ŞÜPHELİ {order.toString().padStart(2, "0")}
+            </Text>
             <Text style={styles.suspectName}>{suspect.name}</Text>
             <Text style={styles.suspectJob}>
               {suspect.occupation}
@@ -88,7 +98,9 @@ function SuspectCard({
           </View>
         </View>
 
-        <Text style={styles.suspectBio}>{suspect.biography}</Text>
+        <Text style={styles.suspectBio} numberOfLines={3}>
+          {suspect.biography}
+        </Text>
 
         <View style={styles.suspectMetaBlock}>
           <Text style={styles.metaLabel}>KURBANLA BAĞ</Text>
@@ -99,7 +111,11 @@ function SuspectCard({
           <Text style={styles.metaLabel}>İDDİA EDİLEN MAZERET</Text>
           <Text style={styles.alibiText}>“{suspect.claimedAlibi}”</Text>
         </View>
-      </View>
+
+        <View style={styles.interrogateCue}>
+          <Text style={styles.interrogateCueText}>SORGUYA AL ›</Text>
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -159,7 +175,13 @@ function ErrorState({
   );
 }
 
-function InvestigationContent({ data }: { data: Case }) {
+function InvestigationContent({
+  data,
+  onInterrogate,
+}: {
+  data: Case;
+  onInterrogate: (suspectId: string) => void;
+}) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
@@ -236,6 +258,7 @@ function InvestigationContent({ data }: { data: Case }) {
               suspect={suspect}
               order={index + 1}
               delay={220 + index * 90}
+              onPress={() => onInterrogate(suspect.id)}
             />
           ))}
         </View>
@@ -336,7 +359,15 @@ export default function CaseInvestigationScreen() {
           onRetry={() => setReloadKey((k) => k + 1)}
         />
       ) : caseData ? (
-        <InvestigationContent data={caseData} />
+        <InvestigationContent
+          data={caseData}
+          onInterrogate={(suspectId) =>
+            router.push({
+              pathname: "/interrogation",
+              params: { suspectId },
+            })
+          }
+        />
       ) : null}
     </View>
   );
@@ -527,6 +558,26 @@ const styles = StyleSheet.create({
     borderColor: t.colors.line,
     padding: t.spacing.lg,
     overflow: "hidden",
+  },
+  suspectCardPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
+  },
+  interrogateCue: {
+    marginTop: t.spacing.md,
+    alignSelf: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: t.colors.goldFaint,
+  },
+  interrogateCueText: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 1.8,
+    color: t.colors.goldSoft,
   },
   suspectTop: {
     flexDirection: "row",
