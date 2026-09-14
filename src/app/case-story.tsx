@@ -107,81 +107,117 @@ function ErrorState({
   );
 }
 
-function CaseStoryContent({ data }: { data: Case }) {
+function CaseStoryContent({
+  data,
+  onInvestigate,
+}: {
+  data: Case;
+  onInvestigate: () => void;
+}) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const horizontal = Math.max(t.spacing.lg, width * 0.06);
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={[
-        styles.scrollContent,
-        {
-          paddingTop: insets.top + t.spacing.lg,
-          paddingBottom: insets.bottom + t.spacing.xxl,
-          paddingHorizontal: horizontal,
-        },
-      ]}
-      showsVerticalScrollIndicator={false}
-    >
-      <Animated.View entering={FadeIn.duration(700)}>
-        <CaseBadge id={data.meta.id} />
-      </Animated.View>
-
-      <Animated.View entering={FadeInDown.delay(120).duration(800)}>
-        <Text style={styles.kicker}>GİZLİ SORUŞTURMA</Text>
-        <Text style={styles.title}>{data.meta.title}</Text>
-        <Text style={styles.summary}>{data.meta.summary}</Text>
-      </Animated.View>
-
-      <Animated.View entering={FadeIn.delay(280).duration(700)}>
-        <GoldRule />
-      </Animated.View>
-
-      <Animated.View
-        entering={FadeInUp.delay(320).duration(700)}
-        style={styles.metaGrid}
+    <View style={styles.contentShell}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + t.spacing.lg,
+            paddingBottom: insets.bottom + 120,
+            paddingHorizontal: horizontal,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
       >
-        <MetaChip label="KONUM" value={data.scene.name} />
-        <MetaChip
-          label="ZAMAN"
-          value={`${data.time.dateLabel} · ${data.time.timeOfCrime}`}
-        />
-        {data.time.atmosphere ? (
-          <MetaChip label="ATMOSFER" value={data.time.atmosphere} />
-        ) : null}
-      </Animated.View>
+        <Animated.View entering={FadeIn.duration(700)}>
+          <CaseBadge id={data.meta.id} />
+        </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(420).duration(800)}>
-        <View style={styles.sceneCard}>
-          <LinearGradient
-            colors={["rgba(26, 39, 68, 0.95)", "rgba(10, 18, 36, 0.92)"]}
-            style={StyleSheet.absoluteFill}
+        <Animated.View entering={FadeInDown.delay(120).duration(800)}>
+          <Text style={styles.kicker}>GİZLİ SORUŞTURMA</Text>
+          <Text style={styles.title}>{data.meta.title}</Text>
+          <Text style={styles.summary}>{data.meta.summary}</Text>
+        </Animated.View>
+
+        <Animated.View entering={FadeIn.delay(280).duration(700)}>
+          <GoldRule />
+        </Animated.View>
+
+        <Animated.View
+          entering={FadeInUp.delay(320).duration(700)}
+          style={styles.metaGrid}
+        >
+          <MetaChip label="KONUM" value={data.scene.name} />
+          <MetaChip
+            label="ZAMAN"
+            value={`${data.time.dateLabel} · ${data.time.timeOfCrime}`}
           />
-          <Text style={styles.sceneEyebrow}>OLAY YERİ</Text>
-          <Text style={styles.sceneName}>{data.scene.name}</Text>
-          <Text style={styles.sceneDescription}>{data.scene.description}</Text>
-          <View style={styles.sceneDetailRule} />
-          <Text style={styles.sceneDetails}>{data.scene.details}</Text>
-        </View>
-      </Animated.View>
+          {data.time.atmosphere ? (
+            <MetaChip label="ATMOSFER" value={data.time.atmosphere} />
+          ) : null}
+        </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(520).duration(800)}>
-        <Text style={styles.sectionLabel}>HİKÂYE GİRİŞİ</Text>
-        <StoryBody text={data.story} />
-      </Animated.View>
+        <Animated.View entering={FadeInUp.delay(420).duration(800)}>
+          <View style={styles.sceneCard}>
+            <LinearGradient
+              colors={["rgba(26, 39, 68, 0.95)", "rgba(10, 18, 36, 0.92)"]}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.sceneEyebrow}>OLAY YERİ</Text>
+            <Text style={styles.sceneName}>{data.scene.name}</Text>
+            <Text style={styles.sceneDescription}>{data.scene.description}</Text>
+            <View style={styles.sceneDetailRule} />
+            <Text style={styles.sceneDetails}>{data.scene.details}</Text>
+          </View>
+        </Animated.View>
+
+        <Animated.View entering={FadeInUp.delay(520).duration(800)}>
+          <Text style={styles.sectionLabel}>HİKÂYE GİRİŞİ</Text>
+          <StoryBody text={data.story} />
+        </Animated.View>
+
+        <Animated.View
+          entering={FadeIn.delay(700).duration(900)}
+          style={styles.footer}
+        >
+          <GoldRule />
+          <Text style={styles.footerNote}>
+            Gerçekler kilitlendi. İfadeler yanıltabilir.
+          </Text>
+        </Animated.View>
+      </ScrollView>
 
       <Animated.View
-        entering={FadeIn.delay(700).duration(900)}
-        style={styles.footer}
+        entering={FadeInUp.delay(500).duration(600)}
+        style={[styles.ctaBar, { paddingBottom: Math.max(insets.bottom, 16) }]}
       >
-        <GoldRule />
-        <Text style={styles.footerNote}>
-          Gerçekler kilitlendi. İfadeler yanıltabilir.
-        </Text>
+        <LinearGradient
+          colors={["transparent", "rgba(5, 7, 13, 0.92)", t.colors.void]}
+          style={styles.ctaFade}
+          pointerEvents="none"
+        />
+        <Pressable
+          onPress={onInvestigate}
+          style={({ pressed }) => [
+            styles.ctaButton,
+            pressed && styles.ctaButtonPressed,
+          ]}
+        >
+          <LinearGradient
+            colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.ctaGradient}
+          >
+            <Text style={styles.ctaLabel}>VAKAYI İNCELE</Text>
+            <Text style={styles.ctaArrow}>›</Text>
+          </LinearGradient>
+        </Pressable>
       </Animated.View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -262,7 +298,10 @@ export default function CaseStoryScreen() {
           onRetry={() => setReloadKey((k) => k + 1)}
         />
       ) : caseData ? (
-        <CaseStoryContent data={caseData} />
+        <CaseStoryContent
+          data={caseData}
+          onInvestigate={() => router.push("/case-investigation")}
+        />
       ) : null}
     </View>
   );
@@ -308,10 +347,59 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  contentShell: {
+    flex: 1,
+  },
   scrollContent: {
     maxWidth: 560,
     width: "100%",
     alignSelf: "center",
+  },
+  ctaBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: t.spacing.lg,
+    paddingTop: t.spacing.xl,
+  },
+  ctaFade: {
+    ...StyleSheet.absoluteFill,
+    top: -40,
+  },
+  ctaButton: {
+    borderRadius: t.radius.md,
+    overflow: "hidden",
+    shadowColor: t.colors.gold,
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
+  },
+  ctaButtonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.985 }],
+  },
+  ctaGradient: {
+    minHeight: 56,
+    paddingHorizontal: t.spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  ctaLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 15,
+    letterSpacing: 2.4,
+    color: t.colors.void,
+  },
+  ctaArrow: {
+    fontFamily: t.typography.title,
+    fontSize: 28,
+    lineHeight: 28,
+    color: t.colors.void,
+    marginTop: -2,
   },
   badge: {
     alignSelf: "flex-start",
