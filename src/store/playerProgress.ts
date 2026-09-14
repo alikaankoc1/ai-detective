@@ -1,8 +1,9 @@
 /**
- * AI Detective — oturum içi Player Progress store.
- * Kalıcı değil (AsyncStorage / Supabase yok); uygulama yeniden açılınca sıfırlanır.
+ * AI Detective — Player Progress store (cihazda AsyncStorage ile kalıcı).
+ * Bellek senkron API; uygulama açılışında hydratePlayerProgress() ile yüklenir.
  */
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getLevelProgress,
   levelFromTotalXp,
@@ -24,6 +25,8 @@ export type AddXpResult = {
   detail: LevelProgress;
 };
 
+const STORAGE_KEY = "ai-detective.playerProgress.v1";
+
 const INITIAL_PROGRESS: PlayerProgress = {
   totalXp: 0,
   level: 1,
@@ -35,6 +38,9 @@ let progress: PlayerProgress = {
   level: INITIAL_PROGRESS.level,
   solvedCaseIds: [...INITIAL_PROGRESS.solvedCaseIds],
 };
+
+let hydrated = false;
+let hydratePromise: Promise<PlayerProgress> | null = null;
 
 function snapshot(): PlayerProgress {
   return {
@@ -54,6 +60,81 @@ function syncLevelFromTotalXp(
     level: levelFromTotalXp(safeTotal),
     solvedCaseIds: [...solvedCaseIds],
   };
+}
+
+function normalizeStored(raw: unknown): PlayerProgress {
+  if (!raw || typeof raw !== "object") {
+    return {
+      totalXp: INITIAL_PROGRESS.totalXp,
+      level: INITIAL_PROGRESS.level,
+      solvedCaseIds: [],
+    };
+  }
+
+  const data = raw as Partial<PlayerProgress>;
+  const totalXp =
+    typeof data.totalXp === "number" && Number.isFinite(data.totalXp) && data.totalXp > 0
+      ? Math.floor(data.totalXp)
+      : 0;
+
+  const solvedCaseIds = Array.isArray(data.solvedCaseIds)
+    ? [
+        ...new Set(
+          data.solvedCaseIds.filter(
+            (id): id is string => typeof id === "string" && id.trim().length > 0
+          )
+        ),
+      ]
+    : [];
+
+  return syncLevelFromTotalXp(totalXp, solvedCaseIds);
+}
+
+async function persistProgress(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
+  } catch {
+    // Kalıcılık başarısız olsa da bellek state çalışmaya devam eder
+  }
+}
+
+/**
+ * Kayıtlı progress'i AsyncStorage'dan yükler.
+ * Tekrar çağrılsa aynı Promise / sonucu kullanır.
+ */
+export function hydratePlayerProgress(): Promise<PlayerProgress> {
+  if (hydrated) {
+    return Promise.resolve(snapshot());
+  }
+  if (hydratePromise) {
+    return hydratePromise;
+  }
+
+  hydratePromise = (async () => {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        progress = normalizeStored(JSON.parse(raw) as unknown);
+      } else {
+        progress = {
+          totalXp: INITIAL_PROGRESS.totalXp,
+          level: INITIAL_PROGRESS.level,
+          solvedCaseIds: [],
+        };
+      }
+    } catch {
+      progress = {
+        totalXp: INITIAL_PROGRESS.totalXp,
+        level: INITIAL_PROGRESS.level,
+        solvedCaseIds: [],
+      };
+    } finally {
+      hydrated = true;
+    }
+    return snapshot();
+  })();
+
+  return hydratePromise;
 }
 
 /** Mevcut progress'i oku (kopya). */
@@ -90,6 +171,7 @@ export function markCaseSolved(caseId: string): boolean {
     ...progress,
     solvedCaseIds: [...progress.solvedCaseIds, id],
   };
+  void persistProgress();
   return true;
 }
 
@@ -109,6 +191,8 @@ export function addPlayerXp(amount: number): AddXpResult {
   );
 
   const current = snapshot();
+  void persistProgress();
+
   return {
     previous,
     current,
@@ -118,12 +202,19 @@ export function addPlayerXp(amount: number): AddXpResult {
   };
 }
 
-/** Progress'i başlangıç değerine döndür. */
+/** Progress'i başlangıç değerine döndür ve storage'ı temizle. */
 export function resetPlayerProgress(): PlayerProgress {
   progress = {
     totalXp: INITIAL_PROGRESS.totalXp,
     level: INITIAL_PROGRESS.level,
     solvedCaseIds: [],
   };
+  void (async () => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  })();
   return snapshot();
 }
