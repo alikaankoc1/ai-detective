@@ -24,7 +24,12 @@ function sendJson(
 
 function getPathname(url: string | undefined): string {
   if (!url) return "/";
-  return url.split("?")[0] ?? "/";
+  const raw = url.split("?")[0] ?? "/";
+  // Browsers may request /api/gemini-test/ — normalize trailing slash
+  if (raw.length > 1 && raw.endsWith("/")) {
+    return raw.slice(0, -1);
+  }
+  return raw;
 }
 
 const server = http.createServer(async (req, res) => {
