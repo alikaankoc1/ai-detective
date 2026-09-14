@@ -23,6 +23,46 @@ export const detectiveTheme = {
     glassHeavy: "rgba(5, 7, 13, 0.78)",
     smoke: "rgba(243, 237, 224, 0.08)",
   },
+  /**
+   * Image → gradient → text katmanları.
+   * Üst/orta şeffaf (görsel görünsün), alt koyu (metin okunsun).
+   */
+  media: {
+    heroWash: [
+      "rgba(5, 7, 13, 0.12)",
+      "rgba(5, 7, 13, 0.08)",
+      "rgba(5, 7, 13, 0.55)",
+      "rgba(5, 7, 13, 0.92)",
+    ] as const,
+    heroLocations: [0, 0.28, 0.62, 1] as const,
+    cardWash: [
+      "rgba(5, 7, 13, 0.08)",
+      "rgba(5, 7, 13, 0.18)",
+      "rgba(5, 7, 13, 0.72)",
+      "rgba(5, 7, 13, 0.94)",
+    ] as const,
+    cardLocations: [0, 0.32, 0.68, 1] as const,
+    pageWash: [
+      "rgba(5, 7, 13, 0.25)",
+      "rgba(5, 7, 13, 0.35)",
+      "rgba(5, 7, 13, 0.78)",
+      "#05070D",
+    ] as const,
+    pageLocations: [0, 0.35, 0.7, 1] as const,
+    lockedWash: [
+      "rgba(5, 7, 13, 0.35)",
+      "rgba(5, 7, 13, 0.55)",
+      "rgba(5, 7, 13, 0.82)",
+    ] as const,
+    lockedLocations: [0, 0.45, 1] as const,
+    bgWash: [
+      "rgba(5, 7, 13, 0.4)",
+      "rgba(5, 7, 13, 0.55)",
+      "#05070D",
+      "#02040A",
+    ] as const,
+    bgLocations: [0, 0.35, 0.7, 1] as const,
+  },
   spacing: {
     xs: 6,
     sm: 10,
@@ -38,12 +78,35 @@ export const detectiveTheme = {
     xl: 28,
   },
   typography: {
-    display: "CormorantGaramond_600SemiBold",
-    displayItalic: "CormorantGaramond_600SemiBold_Italic",
+    /** Büyük hero / vaka adı */
+    hero: "CormorantGaramond_700Bold",
+    /** Kart başlığı, section title */
     title: "CormorantGaramond_700Bold",
+    /** Orta ağırlık display */
+    display: "CormorantGaramond_600SemiBold",
+    /** Alıntı, atmosfer, italik vurgu */
+    displayItalic: "CormorantGaramond_600SemiBold_Italic",
+    /** Alt başlık / unvan */
+    subtitle: "CormorantGaramond_500Medium",
+    /** Serif gövde (hikaye pasajı) */
+    story: "CormorantGaramond_400Regular",
+    /** Ana gövde UI */
     body: "Outfit_400Regular",
+    /** Vurgu gövde */
     bodyMedium: "Outfit_500Medium",
+    /** Küçük etiket / kicker */
     label: "Outfit_600SemiBold",
+    /** CTA / güçlü etiket */
+    labelStrong: "Outfit_700Bold",
+  },
+  /** Ortak metin ritmi — letterSpacing / lineHeight ipuçları */
+  typeRhythm: {
+    heroTracking: 0.2,
+    titleTracking: 0.15,
+    kickerTracking: 2.4,
+    labelTracking: 1.6,
+    bodyLineHeight: 1.55,
+    displayLineHeight: 1.2,
   },
   shadow: {
     soft: {

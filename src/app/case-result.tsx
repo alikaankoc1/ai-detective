@@ -20,19 +20,12 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
-import { addPlayerXp, markCaseSolved } from "@/store/playerProgress";
+import {
+  buildCaseResultXpAwardKey,
+  claimCaseResultXp,
+  markCaseSolved,
+} from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { xpRewardForSolveResult } from "@/utils/progression";
@@ -49,11 +42,6 @@ type ResultPresentation = {
   closingNote: string;
   icon: keyof typeof Ionicons.glyphMap;
 };
-
-/** Aynı sonuç ekranı (re-render / Strict Mode) için XP'nin bir kez eklenmesini sağlar. */
-const awardedXpKeys = new Set<string>();
-/** Aynı sonuç için solved işaretinin bir kez uygulanmasını sağlar. */
-const markedSolvedKeys = new Set<string>();
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
@@ -121,7 +109,13 @@ function toneColors(tone: ResultTone) {
       accent: "#C47878",
       badgeBg: "rgba(196, 120, 120, 0.92)",
       badgeText: t.colors.void,
-      wash: ["rgba(139, 58, 58, 0.42)", "rgba(10, 18, 36, 0.92)", t.colors.void] as const,
+      wash: [
+        "rgba(139, 58, 58, 0.18)",
+        "rgba(5, 7, 13, 0.12)",
+        "rgba(5, 7, 13, 0.72)",
+        "rgba(5, 7, 13, 0.94)",
+      ] as const,
+      washLocations: [0, 0.3, 0.65, 1] as const,
       glow: "rgba(139, 58, 58, 0.35)",
     };
   }
@@ -130,7 +124,13 @@ function toneColors(tone: ResultTone) {
       accent: t.colors.goldSoft,
       badgeBg: t.colors.goldSoft,
       badgeText: t.colors.void,
-      wash: ["rgba(201, 162, 39, 0.38)", "rgba(10, 18, 36, 0.88)", t.colors.void] as const,
+      wash: [
+        "rgba(201, 162, 39, 0.18)",
+        "rgba(5, 7, 13, 0.1)",
+        "rgba(5, 7, 13, 0.68)",
+        "rgba(5, 7, 13, 0.94)",
+      ] as const,
+      washLocations: [0, 0.3, 0.65, 1] as const,
       glow: "rgba(201, 162, 39, 0.4)",
     };
   }
@@ -138,7 +138,13 @@ function toneColors(tone: ResultTone) {
     accent: t.colors.gold,
     badgeBg: t.colors.gold,
     badgeText: t.colors.void,
-    wash: ["rgba(201, 162, 39, 0.22)", "rgba(10, 18, 36, 0.9)", t.colors.void] as const,
+    wash: [
+      "rgba(201, 162, 39, 0.12)",
+      "rgba(5, 7, 13, 0.1)",
+      "rgba(5, 7, 13, 0.68)",
+      "rgba(5, 7, 13, 0.94)",
+    ] as const,
+    washLocations: [0, 0.3, 0.65, 1] as const,
     glow: "rgba(201, 162, 39, 0.28)",
   };
 }
@@ -154,15 +160,6 @@ export default function CaseResultScreen() {
     contradictions?: string | string[];
     caseId?: string | string[];
   }>();
-
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [loadingCase, setLoadingCase] = useState(true);
@@ -203,18 +200,11 @@ export default function CaseResultScreen() {
 
   useEffect(() => {
     const caseKey = caseIdParam ?? caseData?.meta.id ?? "case-001";
-    const awardKey = `${caseKey}:${kind}:${score}`;
-    if (!awardedXpKeys.has(awardKey)) {
-      awardedXpKeys.add(awardKey);
-      addPlayerXp(xpEarned);
-    }
+    const awardKey = buildCaseResultXpAwardKey(caseKey, kind, score);
+    claimCaseResultXp(awardKey, xpEarned);
 
     if (kind === "perfect" || kind === "correct") {
-      const solvedKey = `solved:${caseKey}`;
-      if (!markedSolvedKeys.has(solvedKey)) {
-        markedSolvedKeys.add(solvedKey);
-        markCaseSolved(caseKey);
-      }
+      markCaseSolved(caseKey);
     }
   }, [caseIdParam, caseData?.meta.id, kind, score, xpEarned]);
 
@@ -230,7 +220,7 @@ export default function CaseResultScreen() {
     [caseIdParam, caseData]
   );
 
-  if (!fontsLoaded || loadingCase) {
+  if (loadingCase) {
     return (
       <View style={styles.root}>
         <StatusBar style="light" />
@@ -273,7 +263,7 @@ export default function CaseResultScreen() {
           />
           <LinearGradient
             colors={[...colors.wash]}
-            locations={[0, 0.45, 1]}
+            locations={[...colors.washLocations]}
             style={StyleSheet.absoluteFill}
           />
 
@@ -468,7 +458,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   caseClosed: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 13,
     letterSpacing: 5,
     color: t.colors.goldSoft,
@@ -497,14 +487,15 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   resultBadgeText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
-    letterSpacing: 2.4,
+    letterSpacing: t.typeRhythm.kickerTracking,
   },
   resultTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 40,
     lineHeight: 44,
+    letterSpacing: t.typeRhythm.heroTracking,
     marginBottom: 10,
   },
   resultDescription: {
@@ -545,9 +536,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   xpLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 1.8,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.mist,
   },
   xpValue: {
@@ -599,15 +590,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   statLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 1.3,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.mist,
   },
   sectionKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 2.2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: t.spacing.sm,
   },
@@ -629,19 +620,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   summaryTitle: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     fontSize: 20,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
   },
   summaryText: {
-    fontFamily: t.typography.body,
+    fontFamily: t.typography.story,
     fontSize: 14,
     lineHeight: 22,
     color: t.colors.creamMuted,
   },
   summaryCase: {
     marginTop: 4,
-    fontFamily: t.typography.body,
+    fontFamily: t.typography.story,
     fontSize: 12,
     lineHeight: 19,
     color: t.colors.mist,
@@ -662,9 +654,9 @@ const styles = StyleSheet.create({
     ...t.shadow.glow,
   },
   primaryCtaText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 14,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.void,
   },
   secondaryCta: {
@@ -679,9 +671,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   secondaryCtaText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
-    letterSpacing: 1.6,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.goldSoft,
   },
   pressed: {
@@ -700,9 +692,9 @@ const styles = StyleSheet.create({
     backgroundColor: t.colors.line,
   },
   footerText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 9,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.mist,
   },
 });

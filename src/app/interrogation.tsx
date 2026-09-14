@@ -18,17 +18,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
 import { askSuspect, checkContradiction, fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
@@ -633,15 +622,6 @@ export default function InterrogationScreen() {
     ? params.suspectId[0]
     : params.suspectId;
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
-
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -690,8 +670,8 @@ export default function InterrogationScreen() {
             transition={500}
           />
           <LinearGradient
-            colors={["rgba(5, 7, 13, 0.68)", "rgba(5, 7, 13, 0.94)", t.colors.void]}
-            locations={[0, 0.6, 1]}
+            colors={[...t.media.pageWash]}
+            locations={[...t.media.pageLocations]}
             style={StyleSheet.absoluteFill}
           />
         </View>
@@ -711,7 +691,7 @@ export default function InterrogationScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {!fontsLoaded || (!caseData && !error) ? (
+      {(!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
         <ErrorState
@@ -775,8 +755,9 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.sm,
   },
   screenTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 32,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.lg,
   },
@@ -814,15 +795,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dossierKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: 4,
   },
   dossierName: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     fontSize: 24,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
   },
   dossierMeta: {
@@ -842,9 +824,9 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.md,
   },
   infoLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 1.8,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: 6,
   },
@@ -869,9 +851,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sectionLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 11,
-    letterSpacing: 2.6,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: t.spacing.md,
   },
@@ -950,7 +932,7 @@ const styles = StyleSheet.create({
     backgroundColor: t.colors.gold,
   },
   contradictionBadgeText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
     letterSpacing: 1.4,
     color: t.colors.void,
@@ -1051,9 +1033,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   askLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 14,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.void,
   },
   askLabelDisabled: {
@@ -1086,9 +1068,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   confrontLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
-    letterSpacing: 1.8,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.goldSoft,
   },
   modalRoot: {
@@ -1124,9 +1106,9 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.sm,
   },
   modalKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 2.2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: 4,
   },
@@ -1184,8 +1166,9 @@ const styles = StyleSheet.create({
     color: t.colors.mist,
   },
   evidenceOptionName: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     fontSize: 18,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
     marginBottom: 4,
   },
@@ -1203,7 +1186,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   evidenceOptionCueText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 11,
     letterSpacing: 1.5,
     color: t.colors.gold,
@@ -1221,8 +1204,9 @@ const styles = StyleSheet.create({
     color: t.colors.mist,
   },
   errorTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 28,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.sm,
   },
@@ -1243,7 +1227,7 @@ const styles = StyleSheet.create({
     backgroundColor: t.colors.goldFaint,
   },
   retryText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 13,
     letterSpacing: 1.5,
     color: t.colors.goldSoft,

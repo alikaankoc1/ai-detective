@@ -19,17 +19,6 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
@@ -255,14 +244,6 @@ function CaseStoryContent({
 export default function CaseStoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -288,8 +269,6 @@ export default function CaseStoryScreen() {
     };
   }, [reloadKey]);
 
-  const ready = fontsLoaded;
-
   return (
     <View style={styles.root}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -310,12 +289,8 @@ export default function CaseStoryScreen() {
             transition={500}
           />
           <LinearGradient
-            colors={[
-              "rgba(5, 7, 13, 0.35)",
-              "rgba(5, 7, 13, 0.75)",
-              t.colors.void,
-            ]}
-            locations={[0, 0.6, 1]}
+            colors={[...t.media.heroWash]}
+            locations={[...t.media.heroLocations]}
             style={StyleSheet.absoluteFill}
           />
         </View>
@@ -328,7 +303,7 @@ export default function CaseStoryScreen() {
         pointerEvents="none"
       />
       <LinearGradient
-        colors={["transparent", "rgba(5, 7, 13, 0.85)"]}
+        colors={["transparent", "rgba(5, 7, 13, 0.55)"]}
         style={styles.bottomVignette}
         pointerEvents="none"
       />
@@ -341,7 +316,7 @@ export default function CaseStoryScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {!ready || (!caseData && !error) ? (
+      {(!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
         <ErrorState
@@ -447,7 +422,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   ctaLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 15,
     letterSpacing: 2.4,
     color: t.colors.void,
@@ -486,16 +461,17 @@ const styles = StyleSheet.create({
     color: t.colors.goldSoft,
   },
   kicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 11,
-    letterSpacing: 3.2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: t.spacing.sm,
   },
   title: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 40,
     lineHeight: 46,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.md,
   },
@@ -503,6 +479,7 @@ const styles = StyleSheet.create({
     fontFamily: t.typography.displayItalic,
     fontSize: 18,
     lineHeight: 28,
+    letterSpacing: 0.2,
     color: t.colors.creamMuted,
   },
   ruleRow: {
@@ -574,16 +551,18 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.md,
   },
   sceneName: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     fontSize: 22,
     lineHeight: 28,
+    letterSpacing: 0.2,
     color: t.colors.cream,
     marginBottom: t.spacing.sm,
   },
   sceneDescription: {
-    fontFamily: t.typography.body,
-    fontSize: 15,
-    lineHeight: 24,
+    fontFamily: t.typography.story,
+    fontSize: 16,
+    lineHeight: 26,
+    letterSpacing: 0.2,
     color: t.colors.creamMuted,
   },
   sceneDetailRule: {
@@ -607,9 +586,10 @@ const styles = StyleSheet.create({
     gap: t.spacing.md,
   },
   storyParagraph: {
-    fontFamily: t.typography.body,
-    fontSize: 16,
-    lineHeight: 28,
+    fontFamily: t.typography.story,
+    fontSize: 17,
+    lineHeight: 29,
+    letterSpacing: 0.25,
     color: t.colors.cream,
   },
   footer: {

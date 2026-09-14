@@ -14,17 +14,6 @@ import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
 import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { fallbackCover, gameImages, getCaseCover } from "@/constants/images";
@@ -148,12 +137,8 @@ function CaseFileRow({
             transition={300}
           />
           <LinearGradient
-            colors={[
-              "rgba(5, 7, 13, 0.72)",
-              "rgba(8, 14, 28, 0.88)",
-              "rgba(5, 7, 13, 0.96)",
-            ]}
-            locations={[0, 0.45, 1]}
+            colors={[...t.media.lockedWash]}
+            locations={[...t.media.lockedLocations]}
             style={StyleSheet.absoluteFill}
           />
           <View style={styles.lockOverlay}>
@@ -191,17 +176,14 @@ function CaseFileRow({
           colors={
             item.solved
               ? [
-                  "rgba(201, 162, 39, 0.28)",
-                  "rgba(5, 7, 13, 0.55)",
-                  "rgba(3, 5, 10, 0.97)",
-                ]
-              : [
+                  "rgba(201, 162, 39, 0.12)",
                   "rgba(5, 7, 13, 0.2)",
-                  "rgba(5, 7, 13, 0.55)",
-                  "rgba(3, 5, 10, 0.97)",
+                  "rgba(5, 7, 13, 0.72)",
+                  "rgba(5, 7, 13, 0.94)",
                 ]
+              : [...t.media.cardWash]
           }
-          locations={[0, 0.4, 1]}
+          locations={[...t.media.cardLocations]}
           style={StyleSheet.absoluteFill}
         />
 
@@ -221,6 +203,8 @@ function CaseFileRow({
             </View>
           )}
         </View>
+
+        <View style={styles.cardVisualBreath} />
 
         <View style={styles.cardBody}>
           <Text style={styles.caseTitle}>{item.title}</Text>
@@ -278,14 +262,6 @@ export default function CasesScreen() {
   const { width } = useWindowDimensions();
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [solvedIds, setSolvedIds] = useState<string[]>(() => getSolvedCaseIds());
 
@@ -301,19 +277,6 @@ export default function CasesScreen() {
     CASE_LIBRARY.some((item) => item.id === id)
   ).length;
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.root}>
-        <StatusBar style="light" />
-        <Stack.Screen options={{ headerShown: false }} />
-        <LinearGradient
-          colors={[t.colors.void, t.colors.navyDeep]}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
@@ -326,13 +289,8 @@ export default function CasesScreen() {
         blurRadius={16}
       />
       <LinearGradient
-        colors={[
-          "rgba(5, 7, 13, 0.7)",
-          "rgba(5, 7, 13, 0.88)",
-          t.colors.void,
-          "#02040A",
-        ]}
-        locations={[0, 0.3, 0.65, 1]}
+        colors={[...t.media.bgWash]}
+        locations={[...t.media.bgLocations]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -420,7 +378,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    opacity: 0.28,
+    opacity: 0.48,
   },
   scroll: {
     flex: 1,
@@ -439,16 +397,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   kicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
-    letterSpacing: 4.5,
+    letterSpacing: t.typeRhythm.kickerTracking + 2,
     color: t.colors.gold,
     marginBottom: 8,
   },
   title: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 40,
     lineHeight: 44,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
   },
   solvedLine: {
@@ -477,7 +436,7 @@ const styles = StyleSheet.create({
     gap: t.spacing.md,
   },
   card: {
-    minHeight: 300,
+    minHeight: 320,
     borderRadius: t.radius.xl,
     overflow: "hidden",
     borderWidth: 1,
@@ -501,6 +460,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: t.spacing.sm,
     padding: t.spacing.md,
+  },
+  cardVisualBreath: {
+    flexGrow: 1,
+    minHeight: 110,
   },
   filePill: {
     flexDirection: "row",
@@ -559,20 +522,23 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   caseTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 30,
     lineHeight: 34,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
   },
   caseSummary: {
     fontFamily: t.typography.body,
     fontSize: 13,
-    lineHeight: 20,
+    lineHeight: 21,
+    letterSpacing: 0.15,
     color: t.colors.creamMuted,
   },
   solvedNote: {
     fontFamily: t.typography.displayItalic,
     fontSize: 14,
+    letterSpacing: 0.2,
     color: t.colors.goldSoft,
   },
   metaRow: {
@@ -610,7 +576,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   ctaText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
     letterSpacing: 1.6,
     color: t.colors.void,

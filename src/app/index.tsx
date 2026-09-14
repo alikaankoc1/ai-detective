@@ -29,17 +29,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
-import {
   fetchCase001,
   fetchInvestigationState,
 } from "@/services/cases";
@@ -252,14 +241,6 @@ export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [investigation, setInvestigation] =
@@ -352,17 +333,12 @@ export default function HomeScreen() {
         blurRadius={18}
       />
       <LinearGradient
-        colors={[
-          "rgba(5, 7, 13, 0.55)",
-          "rgba(5, 7, 13, 0.82)",
-          t.colors.void,
-          "#02040A",
-        ]}
-        locations={[0, 0.28, 0.62, 1]}
+        colors={[...t.media.bgWash]}
+        locations={[...t.media.bgLocations]}
         style={StyleSheet.absoluteFill}
       />
 
-      {!fontsLoaded || (!caseData && !error) ? (
+      {(!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
         <ErrorState
@@ -388,13 +364,8 @@ export default function HomeScreen() {
                 transition={500}
               />
               <LinearGradient
-                colors={[
-                  "rgba(5, 7, 13, 0.72)",
-                  "rgba(5, 7, 13, 0.25)",
-                  "rgba(5, 7, 13, 0.55)",
-                  t.colors.void,
-                ]}
-                locations={[0, 0.35, 0.7, 1]}
+                colors={[...t.media.heroWash]}
+                locations={[...t.media.heroLocations]}
                 style={StyleSheet.absoluteFill}
               />
 
@@ -514,12 +485,8 @@ export default function HomeScreen() {
                     transition={350}
                   />
                   <LinearGradient
-                    colors={[
-                      "rgba(5, 7, 13, 0.15)",
-                      "rgba(5, 7, 13, 0.55)",
-                      "rgba(3, 5, 10, 0.97)",
-                    ]}
-                    locations={[0, 0.4, 1]}
+                    colors={[...t.media.heroWash]}
+                    locations={[...t.media.heroLocations]}
                     style={StyleSheet.absoluteFill}
                   />
                   <View style={styles.dayCaseTop}>
@@ -535,6 +502,7 @@ export default function HomeScreen() {
                       {caseData.meta.id.toUpperCase()}
                     </Text>
                   </View>
+                  <View style={styles.dayCaseVisualBreath} />
                   <View style={styles.dayCaseBody}>
                     <Text style={styles.dayCaseTitle}>{caseData.meta.title}</Text>
                     <Text style={styles.dayCaseSummary} numberOfLines={3}>
@@ -683,9 +651,11 @@ export default function HomeScreen() {
                     />
                     <LinearGradient
                       colors={[
-                        "rgba(5, 7, 13, 0.35)",
-                        "rgba(10, 18, 36, 0.92)",
+                        "rgba(5, 7, 13, 0.15)",
+                        "rgba(5, 7, 13, 0.55)",
+                        "rgba(5, 7, 13, 0.88)",
                       ]}
+                      locations={[0, 0.45, 1]}
                       style={StyleSheet.absoluteFill}
                     />
                     <Ionicons
@@ -786,7 +756,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    opacity: 0.35,
+    opacity: 0.55,
   },
   scroll: {
     flex: 1,
@@ -801,15 +771,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   brandMark: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 13,
-    letterSpacing: 4.5,
+    letterSpacing: t.typeRhythm.kickerTracking + 2,
     color: t.colors.goldSoft,
   },
   brandSub: {
     marginTop: 4,
     fontFamily: t.typography.displayItalic,
-    fontSize: 13,
+    fontSize: 14,
+    letterSpacing: 0.3,
     color: t.colors.creamMuted,
   },
   heroActions: {
@@ -851,9 +822,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   heroTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 46,
-    lineHeight: 48,
+    lineHeight: 50,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
   },
   heroLead: {
@@ -861,7 +833,8 @@ const styles = StyleSheet.create({
     maxWidth: 280,
     fontFamily: t.typography.body,
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 22,
+    letterSpacing: 0.2,
     color: t.colors.creamMuted,
   },
   rankPanel: {
@@ -974,8 +947,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sectionTitle: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     fontSize: 26,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
   },
   difficultyPill: {
@@ -993,7 +967,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   dayCase: {
-    height: 340,
+    height: 360,
     borderRadius: t.radius.xl,
     overflow: "hidden",
     borderWidth: 1,
@@ -1006,6 +980,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: t.spacing.md,
+  },
+  dayCaseVisualBreath: {
+    flexGrow: 1,
+    minHeight: 120,
   },
   dayBadge: {
     flexDirection: "row",
@@ -1033,15 +1011,17 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   dayCaseTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 32,
     lineHeight: 36,
+    letterSpacing: t.typeRhythm.titleTracking,
     color: t.colors.cream,
   },
   dayCaseSummary: {
     fontFamily: t.typography.body,
     fontSize: 13,
-    lineHeight: 20,
+    lineHeight: 21,
+    letterSpacing: 0.15,
     color: t.colors.creamMuted,
   },
   dayCaseMeta: {
@@ -1081,7 +1061,7 @@ const styles = StyleSheet.create({
     ...t.shadow.glow,
   },
   primaryCtaText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
     letterSpacing: 1.8,
     color: t.colors.void,

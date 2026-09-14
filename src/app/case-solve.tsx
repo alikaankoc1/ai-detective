@@ -23,17 +23,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
-import {
   fetchCase001,
   fetchInvestigationState,
   submitCaseSolve,
@@ -213,15 +202,6 @@ export default function CaseSolveScreen() {
   const { width } = useWindowDimensions();
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
-
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [investigation, setInvestigation] = useState<InvestigationState | null>(
     null
@@ -319,7 +299,7 @@ export default function CaseSolveScreen() {
     }
   };
 
-  if (!fontsLoaded || loading) {
+  if (loading) {
     return (
       <View style={styles.root}>
         <StatusBar style="light" />
@@ -398,14 +378,12 @@ export default function CaseSolveScreen() {
                 transition={400}
               />
               <LinearGradient
-                colors={[
-                  "rgba(5, 7, 13, 0.35)",
-                  "rgba(10, 18, 36, 0.88)",
-                  "rgba(5, 7, 13, 0.98)",
-                ]}
-                locations={[0, 0.5, 1]}
+                colors={[...t.media.cardWash]}
+                locations={[...t.media.cardLocations]}
                 style={StyleSheet.absoluteFill}
               />
+              <View style={styles.heroVisualBreath} />
+              <View style={styles.heroTextBlock}>
               <View style={styles.livePill}>
                 <View style={styles.liveDot} />
                 <Text style={styles.liveText}>SUÇLAMA ODASI</Text>
@@ -415,6 +393,7 @@ export default function CaseSolveScreen() {
               <Text style={styles.screenLead}>
                 Katili seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.
               </Text>
+              </View>
             </View>
           </Animated.View>
 
@@ -603,9 +582,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   errorTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     color: t.colors.cream,
     fontSize: 26,
+    letterSpacing: t.typeRhythm.heroTracking,
     textAlign: "center",
   },
   errorBody: {
@@ -624,7 +604,7 @@ const styles = StyleSheet.create({
     paddingVertical: t.spacing.sm,
   },
   retryText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     color: t.colors.goldSoft,
     letterSpacing: 1,
     fontSize: 12,
@@ -643,21 +623,27 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   heroCard: {
-    minHeight: 168,
+    minHeight: 200,
     borderRadius: t.radius.lg,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: t.colors.line,
-    padding: t.spacing.lg,
     justifyContent: "flex-end",
     marginBottom: t.spacing.sm,
+  },
+  heroVisualBreath: {
+    minHeight: 72,
+  },
+  heroTextBlock: {
+    padding: t.spacing.lg,
+    paddingTop: t.spacing.sm,
   },
   livePill: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 8,
-    backgroundColor: "rgba(5, 7, 13, 0.55)",
+    backgroundColor: "rgba(5, 7, 13, 0.45)",
     borderWidth: 1,
     borderColor: t.colors.goldDim,
     borderRadius: 999,
@@ -672,23 +658,24 @@ const styles = StyleSheet.create({
     backgroundColor: t.colors.gold,
   },
   liveText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     color: t.colors.goldSoft,
     fontSize: 10,
-    letterSpacing: 1.4,
+    letterSpacing: t.typeRhythm.kickerTracking,
   },
   screenKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     color: t.colors.mist,
     fontSize: 11,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     marginBottom: 4,
   },
   screenTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     color: t.colors.cream,
     fontSize: 36,
     lineHeight: 40,
+    letterSpacing: t.typeRhythm.heroTracking,
   },
   screenLead: {
     marginTop: 8,
@@ -726,9 +713,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   sectionTitle: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     color: t.colors.cream,
     fontSize: 22,
+    letterSpacing: t.typeRhythm.titleTracking,
   },
   sectionHint: {
     fontFamily: t.typography.body,
@@ -780,15 +768,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   suspectOrder: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     color: t.colors.mist,
     fontSize: 10,
-    letterSpacing: 1.5,
+    letterSpacing: t.typeRhythm.kickerTracking,
   },
   suspectName: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     color: t.colors.cream,
     fontSize: 20,
+    letterSpacing: t.typeRhythm.titleTracking,
   },
   suspectJob: {
     fontFamily: t.typography.body,
@@ -893,9 +882,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   evidenceName: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     color: t.colors.cream,
     fontSize: 18,
+    letterSpacing: t.typeRhythm.titleTracking,
   },
   evidencePlace: {
     fontFamily: t.typography.body,
@@ -912,9 +902,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(18, 28, 51, 0.7)",
   },
   emptyEvidenceTitle: {
-    fontFamily: t.typography.display,
+    fontFamily: t.typography.title,
     color: t.colors.cream,
     fontSize: 20,
+    letterSpacing: t.typeRhythm.titleTracking,
   },
   emptyEvidenceBody: {
     fontFamily: t.typography.body,
@@ -964,10 +955,10 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   ctaText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     color: t.colors.void,
     fontSize: 15,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
   },
   ctaTextDisabled: {
     color: t.colors.mist,

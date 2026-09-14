@@ -14,17 +14,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
@@ -149,15 +138,13 @@ function EvidenceContent({
             transition={400}
           />
           <LinearGradient
-            colors={[
-              "rgba(5, 7, 13, 0.55)",
-              "rgba(8, 14, 28, 0.88)",
-              "rgba(5, 7, 13, 0.97)",
-            ]}
-            locations={[0, 0.55, 1]}
+            colors={[...t.media.cardWash]}
+            locations={[...t.media.cardLocations]}
             style={StyleSheet.absoluteFill}
           />
 
+          <View style={styles.heroVisualBreath} />
+          <View style={styles.heroTextBlock}>
           <View style={styles.heroTopRow}>
             <View style={styles.catalogPill}>
               <Text style={styles.catalogText}>{evidence.catalogNumber}</Text>
@@ -176,6 +163,7 @@ function EvidenceContent({
           <Text style={styles.heroHint}>
             Torba mühürlü. İnceleme notları kayda geçirildi.
           </Text>
+          </View>
         </View>
       </Animated.View>
 
@@ -239,15 +227,6 @@ export default function EvidenceScreen() {
     ? params.evidenceId[0]
     : params.evidenceId;
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
-
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -297,8 +276,8 @@ export default function EvidenceScreen() {
             transition={500}
           />
           <LinearGradient
-            colors={["rgba(5, 7, 13, 0.6)", "rgba(5, 7, 13, 0.92)", t.colors.void]}
-            locations={[0, 0.6, 1]}
+            colors={[...t.media.pageWash]}
+            locations={[...t.media.pageLocations]}
             style={StyleSheet.absoluteFill}
           />
         </View>
@@ -312,7 +291,7 @@ export default function EvidenceScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {!fontsLoaded || (!caseData && !error) ? (
+      {(!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
         <ErrorState
@@ -369,21 +348,27 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.sm,
   },
   screenKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 11,
-    letterSpacing: 3,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.creamMuted,
     marginBottom: t.spacing.lg,
   },
   heroCard: {
-    minHeight: 180,
+    minHeight: 220,
     borderRadius: t.radius.lg,
     borderWidth: 1,
     borderColor: t.colors.line,
     overflow: "hidden",
-    padding: t.spacing.lg,
     justifyContent: "flex-end",
     marginBottom: t.spacing.xl,
+  },
+  heroVisualBreath: {
+    minHeight: 88,
+  },
+  heroTextBlock: {
+    padding: t.spacing.lg,
+    paddingTop: t.spacing.sm,
   },
   heroTopRow: {
     flexDirection: "row",
@@ -423,9 +408,10 @@ const styles = StyleSheet.create({
     color: t.colors.creamMuted,
   },
   heroTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 28,
     lineHeight: 34,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.sm,
   },
@@ -449,9 +435,9 @@ const styles = StyleSheet.create({
     marginBottom: t.spacing.sm,
   },
   detailLabel: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 10,
-    letterSpacing: 2,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
   },
   detailBody: {
@@ -541,8 +527,9 @@ const styles = StyleSheet.create({
     color: t.colors.mist,
   },
   errorTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 28,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.sm,
   },
@@ -563,7 +550,7 @@ const styles = StyleSheet.create({
     backgroundColor: t.colors.goldFaint,
   },
   retryText: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 13,
     letterSpacing: 1.5,
     color: t.colors.goldSoft,

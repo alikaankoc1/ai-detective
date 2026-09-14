@@ -14,17 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
-import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
+import { Ionicons } from "@expo/vector-icons";
 import { fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
@@ -194,10 +184,12 @@ function InvestigationContent({
   data,
   onInterrogate,
   onExamineEvidence,
+  onSolve,
 }: {
   data: Case;
   onInterrogate: (suspectId: string) => void;
   onExamineEvidence: (evidenceId: string) => void;
+  onSolve: () => void;
 }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -241,33 +233,32 @@ function InvestigationContent({
             transition={400}
           />
           <LinearGradient
-            colors={[
-              "rgba(5, 7, 13, 0.62)",
-              "rgba(10, 18, 36, 0.9)",
-              "rgba(8, 14, 28, 0.97)",
-            ]}
-            locations={[0, 0.55, 1]}
+            colors={[...t.media.cardWash]}
+            locations={[...t.media.cardLocations]}
             style={StyleSheet.absoluteFill}
           />
-          <Text style={styles.summaryLead}>{data.meta.summary}</Text>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryFacts}>
-            <View style={styles.factItem}>
-              <Text style={styles.factLabel}>MEKÂN</Text>
-              <Text style={styles.factValue}>{data.scene.name}</Text>
+          <View style={styles.summaryVisualBreath} />
+          <View style={styles.summaryTextBlock}>
+            <Text style={styles.summaryLead}>{data.meta.summary}</Text>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryFacts}>
+              <View style={styles.factItem}>
+                <Text style={styles.factLabel}>MEKÂN</Text>
+                <Text style={styles.factValue}>{data.scene.name}</Text>
+              </View>
+              <View style={styles.factItem}>
+                <Text style={styles.factLabel}>ZAMAN</Text>
+                <Text style={styles.factValue}>
+                  {data.time.dateLabel}
+                  {"\n"}
+                  {data.time.timeOfCrime}
+                </Text>
+              </View>
             </View>
-            <View style={styles.factItem}>
-              <Text style={styles.factLabel}>ZAMAN</Text>
-              <Text style={styles.factValue}>
-                {data.time.dateLabel}
-                {"\n"}
-                {data.time.timeOfCrime}
-              </Text>
-            </View>
+            {data.time.atmosphere ? (
+              <Text style={styles.atmosphere}>{data.time.atmosphere}</Text>
+            ) : null}
           </View>
-          {data.time.atmosphere ? (
-            <Text style={styles.atmosphere}>{data.time.atmosphere}</Text>
-          ) : null}
         </View>
       </Animated.View>
 
@@ -309,6 +300,47 @@ function InvestigationContent({
         </View>
       </View>
 
+      <Animated.View
+        entering={FadeInUp.delay(520).duration(700)}
+        style={styles.solveSection}
+      >
+        <SectionHeader index="04" title="Suçlama" />
+        <View style={styles.solvePanel}>
+          <LinearGradient
+            colors={[
+              "rgba(201, 162, 39, 0.18)",
+              "rgba(18, 28, 51, 0.96)",
+              "rgba(8, 14, 28, 0.98)",
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Text style={styles.solveKicker}>DOSYAYI KAPAT</Text>
+          <Text style={styles.solveTitle}>Hazır mısın?</Text>
+          <Text style={styles.solveBody}>
+            Delilleri ve ifadeleri topladıysan suçlamayı kilitle. Yanlış
+            yön, dosyayı açık bırakır.
+          </Text>
+          <Pressable
+            onPress={onSolve}
+            style={({ pressed }) => [
+              styles.solveCta,
+              pressed && styles.solveCtaPressed,
+            ]}
+          >
+            <LinearGradient
+              colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Ionicons name="flash" size={18} color={t.colors.void} />
+            <Text style={styles.solveCtaText}>VAKAYI ÇÖZ</Text>
+          </Pressable>
+        </View>
+      </Animated.View>
+
       <Animated.View entering={FadeIn.delay(700).duration(800)} style={styles.endNote}>
         <Text style={styles.endNoteText}>
           Sorgulama henüz başlamadı. Delilleri çapraz oku.
@@ -321,14 +353,6 @@ function InvestigationContent({
 export default function CaseInvestigationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -373,8 +397,8 @@ export default function CaseInvestigationScreen() {
             transition={500}
           />
           <LinearGradient
-            colors={["rgba(5, 7, 13, 0.55)", "rgba(5, 7, 13, 0.9)", t.colors.void]}
-            locations={[0, 0.65, 1]}
+            colors={[...t.media.pageWash]}
+            locations={[...t.media.pageLocations]}
             style={StyleSheet.absoluteFill}
           />
         </View>
@@ -394,7 +418,7 @@ export default function CaseInvestigationScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {!fontsLoaded || (!caseData && !error) ? (
+      {(!caseData && !error) ? (
         <LoadingState />
       ) : error ? (
         <ErrorState
@@ -416,6 +440,7 @@ export default function CaseInvestigationScreen() {
               params: { evidenceId },
             })
           }
+          onSolve={() => router.push("/case-solve")}
         />
       ) : null}
     </View>
@@ -504,16 +529,17 @@ const styles = StyleSheet.create({
     color: t.colors.mist,
   },
   screenKicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 11,
-    letterSpacing: 3,
+    letterSpacing: t.typeRhythm.kickerTracking,
     color: t.colors.gold,
     marginBottom: t.spacing.sm,
   },
   screenTitle: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 34,
     lineHeight: 40,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.xl,
   },
@@ -562,13 +588,21 @@ const styles = StyleSheet.create({
     borderRadius: t.radius.lg,
     borderWidth: 1,
     borderColor: t.colors.line,
-    padding: t.spacing.lg,
     overflow: "hidden",
+    minHeight: 280,
+    justifyContent: "flex-end",
     shadowColor: "#000",
     shadowOpacity: 0.4,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  summaryVisualBreath: {
+    minHeight: 120,
+  },
+  summaryTextBlock: {
+    padding: t.spacing.lg,
+    paddingTop: t.spacing.md,
   },
   summaryLead: {
     fontFamily: t.typography.displayItalic,
@@ -782,6 +816,57 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.8,
     color: t.colors.goldSoft,
+  },
+  solveSection: {
+    marginTop: t.spacing.xl,
+    gap: t.spacing.md,
+  },
+  solvePanel: {
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    padding: t.spacing.lg,
+    gap: 8,
+  },
+  solveKicker: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 2,
+    color: t.colors.gold,
+  },
+  solveTitle: {
+    fontFamily: t.typography.title,
+    fontSize: 28,
+    color: t.colors.cream,
+  },
+  solveBody: {
+    fontFamily: t.typography.body,
+    fontSize: 14,
+    lineHeight: 21,
+    color: t.colors.creamMuted,
+    marginBottom: t.spacing.sm,
+  },
+  solveCta: {
+    height: 54,
+    borderRadius: t.radius.md,
+    overflow: "hidden",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "rgba(201, 162, 39, 0.55)",
+  },
+  solveCtaPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.985 }],
+  },
+  solveCtaText: {
+    fontFamily: t.typography.label,
+    fontSize: 14,
+    letterSpacing: 2,
+    color: t.colors.void,
   },
   endNote: {
     marginTop: t.spacing.xxl,

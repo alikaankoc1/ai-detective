@@ -24,17 +24,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  CormorantGaramond_600SemiBold,
-  CormorantGaramond_600SemiBold_Italic,
-  CormorantGaramond_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cormorant-garamond";
-import {
-  Outfit_400Regular,
-  Outfit_500Medium,
-  Outfit_600SemiBold,
-} from "@expo-google-fonts/outfit";
-import {
   getPlayerProgressDetail,
   getSolvedCaseIds,
 } from "@/store/playerProgress";
@@ -99,14 +88,6 @@ export default function ProfileScreen() {
   const { width } = useWindowDimensions();
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
 
-  const [fontsLoaded] = useFonts({
-    CormorantGaramond_600SemiBold,
-    CormorantGaramond_600SemiBold_Italic,
-    CormorantGaramond_700Bold,
-    Outfit_400Regular,
-    Outfit_500Medium,
-    Outfit_600SemiBold,
-  });
 
   const [levelProgress, setLevelProgress] = useState<LevelProgress>(() =>
     getPlayerProgressDetail()
@@ -150,19 +131,6 @@ export default function ProfileScreen() {
 
   const barRatio = getLevelProgress(levelProgress.totalXp).progressRatio;
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.root}>
-        <StatusBar style="light" />
-        <Stack.Screen options={{ headerShown: false }} />
-        <LinearGradient
-          colors={[t.colors.void, t.colors.navyDeep]}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
@@ -175,13 +143,8 @@ export default function ProfileScreen() {
         blurRadius={20}
       />
       <LinearGradient
-        colors={[
-          "rgba(5, 7, 13, 0.75)",
-          "rgba(10, 18, 36, 0.9)",
-          t.colors.void,
-          "#02040A",
-        ]}
-        locations={[0, 0.35, 0.7, 1]}
+        colors={[...t.media.bgWash]}
+        locations={[...t.media.bgLocations]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -421,7 +384,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    opacity: 0.3,
+    opacity: 0.48,
   },
   scroll: {
     flex: 1,
@@ -442,16 +405,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   kicker: {
-    fontFamily: t.typography.label,
+    fontFamily: t.typography.labelStrong,
     fontSize: 12,
-    letterSpacing: 4,
+    letterSpacing: t.typeRhythm.kickerTracking + 1.5,
     color: t.colors.gold,
     marginBottom: 8,
   },
   title: {
-    fontFamily: t.typography.title,
+    fontFamily: t.typography.hero,
     fontSize: 38,
     lineHeight: 42,
+    letterSpacing: t.typeRhythm.heroTracking,
     color: t.colors.cream,
     marginBottom: t.spacing.lg,
   },
