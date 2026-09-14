@@ -5,6 +5,13 @@ import { runGeminiTest } from "./gemini";
 import { case001 } from "./cases/case001";
 import { getSupportedCase, runInterrogation } from "./interrogation";
 import { checkContradiction } from "./contradictions";
+import {
+  discoverContradiction,
+  discoverEvidence,
+  getInvestigationState,
+  markSuspectInterrogated,
+  resetInvestigationState,
+} from "./investigation";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -60,6 +67,24 @@ function readJsonBody(req: http.IncomingMessage): Promise<unknown> {
   });
 }
 
+function mapRouteError(message: string): number {
+  if (
+    message.includes("zorunludur") ||
+    message.includes("Geçersiz JSON") ||
+    message.includes("çok uzun") ||
+    message.includes("çok büyük")
+  ) {
+    return 400;
+  }
+  if (message.includes("desteklenmiyor") || message.includes("bulunamadı")) {
+    return 404;
+  }
+  if (message.includes("GEMINI_API_KEY")) {
+    return 500;
+  }
+  return 500;
+}
+
 const server = http.createServer(async (req, res) => {
   setCorsHeaders(res);
 
@@ -83,15 +108,71 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unexpected Gemini error.";
-
-      const statusCode = message.includes("GEMINI_API_KEY") ? 500 : 502;
-      sendJson(res, statusCode, { error: message });
+      sendJson(res, mapRouteError(message) === 500 && message.includes("GEMINI") ? 500 : 502, {
+        error: message,
+      });
     }
     return;
   }
 
   if (req.method === "GET" && pathname === "/api/cases/case-001") {
     sendJson(res, 200, case001);
+    return;
+  }
+
+  // GET /api/investigation/:caseId
+  const investigationGetMatch = pathname.match(
+    /^\/api\/investigation\/([^/]+)$/
+  );
+  if (req.method === "GET" && investigationGetMatch) {
+    try {
+      const caseId = decodeURIComponent(investigationGetMatch[1] ?? "");
+      const state = getInvestigationState(caseId);
+      sendJson(res, 200, state);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Investigation state error.";
+      sendJson(res, mapRouteError(message), { error: message });
+    }
+    return;
+  }
+
+  // POST /api/investigation/:caseId/evidence
+  const evidenceDiscoverMatch = pathname.match(
+    /^\/api\/investigation\/([^/]+)\/evidence$/
+  );
+  if (req.method === "POST" && evidenceDiscoverMatch) {
+    try {
+      const caseId = decodeURIComponent(evidenceDiscoverMatch[1] ?? "");
+      const body = (await readJsonBody(req)) as { evidenceId?: string };
+      const evidenceId = body.evidenceId?.trim() ?? "";
+      if (!evidenceId) {
+        throw new Error("evidenceId zorunludur.");
+      }
+      const state = discoverEvidence(caseId, evidenceId);
+      sendJson(res, 200, state);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Evidence discover error.";
+      sendJson(res, mapRouteError(message), { error: message });
+    }
+    return;
+  }
+
+  // POST /api/investigation/:caseId/reset
+  const investigationResetMatch = pathname.match(
+    /^\/api\/investigation\/([^/]+)\/reset$/
+  );
+  if (req.method === "POST" && investigationResetMatch) {
+    try {
+      const caseId = decodeURIComponent(investigationResetMatch[1] ?? "");
+      const state = resetInvestigationState(caseId);
+      sendJson(res, 200, state);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Investigation reset error.";
+      sendJson(res, mapRouteError(message), { error: message });
+    }
     return;
   }
 
@@ -110,6 +191,12 @@ const server = http.createServer(async (req, res) => {
         playerQuestion: body.playerQuestion,
         evidenceId: body.evidenceId,
       });
+
+      // Investigation state yan etkisi — response sözleşmesi değişmez
+      markSuspectInterrogated(result.caseId, result.suspectId);
+      if (result.evidenceId) {
+        discoverEvidence(result.caseId, result.evidenceId);
+      }
 
       sendJson(res, 200, result);
     } catch (error) {
@@ -169,26 +256,19 @@ const server = http.createServer(async (req, res) => {
       }
 
       const result = checkContradiction(caseId, suspectId, evidenceId);
+
+      // Çelişki bulunduysa state'e kaydet (tekrarsız)
+      if (result.found && result.contradiction) {
+        discoverContradiction(caseId, result.contradiction.id);
+        // Delil de keşfedilmiş sayılır
+        discoverEvidence(caseId, evidenceId);
+      }
+
       sendJson(res, 200, result);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unexpected contradiction error.";
-
-      let statusCode = 500;
-      if (
-        message.includes("zorunludur") ||
-        message.includes("Geçersiz JSON") ||
-        message.includes("çok büyük")
-      ) {
-        statusCode = 400;
-      } else if (
-        message.includes("desteklenmiyor") ||
-        message.includes("bulunamadı")
-      ) {
-        statusCode = 404;
-      }
-
-      sendJson(res, statusCode, { error: message });
+      sendJson(res, mapRouteError(message), { error: message });
     }
     return;
   }
