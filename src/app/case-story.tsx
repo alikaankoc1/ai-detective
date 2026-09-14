@@ -18,6 +18,7 @@ import Animated, {
   FadeInDown,
   FadeInUp,
 } from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 import {
   CormorantGaramond_600SemiBold,
   CormorantGaramond_600SemiBold_Italic,
@@ -34,6 +35,8 @@ import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import type { Case } from "@/types/case";
 
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
 function CaseBadge({ id }: { id: string }) {
   return (
     <View style={styles.badge}>
@@ -43,10 +46,21 @@ function CaseBadge({ id }: { id: string }) {
   );
 }
 
-function MetaChip({ label, value }: { label: string; value: string }) {
+function MetaChip({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: IoniconName;
+}) {
   return (
     <View style={styles.chip}>
-      <Text style={styles.chipLabel}>{label}</Text>
+      <View style={styles.chipLabelRow}>
+        <Ionicons name={icon} size={13} color={t.colors.gold} />
+        <Text style={styles.chipLabel}>{label}</Text>
+      </View>
       <Text style={styles.chipValue}>{value}</Text>
     </View>
   );
@@ -152,13 +166,22 @@ function CaseStoryContent({
           entering={FadeInUp.delay(320).duration(700)}
           style={styles.metaGrid}
         >
-          <MetaChip label="KONUM" value={data.scene.name} />
           <MetaChip
+            icon="location-outline"
+            label="KONUM"
+            value={data.scene.name}
+          />
+          <MetaChip
+            icon="time-outline"
             label="ZAMAN"
             value={`${data.time.dateLabel} · ${data.time.timeOfCrime}`}
           />
           {data.time.atmosphere ? (
-            <MetaChip label="ATMOSFER" value={data.time.atmosphere} />
+            <MetaChip
+              icon="rainy-outline"
+              label="ATMOSFER"
+              value={data.time.atmosphere}
+            />
           ) : null}
         </Animated.View>
 
@@ -168,7 +191,10 @@ function CaseStoryContent({
               colors={["rgba(26, 39, 68, 0.95)", "rgba(10, 18, 36, 0.92)"]}
               style={StyleSheet.absoluteFill}
             />
-            <Text style={styles.sceneEyebrow}>OLAY YERİ</Text>
+            <View style={styles.sceneEyebrowRow}>
+              <Ionicons name="home-outline" size={13} color={t.colors.gold} />
+              <Text style={styles.sceneEyebrow}>OLAY YERİ</Text>
+            </View>
             <Text style={styles.sceneName}>{data.scene.name}</Text>
             <Text style={styles.sceneDescription}>{data.scene.description}</Text>
             <View style={styles.sceneDetailRule} />
@@ -177,7 +203,10 @@ function CaseStoryContent({
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(520).duration(800)}>
-          <Text style={styles.sectionLabel}>HİKÂYE GİRİŞİ</Text>
+          <View style={styles.sectionLabelRow}>
+            <Ionicons name="book-outline" size={13} color={t.colors.gold} />
+            <Text style={styles.sectionLabel}>HİKÂYE GİRİŞİ</Text>
+          </View>
           <StoryBody text={data.story} />
         </Animated.View>
 
@@ -495,12 +524,17 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(18, 28, 51, 0.55)",
     borderRadius: t.radius.sm,
   },
+  chipLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+  },
   chipLabel: {
     fontFamily: t.typography.label,
     fontSize: 10,
     letterSpacing: 2,
     color: t.colors.gold,
-    marginBottom: 4,
   },
   chipValue: {
     fontFamily: t.typography.bodyMedium,
@@ -521,12 +555,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
+  sceneEyebrowRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: t.spacing.sm,
+  },
   sceneEyebrow: {
     fontFamily: t.typography.label,
     fontSize: 10,
     letterSpacing: 2.6,
     color: t.colors.gold,
-    marginBottom: t.spacing.sm,
+  },
+  sectionLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: t.spacing.md,
   },
   sceneName: {
     fontFamily: t.typography.display,
@@ -557,7 +602,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 3,
     color: t.colors.gold,
-    marginBottom: t.spacing.md,
   },
   storyBlock: {
     gap: t.spacing.md,
