@@ -126,14 +126,22 @@ function EvidenceCard({
   evidence,
   order,
   delay,
+  onPress,
 }: {
   evidence: Evidence;
   order: number;
   delay: number;
+  onPress: () => void;
 }) {
   return (
     <Animated.View entering={FadeInUp.delay(delay).duration(650)}>
-      <View style={styles.evidenceCard}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.evidenceCard,
+          pressed && styles.evidenceCardPressed,
+        ]}
+      >
         <View style={styles.evidenceRail} />
         <View style={styles.evidenceBody}>
           <View style={styles.evidenceTopRow}>
@@ -143,9 +151,14 @@ function EvidenceCard({
             <Text style={styles.evidencePlace}>{evidence.discoveryLocation}</Text>
           </View>
           <Text style={styles.evidenceName}>{evidence.name}</Text>
-          <Text style={styles.evidenceDescription}>{evidence.description}</Text>
+          <Text style={styles.evidenceDescription} numberOfLines={3}>
+            {evidence.description}
+          </Text>
+          <View style={styles.examineCue}>
+            <Text style={styles.examineCueText}>İNCELE ›</Text>
+          </View>
         </View>
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -180,9 +193,11 @@ function ErrorState({
 function InvestigationContent({
   data,
   onInterrogate,
+  onExamineEvidence,
 }: {
   data: Case;
   onInterrogate: (suspectId: string) => void;
+  onExamineEvidence: (evidenceId: string) => void;
 }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -288,6 +303,7 @@ function InvestigationContent({
               evidence={item}
               order={index + 1}
               delay={280 + index * 80}
+              onPress={() => onExamineEvidence(item.id)}
             />
           ))}
         </View>
@@ -392,6 +408,12 @@ export default function CaseInvestigationScreen() {
             router.push({
               pathname: "/interrogation",
               params: { suspectId },
+            })
+          }
+          onExamineEvidence={(evidenceId) =>
+            router.push({
+              pathname: "/evidence",
+              params: { evidenceId },
             })
           }
         />
@@ -701,6 +723,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(18, 28, 51, 0.72)",
     overflow: "hidden",
   },
+  evidenceCardPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
+  },
   evidenceRail: {
     width: 4,
     backgroundColor: t.colors.gold,
@@ -740,6 +766,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: t.colors.creamMuted,
+  },
+  examineCue: {
+    marginTop: t.spacing.sm,
+    alignSelf: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: t.colors.goldFaint,
+  },
+  examineCueText: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 1.8,
+    color: t.colors.goldSoft,
   },
   endNote: {
     marginTop: t.spacing.xxl,
