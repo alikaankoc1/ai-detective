@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,7 +12,7 @@ import { BlurTargetView, BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Easing,
@@ -43,19 +43,22 @@ import {
   fetchCase001,
   fetchInvestigationState,
 } from "@/services/cases";
+import { getPlayerProgressDetail } from "@/store/playerProgress";
+import { getLevelProgress, type LevelProgress } from "@/utils/progression";
 import { detectiveTheme as t } from "@/constants/theme";
 import { gameImages, getCaseCover } from "@/constants/images";
 import type { Case } from "@/types/case";
 import type { InvestigationState } from "@/types/investigation";
 
-/** Yerel demo profil — gerçek auth/DB yok. */
-const PLAYER = {
+/** Yerel demo profil metinleri — XP/level store'dan gelir. */
+const PLAYER_PROFILE = {
   name: "Dedektif",
   rank: "Acemi Dedektif",
-  level: 3,
-  xp: 240,
-  xpToNext: 500,
 } as const;
+
+function formatLevelLabel(level: number): string {
+  return `LEVEL ${Math.max(1, Math.floor(level)).toString().padStart(2, "0")}`;
+}
 
 type TabId = "home" | "cases" | "profile" | "shop";
 
@@ -264,6 +267,17 @@ export default function HomeScreen() {
   const [reloadKey, setReloadKey] = useState(0);
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const blurTargetRef = useRef<View | null>(null);
+  const [levelProgress, setLevelProgress] = useState<LevelProgress>(() =>
+    getPlayerProgressDetail()
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const detail = getPlayerProgressDetail();
+      setLevelProgress(getLevelProgress(detail.totalXp));
+      setActiveTab("home");
+    }, [])
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -296,7 +310,7 @@ export default function HomeScreen() {
 
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const heroHeight = Math.min(Math.max(height * 0.42, 280), 420);
-  const xpProgress = PLAYER.xp / PLAYER.xpToNext;
+  const xpBarProgress = getLevelProgress(levelProgress.totalXp).progressRatio;
   const navHeight = 64 + Math.max(insets.bottom, 10);
 
   const progress = useMemo(() => {
@@ -444,21 +458,26 @@ export default function HomeScreen() {
                   </View>
                   <View style={styles.rankIdentity}>
                     <Text style={styles.rankHello}>Merhaba,</Text>
-                    <Text style={styles.rankName}>{PLAYER.name}</Text>
-                    <Text style={styles.rankTitle}>{PLAYER.rank}</Text>
+                    <Text style={styles.rankName}>{PLAYER_PROFILE.name}</Text>
+                    <Text style={styles.rankTitle}>{PLAYER_PROFILE.rank}</Text>
                   </View>
                   <View style={styles.levelSeal}>
                     <Text style={styles.levelSealLabel}>LV</Text>
-                    <Text style={styles.levelSealValue}>{PLAYER.level}</Text>
+                    <Text style={styles.levelSealValue}>
+                      {levelProgress.level.toString().padStart(2, "0")}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.xpMeta}>
-                  <Text style={styles.xpLabel}>DENEYİM</Text>
+                  <Text style={styles.xpLabel}>
+                    {formatLevelLabel(levelProgress.level)}
+                  </Text>
                   <Text style={styles.xpValue}>
-                    {PLAYER.xp} / {PLAYER.xpToNext} XP
+                    {levelProgress.xpIntoLevel} / {levelProgress.xpForNextLevel}{" "}
+                    XP
                   </Text>
                 </View>
-                <XpBar progress={xpProgress} />
+                <XpBar progress={xpBarProgress} />
               </Animated.View>
 
               {/* Günün Vakası */}
