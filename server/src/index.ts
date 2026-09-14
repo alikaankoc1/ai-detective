@@ -1,6 +1,7 @@
 import http from "http";
 import { config } from "dotenv";
 import path from "path";
+import { runGeminiTest } from "./gemini";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -12,7 +13,21 @@ function setCorsHeaders(res: http.ServerResponse) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-const server = http.createServer((req, res) => {
+function sendJson(
+  res: http.ServerResponse,
+  statusCode: number,
+  body: Record<string, unknown>
+) {
+  res.writeHead(statusCode, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(body));
+}
+
+function getPathname(url: string | undefined): string {
+  if (!url) return "/";
+  return url.split("?")[0] ?? "/";
+}
+
+const server = http.createServer(async (req, res) => {
   setCorsHeaders(res);
 
   if (req.method === "OPTIONS") {
@@ -21,14 +36,28 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.method === "GET" && req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ status: "ok" }));
+  const pathname = getPathname(req.url);
+
+  if (req.method === "GET" && pathname === "/health") {
+    sendJson(res, 200, { status: "ok" });
     return;
   }
 
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "Not found" }));
+  if (req.method === "GET" && pathname === "/api/gemini-test") {
+    try {
+      const text = await runGeminiTest();
+      sendJson(res, 200, { text });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected Gemini error.";
+
+      const statusCode = message.includes("GEMINI_API_KEY") ? 500 : 502;
+      sendJson(res, statusCode, { error: message });
+    }
+    return;
+  }
+
+  sendJson(res, 404, { error: "Not found" });
 });
 
 server.listen(PORT, () => {
