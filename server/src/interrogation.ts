@@ -1,4 +1,4 @@
-import type { Case, Suspect } from "../../../src/types/case";
+import type { Case, Suspect } from "../../src/types/case";
 import { case001 } from "./cases/case001";
 import { getGeminiClient } from "./gemini";
 
