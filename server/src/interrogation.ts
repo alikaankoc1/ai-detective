@@ -219,10 +219,15 @@ export async function runInterrogation(
     confrontedEvidence
   );
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: prompt,
-  });
+  let response;
+  try {
+    response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+    });
+  } catch (error) {
+    throw new Error(formatGeminiError(error));
+  }
 
   const reply = response.text?.trim();
   if (!reply) {
@@ -235,4 +240,35 @@ export async function runInterrogation(
     reply,
     ...(evidenceId ? { evidenceId } : {}),
   };
+}
+
+function formatGeminiError(error: unknown): string {
+  const raw =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : JSON.stringify(error);
+
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes("429") ||
+    lower.includes("resource_exhausted") ||
+    lower.includes("quota") ||
+    lower.includes("rate-limit") ||
+    lower.includes("rate limit")
+  ) {
+    return "Gemini günlük ücretsiz kotası doldu. Birkaç dakika sonra tekrar dene veya Google AI Studio'da kotanı / planını kontrol et.";
+  }
+
+  if (lower.includes("api key") || lower.includes("permission")) {
+    return "Gemini API anahtarı geçersiz veya yetkisiz. server/.env içindeki GEMINI_API_KEY değerini kontrol et.";
+  }
+
+  // Ham JSON'u oyuncuya gösterme
+  if (raw.includes('"error"') || raw.length > 280) {
+    return "Şüpheli şu an cevap veremiyor (yapay zeka servisi meşgul). Kısa süre sonra tekrar dene.";
+  }
+
+  return raw;
 }

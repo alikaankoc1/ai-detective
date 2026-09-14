@@ -1,6 +1,8 @@
 import { API_BASE_URL } from "@/constants/api";
 import type { Case } from "@/types/case";
 import type { ContradictionCheckResult } from "@/types/contradiction";
+import type { InvestigationState } from "@/types/investigation";
+import type { SolveCaseRequest, SolveCaseResponse } from "@/types/solve";
 
 export async function fetchCase001(): Promise<Case> {
   const response = await fetch(`${API_BASE_URL}/api/cases/case-001`);
@@ -74,4 +76,56 @@ export async function checkContradiction(input: {
   }
 
   return data as ContradictionCheckResult;
+}
+
+export async function fetchInvestigationState(
+  caseId: string
+): Promise<InvestigationState> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/investigation/${encodeURIComponent(caseId)}`
+  );
+
+  const data = (await response.json()) as
+    | InvestigationState
+    | { error?: string };
+
+  if (!response.ok) {
+    const message =
+      "error" in data && data.error
+        ? data.error
+        : `Soruşturma durumu alınamadı (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data as InvestigationState;
+}
+
+export async function submitCaseSolve(
+  caseId: string,
+  input: SolveCaseRequest
+): Promise<SolveCaseResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/cases/${encodeURIComponent(caseId)}/solve`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    }
+  );
+
+  const data = (await response.json()) as
+    | SolveCaseResponse
+    | { error?: string };
+
+  if (!response.ok) {
+    const message =
+      "error" in data && data.error
+        ? data.error
+        : `Vaka çözümü başarısız (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data as SolveCaseResponse;
 }

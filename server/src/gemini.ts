@@ -15,16 +15,30 @@ export function getGeminiClient(): GoogleGenAI {
 export async function runGeminiTest(): Promise<string> {
   const ai = getGeminiClient();
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: "Reply with a short confirmation that the connection works.",
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: "Reply with a short confirmation that the connection works.",
+    });
 
-  const text = response.text?.trim();
+    const text = response.text?.trim();
 
-  if (!text) {
-    throw new Error("Gemini returned an empty response.");
+    if (!text) {
+      throw new Error("Gemini returned an empty response.");
+    }
+
+    return text;
+  } catch (error) {
+    const raw = error instanceof Error ? error.message : String(error);
+    if (
+      raw.toLowerCase().includes("quota") ||
+      raw.includes("429") ||
+      raw.toLowerCase().includes("resource_exhausted")
+    ) {
+      throw new Error(
+        "Gemini günlük ücretsiz kotası doldu. Birkaç dakika sonra tekrar dene."
+      );
+    }
+    throw error instanceof Error ? error : new Error(String(error));
   }
-
-  return text;
 }

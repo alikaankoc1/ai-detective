@@ -80,7 +80,15 @@ function mapRouteError(message: string): number {
   if (message.includes("desteklenmiyor") || message.includes("bulunamadı")) {
     return 404;
   }
-  if (message.includes("GEMINI_API_KEY")) {
+  if (
+    message.includes("kotası") ||
+    message.includes("quota") ||
+    message.includes("429") ||
+    message.includes("meşgul")
+  ) {
+    return 429;
+  }
+  if (message.includes("GEMINI_API_KEY") || message.includes("API anahtarı")) {
     return 500;
   }
   return 500;
@@ -231,8 +239,15 @@ const server = http.createServer(async (req, res) => {
         error instanceof Error ? error.message : "Unexpected interrogation error.";
 
       let statusCode = 502;
-      if (message.includes("GEMINI_API_KEY")) statusCode = 500;
-      else if (
+      if (message.includes("GEMINI_API_KEY") || message.includes("API anahtarı")) {
+        statusCode = 500;
+      } else if (
+        message.includes("kotası") ||
+        message.includes("meşgul") ||
+        message.includes("429")
+      ) {
+        statusCode = 429;
+      } else if (
         message.includes("zorunludur") ||
         message.includes("Geçersiz JSON") ||
         message.includes("çok uzun") ||
