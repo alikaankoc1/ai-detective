@@ -67,7 +67,7 @@ type TabItem = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
-  href?: "/case-story";
+  href?: "/case-story" | "/cases";
 };
 
 const TABS: TabItem[] = [
@@ -82,7 +82,7 @@ const TABS: TabItem[] = [
     label: "Vakalar",
     icon: "folder-open-outline",
     iconActive: "folder-open",
-    href: "/case-story",
+    href: "/cases",
   },
   {
     id: "profile",

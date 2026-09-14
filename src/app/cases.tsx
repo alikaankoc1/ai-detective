@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -10,7 +10,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,65 +25,113 @@ import {
   Outfit_500Medium,
   Outfit_600SemiBold,
 } from "@expo-google-fonts/outfit";
+import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { fallbackCover, gameImages, getCaseCover } from "@/constants/images";
 
-type CaseFileCard = {
+type CaseFileBase = {
   id: string;
   fileLabel: string;
-  statusLabel: string;
   title: string;
   summary: string;
   location?: string;
   difficulty?: string;
-  locked: boolean;
-  lockHint?: string;
   cover: ReturnType<typeof getCaseCover>;
+  /** Kilit açılmadan önceki ipucu */
+  lockHint?: string;
 };
 
-const CASE_LIBRARY: CaseFileCard[] = [
+type CaseFileView = CaseFileBase & {
+  locked: boolean;
+  solved: boolean;
+  statusLabel: string;
+  ctaLabel: string;
+};
+
+const CASE_LIBRARY: CaseFileBase[] = [
   {
     id: "case-001",
     fileLabel: "DOSYA CASE-001",
-    statusLabel: "GİZLİ SORUŞTURMA",
     title: "03:17'deki Telefon",
     summary:
       "Kadıköy'de bir gece, kurbanın telefonu 03:17'de çalar. Sabah ise cesedi bulunur. Üç şüpheli, bir sessiz arama ve karanlık bir sır.",
     location: "Kadıköy, Moda",
     difficulty: "ORTA",
-    locked: false,
     cover: getCaseCover("case-001"),
   },
   {
     id: "case-002",
     fileLabel: "DOSYA CASE-002",
-    statusLabel: "KİLİTLİ",
     title: "Kayıp Paket",
-    summary: "Önceki vakayı çözerek açılır.",
-    locked: true,
+    summary:
+      "Şehirde kaybolan bir kargo, yanlış adrese giden izler ve suskun bir tanık.",
+    location: "Karaköy",
+    difficulty: "ORTA",
     lockHint: "Önceki vakayı çözerek açılır.",
     cover: fallbackCover,
   },
   {
     id: "case-003",
     fileLabel: "DOSYA CASE-003",
-    statusLabel: "KİLİTLİ",
     title: "Son Tren",
     summary: "Daha fazla soruşturma gerekli.",
-    locked: true,
     lockHint: "Daha fazla soruşturma gerekli.",
     cover: gameImages.homeHeader,
   },
 ];
 
-const SOLVED_COUNT = 0;
+function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
+  const solved = new Set(solvedIds);
+  const case001Solved = solved.has("case-001");
+
+  return CASE_LIBRARY.map((item) => {
+    if (item.id === "case-001") {
+      const isSolved = case001Solved;
+      return {
+        ...item,
+        locked: false,
+        solved: isSolved,
+        statusLabel: isSolved ? "SOLVED" : "GİZLİ SORUŞTURMA",
+        ctaLabel: isSolved ? "DOSYAYI AÇ" : "VAKAYI İNCELE",
+      };
+    }
+
+    if (item.id === "case-002") {
+      const unlocked = case001Solved;
+      return {
+        ...item,
+        locked: !unlocked,
+        solved: solved.has("case-002"),
+        statusLabel: unlocked
+          ? solved.has("case-002")
+            ? "SOLVED"
+            : "YENİ DOSYA"
+          : "KİLİTLİ",
+        ctaLabel: "VAKAYI İNCELE",
+        summary: unlocked
+          ? item.summary
+          : (item.lockHint ?? "Önceki vakayı çözerek açılır."),
+      };
+    }
+
+    // case-003 — şimdilik kilitli
+    return {
+      ...item,
+      locked: true,
+      solved: false,
+      statusLabel: "KİLİTLİ",
+      ctaLabel: "VAKAYI İNCELE",
+      summary: item.lockHint ?? item.summary,
+    };
+  });
+}
 
 function CaseFileRow({
   item,
   index,
   onOpen,
 }: {
-  item: CaseFileCard;
+  item: CaseFileView;
   index: number;
   onOpen: () => void;
 }) {
@@ -115,7 +163,7 @@ function CaseFileRow({
             <Text style={styles.fileLabelMuted}>{item.fileLabel}</Text>
             <Text style={styles.lockedBadge}>KİLİTLİ</Text>
             <Text style={styles.lockedTitle}>{item.title}</Text>
-            <Text style={styles.lockHint}>{item.lockHint}</Text>
+            <Text style={styles.lockHint}>{item.lockHint ?? item.summary}</Text>
           </View>
         </View>
       </Animated.View>
@@ -128,6 +176,7 @@ function CaseFileRow({
         onPress={onOpen}
         style={({ pressed }) => [
           styles.card,
+          item.solved && styles.cardSolved,
           t.shadow.deep,
           pressed && styles.pressed,
         ]}
@@ -139,11 +188,19 @@ function CaseFileRow({
           transition={350}
         />
         <LinearGradient
-          colors={[
-            "rgba(5, 7, 13, 0.2)",
-            "rgba(5, 7, 13, 0.55)",
-            "rgba(3, 5, 10, 0.97)",
-          ]}
+          colors={
+            item.solved
+              ? [
+                  "rgba(201, 162, 39, 0.28)",
+                  "rgba(5, 7, 13, 0.55)",
+                  "rgba(3, 5, 10, 0.97)",
+                ]
+              : [
+                  "rgba(5, 7, 13, 0.2)",
+                  "rgba(5, 7, 13, 0.55)",
+                  "rgba(3, 5, 10, 0.97)",
+                ]
+          }
           locations={[0, 0.4, 1]}
           style={StyleSheet.absoluteFill}
         />
@@ -153,14 +210,27 @@ function CaseFileRow({
             <View style={styles.fileDot} />
             <Text style={styles.filePillText}>{item.fileLabel}</Text>
           </View>
-          <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>{item.statusLabel}</Text>
-          </View>
+          {item.solved ? (
+            <View style={styles.solvedPill}>
+              <Ionicons name="shield-checkmark" size={12} color={t.colors.void} />
+              <Text style={styles.solvedPillText}>SOLVED</Text>
+            </View>
+          ) : (
+            <View style={styles.statusPill}>
+              <Text style={styles.statusPillText}>{item.statusLabel}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.cardBody}>
           <Text style={styles.caseTitle}>{item.title}</Text>
           <Text style={styles.caseSummary}>{item.summary}</Text>
+
+          {item.solved ? (
+            <Text style={styles.solvedNote}>
+              Dosya arşive alındı. Kayıtlar incelenmeye açık.
+            </Text>
+          ) : null}
 
           <View style={styles.metaRow}>
             {item.location ? (
@@ -183,12 +253,16 @@ function CaseFileRow({
 
           <View style={styles.ctaRow}>
             <LinearGradient
-              colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
+              colors={
+                item.solved
+                  ? ["#E8D48A", t.colors.goldSoft, t.colors.gold]
+                  : [t.colors.goldSoft, t.colors.gold, "#A8841A"]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.ctaButton}
             >
-              <Text style={styles.ctaText}>VAKAYI İNCELE</Text>
+              <Text style={styles.ctaText}>{item.ctaLabel}</Text>
               <Ionicons name="arrow-forward" size={16} color={t.colors.void} />
             </LinearGradient>
           </View>
@@ -213,11 +287,19 @@ export default function CasesScreen() {
     Outfit_600SemiBold,
   });
 
-  const totalCases = CASE_LIBRARY.length;
-  const openCase = useMemo(
-    () => CASE_LIBRARY.find((item) => !item.locked),
-    []
+  const [solvedIds, setSolvedIds] = useState<string[]>(() => getSolvedCaseIds());
+
+  useFocusEffect(
+    useCallback(() => {
+      setSolvedIds(getSolvedCaseIds());
+    }, [])
   );
+
+  const caseViews = useMemo(() => buildCaseViews(solvedIds), [solvedIds]);
+  const totalCases = CASE_LIBRARY.length;
+  const solvedCount = solvedIds.filter((id) =>
+    CASE_LIBRARY.some((item) => item.id === id)
+  ).length;
 
   if (!fontsLoaded) {
     return (
@@ -280,7 +362,7 @@ export default function CasesScreen() {
           <Text style={styles.kicker}>CASE FILES</Text>
           <Text style={styles.title}>Vaka Dosyaları</Text>
           <Text style={styles.solvedLine}>
-            Çözülen: {SOLVED_COUNT} / {totalCases}
+            Çözülen: {solvedCount} / {totalCases}
           </Text>
           <View style={styles.rule}>
             <LinearGradient
@@ -297,14 +379,16 @@ export default function CasesScreen() {
         </Animated.View>
 
         <View style={styles.list}>
-          {CASE_LIBRARY.map((item, index) => (
+          {caseViews.map((item, index) => (
             <CaseFileRow
               key={item.id}
               item={item}
               index={index}
               onOpen={() => {
                 if (item.locked) return;
-                if (item.id === openCase?.id || item.id === "case-001") {
+                // Case 001 oynanabilir; Case 002 açık olsa da gerçek veri yok —
+                // şimdilik yalnızca case-story'ye gider (placeholder).
+                if (item.id === "case-001" || item.id === "case-002") {
                   router.push("/case-story");
                 }
               }}
@@ -400,6 +484,9 @@ const styles = StyleSheet.create({
     borderColor: t.colors.line,
     justifyContent: "space-between",
   },
+  cardSolved: {
+    borderColor: t.colors.gold,
+  },
   cardLocked: {
     minHeight: 220,
     borderColor: "rgba(243, 237, 224, 0.12)",
@@ -452,6 +539,21 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     color: t.colors.gold,
   },
+  solvedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: t.colors.goldSoft,
+  },
+  solvedPillText: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 1.6,
+    color: t.colors.void,
+  },
   cardBody: {
     padding: t.spacing.lg,
     gap: 10,
@@ -467,6 +569,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     color: t.colors.creamMuted,
+  },
+  solvedNote: {
+    fontFamily: t.typography.displayItalic,
+    fontSize: 14,
+    color: t.colors.goldSoft,
   },
   metaRow: {
     flexDirection: "row",
