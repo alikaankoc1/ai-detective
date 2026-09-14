@@ -15,12 +15,14 @@ export type InterrogationResponse = {
   caseId: string;
   suspectId: string;
   reply: string;
+  evidenceId?: string;
 };
 
 export async function askSuspect(input: {
   caseId: string;
   suspectId: string;
-  playerQuestion: string;
+  playerQuestion?: string;
+  evidenceId?: string;
 }): Promise<InterrogationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/interrogation`, {
     method: "POST",

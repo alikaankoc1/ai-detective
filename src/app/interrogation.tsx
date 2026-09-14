@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -16,6 +17,7 @@ import { StatusBar } from "expo-status-bar";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 import {
   CormorantGaramond_600SemiBold,
   CormorantGaramond_600SemiBold_Italic,
@@ -30,7 +32,9 @@ import {
 import { askSuspect, fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
+import { buildEvidenceViews } from "@/utils/evidence-presentation";
 import type { Case, Suspect } from "@/types/case";
+import type { EvidenceView } from "@/types/evidence-view";
 
 type ChatRole = "player" | "suspect" | "system";
 
@@ -188,6 +192,94 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
+function EvidencePickerModal({
+  visible,
+  evidenceList,
+  sending,
+  onClose,
+  onSelect,
+}: {
+  visible: boolean;
+  evidenceList: EvidenceView[];
+  sending: boolean;
+  onClose: () => void;
+  onSelect: (evidence: EvidenceView) => void;
+}) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalRoot}>
+        <Pressable style={styles.modalBackdrop} onPress={onClose} />
+        <View
+          style={[
+            styles.modalSheet,
+            { paddingBottom: Math.max(insets.bottom, 16) },
+          ]}
+        >
+          <LinearGradient
+            colors={["rgba(26, 39, 68, 0.98)", "rgba(8, 14, 28, 1)"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.modalHandle} />
+          <View style={styles.modalHeader}>
+            <View>
+              <Text style={styles.modalKicker}>DELİL SEÇ</Text>
+              <Text style={styles.modalTitle}>Yüzleştirme</Text>
+            </View>
+            <Pressable onPress={onClose} hitSlop={10} style={styles.modalClose}>
+              <Ionicons name="close" size={18} color={t.colors.creamMuted} />
+            </Pressable>
+          </View>
+          <Text style={styles.modalHint}>
+            Bir delil seç. Şüpheli yalnızca bu delilin açık bilgilerine tepki verir.
+          </Text>
+
+          <ScrollView
+            style={styles.modalList}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {evidenceList.map((item) => (
+              <Pressable
+                key={item.id}
+                disabled={sending}
+                onPress={() => onSelect(item)}
+                style={({ pressed }) => [
+                  styles.evidenceOption,
+                  pressed && styles.evidenceOptionPressed,
+                ]}
+              >
+                <View style={styles.evidenceOptionTop}>
+                  <Text style={styles.evidenceOptionCatalog}>
+                    {item.catalogNumber}
+                  </Text>
+                  <Text style={styles.evidenceOptionCategory}>
+                    {item.categoryLabel}
+                  </Text>
+                </View>
+                <Text style={styles.evidenceOptionName}>{item.name}</Text>
+                <Text style={styles.evidenceOptionDesc} numberOfLines={2}>
+                  {item.description}
+                </Text>
+                <View style={styles.evidenceOptionCue}>
+                  <Ionicons name="flash-outline" size={12} color={t.colors.gold} />
+                  <Text style={styles.evidenceOptionCueText}>YÜZLEŞTİR</Text>
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function InterrogationRoom({
   caseData,
   suspect,
@@ -199,13 +291,19 @@ function InterrogationRoom({
   const [question, setQuestion] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: "sys-1",
       role: "system",
-      text: `${suspect.name} karşınızda. Sorularınız kayda geçecek.`,
+      text: `${suspect.name} karşınızda. Soru sorun veya bir delille yüzleştirin.`,
     },
   ]);
+
+  const evidenceList = useMemo(
+    () => buildEvidenceViews(caseData),
+    [caseData]
+  );
 
   const canAsk = question.trim().length > 0 && !sending;
 
@@ -247,6 +345,55 @@ function InterrogationRoom({
           id: `err-${Date.now()}`,
           role: "system",
           text: `Bağlantı hatası: ${message} Soruyu yeniden deneyebilirsin.`,
+        },
+      ]);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const confrontWithEvidence = async (evidence: EvidenceView) => {
+    if (sending) return;
+
+    setPickerOpen(false);
+    setSendError(null);
+    setSending(true);
+
+    const playerMessage: ChatMessage = {
+      id: `p-${Date.now()}`,
+      role: "player",
+      text: `Delille yüzleştirildi: [${evidence.catalogNumber}] ${evidence.name}`,
+    };
+    setMessages((prev) => [...prev, playerMessage]);
+
+    try {
+      const result = await askSuspect({
+        caseId: caseData.meta.id,
+        suspectId: suspect.id,
+        evidenceId: evidence.id,
+        playerQuestion: question.trim() || undefined,
+      });
+
+      if (question.trim()) {
+        setQuestion("");
+      }
+
+      const reply: ChatMessage = {
+        id: `s-${Date.now()}`,
+        role: "suspect",
+        text: result.reply,
+      };
+      setMessages((prev) => [...prev, reply]);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Yüzleştirme başarısız.";
+      setSendError(message);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: "system",
+          text: `Bağlantı hatası: ${message} Delili yeniden deneyebilirsin.`,
         },
       ]);
     } finally {
@@ -307,6 +454,20 @@ function InterrogationRoom({
           style={styles.composerFade}
           pointerEvents="none"
         />
+
+        <Pressable
+          onPress={() => setPickerOpen(true)}
+          disabled={sending || evidenceList.length === 0}
+          style={({ pressed }) => [
+            styles.confrontButton,
+            (sending || evidenceList.length === 0) && styles.confrontButtonDisabled,
+            pressed && !sending && styles.confrontButtonPressed,
+          ]}
+        >
+          <Ionicons name="flash-outline" size={14} color={t.colors.goldSoft} />
+          <Text style={styles.confrontLabel}>DELİLLE YÜZLEŞTİR</Text>
+        </Pressable>
+
         <View style={styles.inputRow}>
           <TextInput
             value={question}
@@ -353,6 +514,16 @@ function InterrogationRoom({
           <Text style={styles.sendErrorText}>{sendError}</Text>
         ) : null}
       </View>
+
+      <EvidencePickerModal
+        visible={pickerOpen}
+        evidenceList={evidenceList}
+        sending={sending}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(evidence) => {
+          void confrontWithEvidence(evidence);
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -727,6 +898,148 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     color: "#E0A0A0",
+  },
+  confrontButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: t.spacing.sm,
+    paddingVertical: 12,
+    borderRadius: t.radius.md,
+    borderWidth: 1,
+    borderColor: t.colors.goldDim,
+    backgroundColor: t.colors.goldFaint,
+  },
+  confrontButtonDisabled: {
+    opacity: 0.55,
+  },
+  confrontButtonPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.985 }],
+  },
+  confrontLabel: {
+    fontFamily: t.typography.label,
+    fontSize: 12,
+    letterSpacing: 1.8,
+    color: t.colors.goldSoft,
+  },
+  modalRoot: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
+  },
+  modalSheet: {
+    maxHeight: "78%",
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    overflow: "hidden",
+    paddingHorizontal: t.spacing.lg,
+    paddingTop: t.spacing.sm,
+  },
+  modalHandle: {
+    alignSelf: "center",
+    width: 42,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(243, 237, 224, 0.25)",
+    marginBottom: t.spacing.md,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: t.spacing.sm,
+  },
+  modalKicker: {
+    fontFamily: t.typography.label,
+    fontSize: 10,
+    letterSpacing: 2.2,
+    color: t.colors.gold,
+    marginBottom: 4,
+  },
+  modalTitle: {
+    fontFamily: t.typography.title,
+    fontSize: 26,
+    color: t.colors.cream,
+  },
+  modalClose: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(243, 237, 224, 0.16)",
+  },
+  modalHint: {
+    fontFamily: t.typography.body,
+    fontSize: 13,
+    lineHeight: 20,
+    color: t.colors.creamMuted,
+    marginBottom: t.spacing.md,
+  },
+  modalList: {
+    flexGrow: 0,
+  },
+  evidenceOption: {
+    marginBottom: t.spacing.sm,
+    padding: t.spacing.md,
+    borderRadius: t.radius.md,
+    borderWidth: 1,
+    borderColor: t.colors.line,
+    backgroundColor: "rgba(5, 7, 13, 0.45)",
+  },
+  evidenceOptionPressed: {
+    opacity: 0.9,
+    borderColor: t.colors.goldDim,
+  },
+  evidenceOptionTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  evidenceOptionCatalog: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 1.4,
+    color: t.colors.goldSoft,
+  },
+  evidenceOptionCategory: {
+    fontFamily: t.typography.body,
+    fontSize: 11,
+    color: t.colors.mist,
+  },
+  evidenceOptionName: {
+    fontFamily: t.typography.display,
+    fontSize: 18,
+    color: t.colors.cream,
+    marginBottom: 4,
+  },
+  evidenceOptionDesc: {
+    fontFamily: t.typography.body,
+    fontSize: 13,
+    lineHeight: 20,
+    color: t.colors.creamMuted,
+  },
+  evidenceOptionCue: {
+    marginTop: t.spacing.sm,
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  evidenceOptionCueText: {
+    fontFamily: t.typography.label,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    color: t.colors.gold,
   },
   stateCenter: {
     flex: 1,

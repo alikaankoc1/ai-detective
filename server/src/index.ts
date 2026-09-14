@@ -100,12 +100,14 @@ const server = http.createServer(async (req, res) => {
         caseId?: string;
         suspectId?: string;
         playerQuestion?: string;
+        evidenceId?: string;
       };
 
       const result = await runInterrogation({
         caseId: body.caseId ?? "",
         suspectId: body.suspectId ?? "",
-        playerQuestion: body.playerQuestion ?? "",
+        playerQuestion: body.playerQuestion,
+        evidenceId: body.evidenceId,
       });
 
       sendJson(res, 200, result);
