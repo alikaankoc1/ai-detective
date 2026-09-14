@@ -12,6 +12,7 @@ import {
   markSuspectInterrogated,
   resetInvestigationState,
 } from "./investigation";
+import { solveCase } from "./solve";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -171,6 +172,32 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Investigation reset error.";
+      sendJson(res, mapRouteError(message), { error: message });
+    }
+    return;
+  }
+
+  // POST /api/cases/:caseId/solve
+  const solveMatch = pathname.match(/^\/api\/cases\/([^/]+)\/solve$/);
+  if (req.method === "POST" && solveMatch) {
+    try {
+      const caseId = decodeURIComponent(solveMatch[1] ?? "");
+      const body = (await readJsonBody(req)) as {
+        suspectId?: string;
+        motive?: string;
+        evidenceIds?: string[];
+      };
+
+      const result = solveCase(caseId, {
+        suspectId: body.suspectId ?? "",
+        motive: body.motive ?? "",
+        evidenceIds: body.evidenceIds ?? [],
+      });
+
+      sendJson(res, 200, result);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected solve error.";
       sendJson(res, mapRouteError(message), { error: message });
     }
     return;
