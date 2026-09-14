@@ -32,8 +32,10 @@ import {
   Outfit_600SemiBold,
 } from "@expo-google-fonts/outfit";
 import { fetchCase001 } from "@/services/cases";
+import { addPlayerXp } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
+import { xpRewardForSolveResult } from "@/utils/progression";
 import type { Case } from "@/types/case";
 import type { SolveResultKind } from "@/types/solve";
 
@@ -47,6 +49,9 @@ type ResultPresentation = {
   closingNote: string;
   icon: keyof typeof Ionicons.glyphMap;
 };
+
+/** Aynı sonuç ekranı (re-render / Strict Mode) için XP'nin bir kez eklenmesini sağlar. */
+const awardedXpKeys = new Set<string>();
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
@@ -143,7 +148,6 @@ export default function CaseResultScreen() {
   const params = useLocalSearchParams<{
     result?: string | string[];
     score?: string | string[];
-    xp?: string | string[];
     evidence?: string | string[];
     contradictions?: string | string[];
     caseId?: string | string[];
@@ -165,16 +169,17 @@ export default function CaseResultScreen() {
   const copy = presentationFor(kind);
   const colors = toneColors(copy.tone);
 
-  const score = parsePositiveInt(firstParam(params.score), kind === "perfect" ? 100 : kind === "correct" ? 75 : 20);
-  const xpEarned = parsePositiveInt(
-    firstParam(params.xp),
-    Math.max(25, Math.round(score * 1.2))
+  const score = parsePositiveInt(
+    firstParam(params.score),
+    kind === "perfect" ? 100 : kind === "correct" ? 75 : 20
   );
+  const xpEarned = useMemo(() => xpRewardForSolveResult(kind), [kind]);
   const evidenceCount = parsePositiveInt(firstParam(params.evidence), 3);
   const contradictionCount = parsePositiveInt(
     firstParam(params.contradictions),
     kind === "wrong" ? 0 : 2
   );
+  const caseIdParam = firstParam(params.caseId);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,6 +199,14 @@ export default function CaseResultScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    const caseKey = caseIdParam ?? caseData?.meta.id ?? "case-001";
+    const awardKey = `${caseKey}:${kind}:${score}`;
+    if (awardedXpKeys.has(awardKey)) return;
+    awardedXpKeys.add(awardKey);
+    addPlayerXp(xpEarned);
+  }, [caseIdParam, caseData?.meta.id, kind, score, xpEarned]);
+
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const heroHeight = Math.min(Math.max(height * 0.34, 240), 320);
 
@@ -202,8 +215,8 @@ export default function CaseResultScreen() {
     [caseData]
   );
   const caseId = useMemo(
-    () => firstParam(params.caseId) ?? caseData?.meta.id ?? "case-001",
-    [params.caseId, caseData]
+    () => caseIdParam ?? caseData?.meta.id ?? "case-001",
+    [caseIdParam, caseData]
   );
 
   if (!fontsLoaded || loadingCase) {
