@@ -26,7 +26,7 @@ import {
   Outfit_500Medium,
   Outfit_600SemiBold,
 } from "@expo-google-fonts/outfit";
-import { fetchCase001 } from "@/services/cases";
+import { askSuspect, fetchCase001 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import type { Case, Suspect } from "@/types/case";
 
@@ -37,22 +37,6 @@ type ChatMessage = {
   role: ChatRole;
   text: string;
 };
-
-const LOCAL_REPLIES = [
-  "Bu soruya net cevap vermek istemiyorum. O geceyi… farklı hatırlıyorum.",
-  "Bunu daha önce de sordular. Size söylediğimden fazlasını bilmiyorum.",
-  "Kerem'le aramızda iş vardı, cinayet değil. Bu kadarını anlayın.",
-  "İsterseniz mazeretimi tekrar edeyim. Başka bir şey eklemeyeceğim.",
-  "Sizin delilleriniz var, benim de gerçeklerim. İkisi aynı şey değil.",
-  "O saatte başka yerdeydim. Telefon kayıtları her şeyi göstermez.",
-];
-
-function buildLocalReply(suspectName: string, question: string): string {
-  const trimmed = question.trim();
-  const seed = trimmed.length + suspectName.length;
-  const base = LOCAL_REPLIES[seed % LOCAL_REPLIES.length];
-  return `${base}\n\n— ${suspectName}`;
-}
 
 function LoadingState() {
   return (
@@ -212,17 +196,18 @@ function InterrogationRoom({
   const insets = useSafeAreaInsets();
   const [question, setQuestion] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: "sys-1",
       role: "system",
-      text: `${suspect.name} karşınızda. Sorularınız kayda geçecek. (Geçici yanıt modu — Gemini henüz bağlı değil.)`,
+      text: `${suspect.name} karşınızda. Sorularınız kayda geçecek.`,
     },
   ]);
 
   const canAsk = question.trim().length > 0 && !sending;
 
-  const ask = () => {
+  const ask = async () => {
     const trimmed = question.trim();
     if (!trimmed || sending) return;
 
@@ -234,18 +219,37 @@ function InterrogationRoom({
 
     setMessages((prev) => [...prev, playerMessage]);
     setQuestion("");
+    setSendError(null);
     setSending(true);
 
-    // Geçici local cevap — Gemini sonraki adımda bağlanacak
-    setTimeout(() => {
+    try {
+      const result = await askSuspect({
+        caseId: caseData.meta.id,
+        suspectId: suspect.id,
+        playerQuestion: trimmed,
+      });
+
       const reply: ChatMessage = {
         id: `s-${Date.now()}`,
         role: "suspect",
-        text: buildLocalReply(suspect.name, trimmed),
+        text: result.reply,
       };
       setMessages((prev) => [...prev, reply]);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "İfade alınamadı.";
+      setSendError(message);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: "system",
+          text: `Bağlantı hatası: ${message} Soruyu yeniden deneyebilirsin.`,
+        },
+      ]);
+    } finally {
       setSending(false);
-    }, 650);
+    }
   };
 
   return (
@@ -311,11 +315,15 @@ function InterrogationRoom({
             multiline
             maxLength={280}
             editable={!sending}
-            onSubmitEditing={ask}
+            onSubmitEditing={() => {
+              void ask();
+            }}
             blurOnSubmit
           />
           <Pressable
-            onPress={ask}
+            onPress={() => {
+              void ask();
+            }}
             disabled={!canAsk}
             style={({ pressed }) => [
               styles.askButton,
@@ -339,6 +347,9 @@ function InterrogationRoom({
             </LinearGradient>
           </Pressable>
         </View>
+        {sendError ? (
+          <Text style={styles.sendErrorText}>{sendError}</Text>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );
@@ -684,6 +695,13 @@ const styles = StyleSheet.create({
   },
   askLabelDisabled: {
     color: t.colors.mist,
+  },
+  sendErrorText: {
+    marginTop: t.spacing.sm,
+    fontFamily: t.typography.body,
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#E0A0A0",
   },
   stateCenter: {
     flex: 1,
