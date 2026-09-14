@@ -20,7 +20,6 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
-  ZoomIn,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -45,7 +44,6 @@ import { buildEvidenceViews } from "@/utils/evidence-presentation";
 import type { Case, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { InvestigationState } from "@/types/investigation";
-import type { SolveCaseResponse, SolveResultKind } from "@/types/solve";
 
 /** Oyuncu hipotezleri — canon motive metni değil; serbest metin düzenlenebilir. */
 const MOTIVE_HYPOTHESES = [
@@ -55,33 +53,6 @@ const MOTIVE_HYPOTHESES = [
   "Borç baskısı ve tehdit",
   "Kaza sonrası örtbas",
 ] as const;
-
-function resultCopy(kind: SolveResultKind): {
-  title: string;
-  subtitle: string;
-  tone: "perfect" | "correct" | "wrong";
-} {
-  switch (kind) {
-    case "perfect":
-      return {
-        title: "Mükemmel çözüm",
-        subtitle: "Suçlama, motif ve deliller birleşti. Dosya kilitlendi.",
-        tone: "perfect",
-      };
-    case "correct":
-      return {
-        title: "Doğru suçlama",
-        subtitle: "Katil ve motif tutuyor; delil zinciri kısmen eksik kalmış olabilir.",
-        tone: "correct",
-      };
-    case "wrong":
-      return {
-        title: "Yanlış çözüm",
-        subtitle: "Suçlama dosyayı kapatmadı. Daha fazla delil veya daha net motif gerekebilir.",
-        tone: "wrong",
-      };
-  }
-}
 
 function LoadingState() {
   return (
@@ -236,67 +207,6 @@ function EvidencePick({
   );
 }
 
-function ResultPanel({ result }: { result: SolveCaseResponse }) {
-  const copy = resultCopy(result.result);
-  const toneColor =
-    copy.tone === "perfect"
-      ? t.colors.goldSoft
-      : copy.tone === "correct"
-        ? t.colors.gold
-        : "#C47878";
-
-  return (
-    <Animated.View entering={ZoomIn.duration(420)} style={styles.resultWrap}>
-      <View style={styles.resultCard}>
-        <LinearGradient
-          colors={
-            copy.tone === "wrong"
-              ? ["rgba(139, 58, 58, 0.35)", "rgba(10, 18, 36, 0.96)"]
-              : ["rgba(201, 162, 39, 0.28)", "rgba(10, 18, 36, 0.96)"]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.resultBadge}>
-          <Ionicons
-            name={
-              copy.tone === "wrong"
-                ? "close-circle"
-                : copy.tone === "perfect"
-                  ? "diamond"
-                  : "shield-checkmark"
-            }
-            size={16}
-            color={t.colors.void}
-          />
-          <Text style={styles.resultBadgeText}>
-            {result.correct ? "DOSYA KAPANDI" : "DOSYA AÇIK KALDI"}
-          </Text>
-        </View>
-        <Text style={[styles.resultTitle, { color: toneColor }]}>{copy.title}</Text>
-        <Text style={styles.resultSubtitle}>{copy.subtitle}</Text>
-        <View style={styles.resultStats}>
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>SONUÇ</Text>
-            <Text style={styles.statValue}>{result.result.toUpperCase()}</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>SKOR</Text>
-            <Text style={styles.statValue}>{result.score}</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>DOĞRU</Text>
-            <Text style={styles.statValue}>{result.correct ? "EVET" : "HAYIR"}</Text>
-          </View>
-        </View>
-      </View>
-    </Animated.View>
-  );
-}
-
 export default function CaseSolveScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -326,7 +236,6 @@ export default function CaseSolveScreen() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [solveResult, setSolveResult] = useState<SolveCaseResponse | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -340,7 +249,6 @@ export default function CaseSolveScreen() {
       setSelectedEvidenceIds([]);
       setMotive("");
       setActiveHypothesis(null);
-      setSolveResult(null);
       setSubmitError(null);
     } catch (error) {
       setLoadError(
@@ -369,7 +277,6 @@ export default function CaseSolveScreen() {
     !submitting;
 
   const toggleEvidence = (id: string) => {
-    setSolveResult(null);
     setSubmitError(null);
     setSelectedEvidenceIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -379,27 +286,35 @@ export default function CaseSolveScreen() {
   const onSelectHypothesis = (text: string) => {
     setActiveHypothesis(text);
     setMotive(text);
-    setSolveResult(null);
     setSubmitError(null);
   };
 
   const onSubmit = async () => {
-    if (!caseData || !selectedSuspectId || !canSubmit) return;
+    if (!caseData || !selectedSuspectId || !canSubmit || !investigation) return;
     setSubmitting(true);
     setSubmitError(null);
-    setSolveResult(null);
     try {
       const result = await submitCaseSolve(caseData.meta.id, {
         suspectId: selectedSuspectId,
         motive: motive.trim(),
         evidenceIds: selectedEvidenceIds,
       });
-      setSolveResult(result);
+
+      router.replace({
+        pathname: "/case-result",
+        params: {
+          caseId: caseData.meta.id,
+          result: result.result,
+          score: String(result.score),
+          xp: String(Math.max(25, Math.round(result.score * 1.2))),
+          evidence: String(investigation.discoveredEvidenceIds.length),
+          contradictions: String(investigation.discoveredContradictionIds.length),
+        },
+      });
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "Suçlama gönderilemedi."
       );
-    } finally {
       setSubmitting(false);
     }
   };
@@ -517,7 +432,6 @@ export default function CaseSolveScreen() {
               delay={120 + index * 70}
               onSelect={() => {
                 setSelectedSuspectId(suspect.id);
-                setSolveResult(null);
                 setSubmitError(null);
               }}
             />
@@ -550,7 +464,6 @@ export default function CaseSolveScreen() {
               onChangeText={(value) => {
                 setMotive(value);
                 setActiveHypothesis(null);
-                setSolveResult(null);
                 setSubmitError(null);
               }}
               placeholder="Suçun arkasındaki nedeni detaylandır…"
@@ -604,8 +517,6 @@ export default function CaseSolveScreen() {
               </View>
             </Animated.View>
           ) : null}
-
-          {solveResult ? <ResultPanel result={solveResult} /> : null}
         </ScrollView>
 
         <View
@@ -1024,73 +935,6 @@ const styles = StyleSheet.create({
     color: "#E8B4B4",
     fontSize: 13,
     lineHeight: 20,
-  },
-  resultWrap: {
-    marginTop: t.spacing.sm,
-  },
-  resultCard: {
-    borderRadius: t.radius.lg,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: t.colors.gold,
-    padding: t.spacing.lg,
-    gap: t.spacing.sm,
-  },
-  resultBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    gap: 6,
-    backgroundColor: t.colors.gold,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  resultBadgeText: {
-    fontFamily: t.typography.label,
-    color: t.colors.void,
-    fontSize: 10,
-    letterSpacing: 1.2,
-  },
-  resultTitle: {
-    fontFamily: t.typography.title,
-    fontSize: 30,
-    marginTop: 4,
-  },
-  resultSubtitle: {
-    fontFamily: t.typography.body,
-    color: t.colors.creamMuted,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  resultStats: {
-    marginTop: t.spacing.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: t.colors.line,
-    paddingTop: t.spacing.md,
-  },
-  statBlock: {
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: t.colors.line,
-  },
-  statLabel: {
-    fontFamily: t.typography.label,
-    color: t.colors.mist,
-    fontSize: 10,
-    letterSpacing: 1.2,
-  },
-  statValue: {
-    fontFamily: t.typography.display,
-    color: t.colors.cream,
-    fontSize: 18,
   },
   ctaBar: {
     position: "absolute",
