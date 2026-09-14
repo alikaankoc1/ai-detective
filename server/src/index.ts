@@ -2,6 +2,7 @@ import http from "http";
 import { config } from "dotenv";
 import path from "path";
 import { runGeminiTest } from "./gemini";
+import { case001 } from "./cases/case001";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -16,7 +17,7 @@ function setCorsHeaders(res: http.ServerResponse) {
 function sendJson(
   res: http.ServerResponse,
   statusCode: number,
-  body: Record<string, unknown>
+  body: unknown
 ) {
   res.writeHead(statusCode, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
@@ -59,6 +60,11 @@ const server = http.createServer(async (req, res) => {
       const statusCode = message.includes("GEMINI_API_KEY") ? 500 : 502;
       sendJson(res, statusCode, { error: message });
     }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/cases/case-001") {
+    sendJson(res, 200, case001);
     return;
   }
 
