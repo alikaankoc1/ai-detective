@@ -93,6 +93,17 @@ const CASE_LIBRARY: CaseFileBase[] = [
     lockHint: "Önceki vakayı çözerek açılır.",
     cover: getCaseCover("case-005"),
   },
+  {
+    id: "case-006",
+    fileLabel: "DOSYA CASE-006",
+    title: "Alsancak Saati",
+    summary:
+      "İzmir Alsancak'ta yağmurlu bir gece, butik otelin kasasından antika cep saati kaybolur. Üç kişi, kamera kör noktası ve ıslak ayak izi.",
+    location: "İzmir, Alsancak",
+    difficulty: "ORTA-ZOR",
+    lockHint: "Önceki vakayı çözerek açılır.",
+    cover: getCaseCover("case-006"),
+  },
 ];
 
 function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {

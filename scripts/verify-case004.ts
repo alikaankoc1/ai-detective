@@ -29,24 +29,29 @@ function main() {
   assert(ids.includes("case-003"), "registry has case-003");
   assert(ids.includes("case-004"), "registry has case-004");
   assert(ids.includes("case-005"), "registry has case-005");
+  assert(ids.includes("case-006"), "registry has case-006");
 
   const c1 = getSupportedCase("case-001");
   const c2 = getSupportedCase("case-002");
   const c3 = getSupportedCase("case-003");
   const c4 = getSupportedCase("case-004");
   const c5 = getSupportedCase("case-005");
+  const c6 = getSupportedCase("case-006");
 
   assert(c1?.meta.title === "Kayıp Anahtar", "001 = Kayıp Anahtar (kolay)");
   assert(c2?.meta.title === "Son Metro", "002 = Son Metro (kolay-orta)");
   assert(c3?.meta.title === "Kırık Çini", "003 = Kırık Çini (orta)");
   assert(c4?.meta.title === "03:17'deki Telefon", "004 = 03:17 (zor)");
   assert(c5?.meta.title === "Karatay Mührü", "005 = Karatay Mührü (orta-zor)");
+  assert(c6?.meta.title === "Alsancak Saati", "006 = Alsancak Saati (orta-zor)");
 
   assert(!!c3 && /kütahya|kutahya/i.test(c3.story), "003 location Kütahya");
   assert(!!c5 && /konya/i.test(c5.story) && /karatay/i.test(c5.story), "005 location Konya Karatay");
+  assert(!!c6 && /izmir|alsancak/i.test(c6.story), "006 location İzmir Alsancak");
   assert(c3!.suspects.length === 3, "003 has 3 suspects");
   assert(c3!.canon.killerSuspectId === "suspect-c4-cem", "003 canon killer");
   assert(c5!.canon.killerSuspectId === "suspect-c5-deniz", "005 canon killer");
+  assert(c6!.canon.killerSuspectId === "suspect-c6-ruzgar", "006 canon killer");
   assert(c1!.suspects.length === 2, "001 has 2 suspects");
   assert(c4!.suspects.length === 3, "004 has 3 suspects");
 
@@ -55,9 +60,11 @@ function main() {
 
   assert(getRegisteredContradictions("case-003").length === 3, "003 contradictions");
   assert(getRegisteredContradictions("case-005").length === 3, "005 contradictions");
+  assert(getRegisteredContradictions("case-006").length === 3, "006 contradictions");
   assert(getMotiveKeywords("case-001").includes("anahtar"), "001 motive keys");
   assert(getMotiveKeywords("case-004").includes("sponsor"), "004 motive keys");
   assert(getMotiveKeywords("case-005").includes("muhur"), "005 motive keys");
+  assert(getMotiveKeywords("case-006").includes("saat"), "006 motive keys");
 
   const hit = checkContradiction(
     "case-003",
@@ -76,6 +83,28 @@ function main() {
     isCasePlayable("case-005", ["case-001", "case-002", "case-003", "case-004"]) === true,
     "005 unlocks after 004"
   );
+  assert(
+    isCasePlayable("case-006", [
+      "case-001",
+      "case-002",
+      "case-003",
+      "case-004",
+      "case-005",
+    ]) === true,
+    "006 unlocks after 005"
+  );
+
+  resetInvestigationState("case-006");
+  for (const id of c6!.canon.criticalEvidenceIds) {
+    discoverEvidence("case-006", id);
+  }
+  const perfect6 = solveCase("case-006", {
+    suspectId: "suspect-c6-ruzgar",
+    motive:
+      "Kumar borcu için antika saati çalıp Alsancak'ta nakit satmak üzere teslim edecekti.",
+    evidenceIds: [...c6!.canon.criticalEvidenceIds],
+  });
+  assert(perfect6.correct === true && perfect6.result === "perfect", "006 perfect");
 
   resetInvestigationState("case-003");
   for (const id of c3!.canon.criticalEvidenceIds) {

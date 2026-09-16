@@ -10,6 +10,7 @@ export { case002Contradictions } from "./case002";
 export { case003Contradictions } from "./case003";
 export { case004Contradictions } from "./case004";
 export { case005Contradictions } from "./case005";
+export { case006Contradictions } from "./case006";
 export {
   checkContradiction,
   findContradiction,

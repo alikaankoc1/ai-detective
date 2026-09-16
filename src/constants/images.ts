@@ -20,6 +20,7 @@ const caseCovers: Record<string, ImageSourcePropType> = {
   "case-003": require("../../assets/images/game/case-004-cover-kirik-cini.png") as ImageSourcePropType,
   "case-004": require("../../assets/images/game/case-001-cover-0317.png") as ImageSourcePropType,
   "case-005": require("../../assets/images/game/case-005-cover-karatay-muhru.png") as ImageSourcePropType,
+  "case-006": require("../../assets/images/game/case-006-cover-alsancak-saati.png") as ImageSourcePropType,
 };
 
 export function getCaseCover(caseId: string): ImageSourcePropType {

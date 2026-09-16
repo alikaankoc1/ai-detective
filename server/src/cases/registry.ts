@@ -5,11 +5,13 @@ import { case002 } from "./case002";
 import { case003 } from "./case003";
 import { case004 } from "./case004";
 import { case005 } from "./case005";
+import { case006 } from "./case006";
 import { case001Contradictions } from "../contradictions/case001";
 import { case002Contradictions } from "../contradictions/case002";
 import { case003Contradictions } from "../contradictions/case003";
 import { case004Contradictions } from "../contradictions/case004";
 import { case005Contradictions } from "../contradictions/case005";
+import { case006Contradictions } from "../contradictions/case006";
 
 /**
  * Tek vaka kayıt defteri.
@@ -104,6 +106,22 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "belge",
       "sahte",
       "sevkiyat",
+    ],
+  },
+  "case-006": {
+    caseData: case006,
+    contradictions: case006Contradictions,
+    // Alsancak Saati (orta-zor) — İzmir
+    motiveKeywords: [
+      "saat",
+      "antika",
+      "cal",
+      "sat",
+      "borc",
+      "kumar",
+      "nakit",
+      "teslim",
+      "kasa",
     ],
   },
 };

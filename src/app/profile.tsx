@@ -40,6 +40,7 @@ const CASE_CATALOG = [
   { id: "case-003", title: "Kırık Çini", fileLabel: "CASE-003" },
   { id: "case-004", title: "03:17'deki Telefon", fileLabel: "CASE-004" },
   { id: "case-005", title: "Karatay Mührü", fileLabel: "CASE-005" },
+  { id: "case-006", title: "Alsancak Saati", fileLabel: "CASE-006" },
 ] as const;
 
 const LIBRARY_TOTAL = CASE_CATALOG.length;

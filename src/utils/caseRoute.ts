@@ -19,6 +19,7 @@ export const CASE_UNLOCK_REQUIRES: Record<string, readonly string[]> = {
   "case-003": ["case-002"],
   "case-004": ["case-003"],
   "case-005": ["case-004"],
+  "case-006": ["case-005"],
 };
 
 /** Route paramından caseId çöz; yoksa Case 001. */

@@ -66,6 +66,11 @@ const MOTIVE_HYPOTHESES_BY_CASE: Record<string, readonly string[]> = {
     "Sahte envanter belgesi için mührü ele geçirmek",
     "Kişisel intikam",
   ],
+  "case-006": [
+    "Kumar borcunu kapatmak için antika cep saatini çalıp nakit satmak",
+    "Gece alıcıya teslim için kasadan saati almak",
+    "Kişisel intikam",
+  ],
 };
 
 function motiveHypothesesFor(caseId: string): readonly string[] {
@@ -74,12 +79,13 @@ function motiveHypothesesFor(caseId: string): readonly string[] {
 
 /** Cinayet / hırsızlık vakalarına göre solve metinleri. */
 function solveCopyFor(caseId: string) {
-  // 001–003, 005 hırsızlık; 004 cinayet
+  // 001–003, 005–006 hırsızlık; 004 cinayet
   if (
     caseId === "case-001" ||
     caseId === "case-002" ||
     caseId === "case-003" ||
-    caseId === "case-005"
+    caseId === "case-005" ||
+    caseId === "case-006"
   ) {
     return {
       lead: "Sorumluyu ve motifi seç; sonra suçlamayı kanıtlayan delilleri işaretle.",
