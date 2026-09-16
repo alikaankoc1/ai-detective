@@ -10,7 +10,7 @@ export const case002Contradictions: readonly ContradictionDefinition[] = [
     id: "contradiction-deniz-prints",
     caseId: "case-002",
     suspectId: "suspect-deniz",
-    relatedEvidenceId: "evidence-wet-prints",
+    relatedEvidenceId: "evidence-c2-hall-prints",
     severity: "high",
     relatedStatementIds: ["stmt-deniz-1"],
     contradictionDescription:

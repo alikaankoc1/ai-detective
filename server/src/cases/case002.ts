@@ -73,7 +73,7 @@ export const case002: Case = {
       isRedHerring: false,
     },
     {
-      id: "evidence-wet-prints",
+      id: "evidence-c2-hall-prints",
       name: "Askı önündeki ıslak ayak izleri",
       description:
         "Anahtar askısının hemen önünde, yağmurdan ıslanmış kısa ayak izleri var. İzler askıya kadar geliyor; salona uzanmıyor.",
@@ -105,7 +105,7 @@ export const case002: Case = {
     {
       id: "clue-prints-stop",
       text: "Islak izler yalnızca askıya kadar geliyor — salona değil. Anahtarı alan kişi holde kısa durmuş.",
-      relatedEvidenceIds: ["evidence-wet-prints", "evidence-key-hook"],
+      relatedEvidenceIds: ["evidence-c2-hall-prints", "evidence-key-hook"],
       relatedSuspectIds: ["suspect-deniz"],
     },
     {
@@ -190,7 +190,7 @@ export const case002: Case = {
     falseStatementIds: ["stmt-deniz-1", "stmt-deniz-2"],
     criticalEvidenceIds: [
       "evidence-key-hook",
-      "evidence-wet-prints",
+      "evidence-c2-hall-prints",
       "evidence-debt-sms",
     ],
   },
@@ -203,7 +203,7 @@ export const case002: Case = {
       description:
         "Deniz Acar suçlanır. Islak ayak izleri ve boş askı, hol'e uğramadığını söyleyen ifadesini çürütür. Anahtar hırsızlığı kapanır.",
       requiredSuspectId: "suspect-deniz",
-      requiredEvidenceIds: ["evidence-key-hook", "evidence-wet-prints"],
+      requiredEvidenceIds: ["evidence-key-hook", "evidence-c2-hall-prints"],
     },
     {
       id: "ending-c2-wrong",
@@ -222,7 +222,7 @@ export const case002: Case = {
       requiredSuspectId: "suspect-deniz",
       requiredEvidenceIds: [
         "evidence-key-hook",
-        "evidence-wet-prints",
+        "evidence-c2-hall-prints",
         "evidence-debt-sms",
       ],
     },

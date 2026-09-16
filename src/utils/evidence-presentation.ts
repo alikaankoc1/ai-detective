@@ -21,6 +21,7 @@ function resolveCategory(evidenceId: string): EvidenceCategory {
     case "evidence-tea-cups":
       return "fiziksel";
     case "evidence-wet-prints":
+    case "evidence-c2-hall-prints":
       return "iz";
     case "evidence-bar-receipt":
       return "belge";
