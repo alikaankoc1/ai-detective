@@ -1,32 +1,44 @@
 import type { ContradictionDefinition } from "./types";
 
 /**
- * Case #003 — tanımlı çelişkiler (zaman çizelgesi odaklı).
+ * Case #003 — tanımlı çelişkiler (nöbet / iz odaklı).
  * Kaynak: Case Engine ifadeleri + deliller (Gemini üretmez).
  */
 export const case003Contradictions: readonly ContradictionDefinition[] = [
   {
-    id: "contradiction-c3-mert-ticket",
+    id: "contradiction-c4-cem-log",
     caseId: "case-003",
-    suspectId: "suspect-c3-mert",
-    relatedEvidenceId: "evidence-c3-tram-ticket",
+    suspectId: "suspect-c4-cem",
+    relatedEvidenceId: "evidence-c4-shift-log",
     severity: "high",
-    relatedStatementIds: ["stmt-c3-mert-1"],
+    relatedStatementIds: ["stmt-c4-cem-1"],
     contradictionDescription:
-      "Mert Kaya 21:40'tan sonra ayrıldığını ve son tramvaya binmediğini söylüyor; Odunpazarı durağındaki 22:05 damgalı EsTram bileti ise geç bir binişe işaret ediyor.",
+      "Cem Yıldırım 21:30'dan sonra yalnızca dış kapıda kaldığını ve atölyeye girmediğini söylüyor; nöbet defterindeki 22:10 'atölye iç kontrol' satırı bununla çelişiyor.",
     internalNote:
-      "Canon: Mert 22:05 tramvayına bindi. stmt-c3-mert-1 yalan. Zaman çizelgesi çelişkisi.",
+      "Canon: Cem 22:10'da atölyeye girdi. stmt-c4-cem-1 yalan. Zaman/mekân çelişkisi.",
   },
   {
-    id: "contradiction-c3-mert-sleeve",
+    id: "contradiction-c4-cem-dust",
     caseId: "case-003",
-    suspectId: "suspect-c3-mert",
-    relatedEvidenceId: "evidence-c3-usb-sleeve",
-    severity: "critical",
-    relatedStatementIds: ["stmt-c3-mert-2"],
+    suspectId: "suspect-c4-cem",
+    relatedEvidenceId: "evidence-c4-tile-dust",
+    severity: "high",
+    relatedStatementIds: ["stmt-c4-cem-1", "stmt-c4-cem-2"],
     contradictionDescription:
-      "Mert Kaya USB'ye ve şirket kılıfına hiç dokunmadığını söylüyor; yağmurluk cebindeki boş, nemli USB kılıfı bununla çelişiyor.",
+      "Cem Yıldırım atölyeye girmediğini ve üzerinde toz olamayacağını söylüyor; bot tabanındaki atölyeye özgü mavi çini tozu aksini gösteriyor.",
     internalNote:
-      "Canon: Mert USB'yi aldı, boş kılıf cebinde kaldı. stmt-c3-mert-2 yalan.",
+      "Canon: Cem atölye zemininde yürüdü. Çini tozu fiziksel çelişki.",
+  },
+  {
+    id: "contradiction-c4-cem-glove",
+    caseId: "case-003",
+    suspectId: "suspect-c4-cem",
+    relatedEvidenceId: "evidence-c4-pigment-glove",
+    severity: "critical",
+    relatedStatementIds: ["stmt-c4-cem-2"],
+    contradictionDescription:
+      "Cem Yıldırım çiniye dokunmadığını söylüyor; lavabodaki pigment lekeli, aynı seri nöbet eldiveni bununla çelişiyor.",
+    internalNote:
+      "Canon: Cem eldivenle parçayı aldı. stmt-c4-cem-2 yalan.",
   },
 ];

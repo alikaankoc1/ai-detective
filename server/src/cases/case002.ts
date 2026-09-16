@@ -1,229 +1,242 @@
 import type { Case } from "../../../src/types/case";
 
 /**
- * Case #002 — "Kayıp Anahtar"
- * Kolay giriş vakası: 2 şüpheli, az delil, net çelişki.
+ * Case #002 — "Son Metro"
+ * Kolay-orta: 2 şüpheli, zaman çizelgesi karşılaştırması, net çelişkiler.
+ * Konum: Eskişehir, Odunpazarı (yağmurlu gece).
  * Gerçekler `canon` içinde kilitlidir (`factsLocked: true`).
  */
 export const case002: Case = {
   meta: {
     id: "case-002",
-    title: "Kayıp Anahtar",
+    title: "Son Metro",
     summary:
-      "Kadıköy'de yağmurlu bir akşam, apartman yöneticisi Murat Yalçın'ın kasa anahtarı kaybolur. Dairede yalnızca iki kişi vardır — ve küçük bir ıslak iz yalanı ele verir.",
+      "Eskişehir Odunpazarı'nda yağmurlu bir gece, yazılımcı Ece Karaca şirket USB'sini ve kısa süreliğine telefonunu kaybeder. İki şüpheli, çelişen saatler ve son tramvay bileti.",
     locale: "tr",
     schemaVersion: 1,
-    createdAt: "2026-09-16T00:00:00.000Z",
+    createdAt: "2026-09-16T12:00:00.000Z",
     factsLocked: true,
   },
 
   story:
-    "Kadıköy'de sıradan bir apartmanın zemin katındaki yönetici dairesi, yağmurlu bir akşam loş ışıklarla aydınlanır. Apartman yöneticisi Murat Yalçın, kiracı aidatlarını sakladığı küçük kasasının anahtarını her zamanki yerinde — giriş holündeki askıda — arar. Askı boştur. Anahtarın kaybolduğu saatte dairede yalnızca iki kişi vardır: temizlik görevlisi Deniz Acar ve üst kat komşusu Emre Yıldız. Hırsızlık basit görünür. Ama askının önündeki ıslak ayak izi, şüphelilerden birinin sözünü bozar.",
+    "Eskişehir'in Odunpazarı semtinde yağmur, ahşap evlerin saçaklarından damlar. Yazılım şirketi çalışanı Ece Karaca, akşamki sektör buluşmasından sonra eski bir kafede çantasını kısa bir an yalnız bırakır. Döndüğünde şirket belgelerinin bulunduğu USB bellek yoktur; telefonu da birkaç dakika sonra ıslak bankta bulunur. Bölgede yalnızca iki kişi kalmıştır: iş arkadaşı Mert Kaya ve buluşmada tanıştığı Selin Aras. Son tramvay istasyona yaklaşırken, ifadelerdeki saatler birbirini tutmaz.",
 
   scene: {
-    name: "Murat Yalçın'ın yönetici dairesi — Kadıköy",
+    name: "Odunpazarı — Atlıhan civarı kafe ve EsTram durağı",
     description:
-      "Küçük, düzenli bir zemin kat dairesi. Salon sade mobilyalı; giriş holünde ahşap bir anahtar askısı asılı. Yağmur camlara vuruyor; holün tahta zemini yer yer nemli.",
+      "Yağmurlu Odunpazarı sokağı. Dar kaldırım, loş kafe ışıkları, biraz ileride EsTram durağı. Tahta bank ıslak; üzerine bırakılmış bir telefon kılıfı izi vardır.",
     details:
-      "Askı boş. Askının hemen önünde kısa bir ıslak ayak izi dizisi var; izler salona uzanmıyor. Salonda iki çay fincanı duruyor. Kasa, çalışma odasındaki dolabın içinde kilitli — anahtar olmadan açılamaz.",
+      "Kafenin dış masasında Ece'nin çantası 21:52–21:55 arasında yalnız kalmıştır. Durakta 22:05 damgalı bir tramvay bileti bulunur. USB'nin boş kılıfı sonra bir şüphelinin cebinden çıkar.",
   },
 
   time: {
-    dateLabel: "16 Eylül 2026, Çarşamba akşamı",
-    timeOfCrime: "19:20–19:25 civarı",
+    dateLabel: "20 Eylül 2026, Cumartesi gecesi",
+    timeOfCrime: "21:52–21:55 civarı",
     atmosphere:
-      "Yağmurlu Kadıköy akşamı — ıslak kaldırımlar, loş hol, apartman sessizliği",
+      "Yağmurlu Odunpazarı gecesi — ıslak taş sokaklar, tramvay zili, uzak müzik",
   },
 
   suspects: [
     {
-      id: "suspect-deniz",
-      name: "Deniz Acar",
-      age: 29,
-      occupation: "Apartman temizlik görevlisi",
+      id: "suspect-c3-mert",
+      name: "Mert Kaya",
+      age: 32,
+      occupation: "Yazılım geliştirici / Ece'nin iş arkadaşı",
       biography:
-        "Binada haftada üç gün çalışan, sessiz ve dikkatli bir temizlik görevlisi. Son haftalarda para konusunda gergin görünüyor; ama kimseyle sorun çıkarmıyor.",
+        "Aynı şirkette backend geliştirici. Son haftalarda performans görüşmelerinden gergin; başka bir firmayla görüştüğü konuşuluyor. Soğukkanlı konuşur.",
       relationshipToVictim:
-        "Murat'ın çalışanı; daireye ve yönetici rutinlerine aşina.",
+        "İş arkadaşı; USB'deki müşteri ve proje dosyalarına erişmek istiyordu.",
       claimedAlibi:
-        "Sadece salonda oturdum. Anahtar askısına hiç yaklaşmadım, hol'e uğramadım. Yağmurdan ıslanmadım.",
+        "21:40'tan sonra Odunpazarı'ndan ayrıldım. Son tramvaya binmedim; USB'ye ve çantaya hiç dokunmadım.",
     },
     {
-      id: "suspect-emre",
-      name: "Emre Yıldız",
-      age: 41,
-      occupation: "Üst kat komşusu / muhasebeci",
+      id: "suspect-c3-selin",
+      name: "Selin Aras",
+      age: 28,
+      occupation: "Etkinlik organizatörü",
       biography:
-        "Üçüncü kattaki dairede yaşayan düzenli bir muhasebeci. Aidat ve tadilat konularında Murat'la sık konuşur. Sakin, net konuşur.",
+        "Odunpazarı buluşmasını düzenleyen bağımsız organizatör. Ece ile o gece tanışmıştır. Açık sözlü, saatleri net hatırlar.",
       relationshipToVictim:
-        "Komşu; o akşam aidat ve çatı tamiri için uğramıştı.",
+        "Etkinlik organizatörü; Ece'ye yol tarifi ve kafe önerisi yapmıştı.",
       claimedAlibi:
-        "Murat'la salonda oturup aidat konuştuk. Anahtarı görmedim; askıya hiç gitmedim.",
+        "21:50 civarı Ece'yle kafedeydik. Sipariş için sıraya girdiğimde çanta masada kaldı; Mert masanın yanındaydı.",
     },
   ],
 
   evidence: [
     {
-      id: "evidence-key-hook",
-      name: "Boş anahtar askısı",
+      id: "evidence-c3-cctv-time",
+      name: "Kafe masa kaydı (21:52–21:55)",
       description:
-        "Giriş holündeki ahşap askıda kasa anahtarı yok. Askının çengeli boş; anahtar her zaman burada asılı dururmuş.",
-      discoveryLocation: "Daire giriş holü",
-      relatedSuspectIds: ["suspect-deniz", "suspect-emre"],
+        "Kafenin dış kamera özeti: Ece'nin çantası 21:52'de masada yalnız kalıyor, 21:55'te Ece geri dönüyor. Ara dakikalarda bir silüet masaya yaklaşıyor.",
+      discoveryLocation: "Kafe güvenlik notu / kamera özeti",
+      relatedSuspectIds: ["suspect-c3-mert", "suspect-c3-selin"],
       isRedHerring: false,
     },
     {
-      id: "evidence-c2-hall-prints",
-      name: "Askı önündeki ıslak ayak izleri",
+      id: "evidence-c3-tram-ticket",
+      name: "22:05 damgalı EsTram bileti",
       description:
-        "Anahtar askısının hemen önünde, yağmurdan ıslanmış kısa ayak izleri var. İzler askıya kadar geliyor; salona uzanmıyor.",
-      discoveryLocation: "Giriş holü, anahtar askısının önü",
-      relatedSuspectIds: ["suspect-deniz"],
+        "Odunpazarı durağı civarında bulunan tek binişlik EsTram bileti. Damga: 22:05 — gecenin son seferlerinden biri.",
+      discoveryLocation: "EsTram durağı, ıslak bank yanı",
+      relatedSuspectIds: ["suspect-c3-mert"],
       isRedHerring: false,
     },
     {
-      id: "evidence-debt-sms",
-      name: "Vadesi geçmiş borç SMS'i",
+      id: "evidence-c3-usb-sleeve",
+      name: "Boş USB kılıfı",
       description:
-        "Deniz'in telefonunda bankadan gelen kısa mesaj: 'Kart borcunuzun son ödeme tarihi geçti. Acil ödeme bekleniyor.'",
-      discoveryLocation: "Deniz Acar'ın çantası (ifade sırasında)",
-      relatedSuspectIds: ["suspect-deniz"],
+        "Şirket logolu küçük USB kılıfı. İçinde bellek yok. Mert Kaya'nın yağmurluk cebinden çıkar; kılıfın kenarı hâlâ nemlidir.",
+      discoveryLocation: "Mert Kaya'nın yağmurluk cebi (ifade sırasında)",
+      relatedSuspectIds: ["suspect-c3-mert"],
       isRedHerring: false,
     },
     {
-      id: "evidence-tea-cups",
-      name: "Salondaki iki çay fincanı",
+      id: "evidence-c3-event-badge",
+      name: "Selin'in etkinlik yaka kartı",
       description:
-        "Salondaki sehpada iki fincan çay duruyor. Biri Murat'a, diğeri Emre'ye ait gibi; konuşmanın salonda geçtiğini destekliyor.",
-      discoveryLocation: "Salon sehpası",
-      relatedSuspectIds: ["suspect-emre"],
+        "Islak bankın yanında bulunan organizatör yaka kartı: 'Selin Aras — Odunpazarı Buluşması'. Kart, çantanın kaybolduğu masaya yakın düşmüş.",
+      discoveryLocation: "Kafe dışı bank / kaldırım",
+      relatedSuspectIds: ["suspect-c3-selin"],
       isRedHerring: true,
     },
   ],
 
   clues: [
     {
-      id: "clue-prints-stop",
-      text: "Islak izler yalnızca askıya kadar geliyor — salona değil. Anahtarı alan kişi holde kısa durmuş.",
-      relatedEvidenceIds: ["evidence-c2-hall-prints", "evidence-key-hook"],
-      relatedSuspectIds: ["suspect-deniz"],
+      id: "clue-c3-timeline-window",
+      text: "USB kaybı 21:52–21:55 arasında olmalı. İfadelerdeki saatleri bu pencereyle karşılaştır.",
+      relatedEvidenceIds: ["evidence-c3-cctv-time"],
+      relatedSuspectIds: ["suspect-c3-mert", "suspect-c3-selin"],
     },
     {
-      id: "clue-money-pressure",
-      text: "Deniz 'paramla ilgili sıkıntım yok' diyor; telefonundaki borç SMS'i aksini söylüyor.",
-      relatedEvidenceIds: ["evidence-debt-sms"],
-      relatedSuspectIds: ["suspect-deniz"],
+      id: "clue-c3-ticket-vs-alibi",
+      text: "Mert 21:40'tan sonra ayrıldığını ve son tramvaya binmediğini söylüyor; 22:05 damgalı bilet aksini ima ediyor.",
+      relatedEvidenceIds: ["evidence-c3-tram-ticket"],
+      relatedSuspectIds: ["suspect-c3-mert"],
     },
   ],
 
   statements: [
     {
-      id: "stmt-deniz-1",
-      suspectId: "suspect-deniz",
-      text: "Anahtar askısına hiç yaklaşmadım. Sadece salonda oturdum, hol'e uğramadım. Yağmurdan da ıslanmadım.",
+      id: "stmt-c3-mert-1",
+      suspectId: "suspect-c3-mert",
+      text: "21:40'tan sonra Odunpazarı'ndan ayrıldım. Son tramvaya binmedim; 22:00'den sonra burada değildim.",
     },
     {
-      id: "stmt-deniz-2",
-      suspectId: "suspect-deniz",
-      text: "Paramla ilgili bir sıkıntım yok. Kasadaki parayla veya anahtarla işim olmaz.",
+      id: "stmt-c3-mert-2",
+      suspectId: "suspect-c3-mert",
+      text: "Ece'nin çantasına ve USB'sine hiç dokunmadım. Yanımda şirket kılıfı da yoktu.",
     },
     {
-      id: "stmt-emre-1",
-      suspectId: "suspect-emre",
-      text: "Murat'la salonda aidat konuştuk. Askıya gitmedim; anahtarı görmedim.",
+      id: "stmt-c3-selin-1",
+      suspectId: "suspect-c3-selin",
+      text: "21:50 civarı Ece'yle dış masadaydık. Ben sıraya gidince çanta masada kaldı.",
     },
     {
-      id: "stmt-emre-2",
-      suspectId: "suspect-emre",
-      text: "Deniz birkaç kez mutfağa ve hol tarafına gitti. Ben salondan kalkmadım.",
+      id: "stmt-c3-selin-2",
+      suspectId: "suspect-c3-selin",
+      text: "O sırada Mert masanın yanındaydı. Ben döndüğümde Ece panikle USB'sini arıyordu.",
     },
   ],
 
   canon: {
-    victimName: "Murat Yalçın",
+    victimName: "Ece Karaca",
     victimDescription:
-      "48 yaşında apartman yöneticisi. Aidat nakitlerini çalışma odasındaki küçük kasada saklar; kasa anahtarı giriş holündeki askıda durur.",
-    killerSuspectId: "suspect-deniz",
+      "29 yaşında yazılım şirketi ürün analisti. Çantasında müşteri listesi ve gizli proje notları olan şirket USB'si taşıyordu.",
+    killerSuspectId: "suspect-c3-mert",
     motive:
-      "Deniz Acar, vadesi geçmiş kart borcunu kapatmak için kasadaki aidat nakitine ulaşmak istedi. Anahtarı çalarak kasayı sonra açmayı planladı.",
+      "Mert Kaya, rakip firmaya geçiş görüşmesi için USB'deki müşteri listesi ve proje belgelerini çaldı. Dosyalar eline geçmeden teklifi garantiye alamayacaktı.",
     methodOfCrime:
-      "Yağmurda ıslak ayakkabılarıyla daireye giren Deniz, Murat ve Emre salonda konuşurken holdeki askıdan kasa anahtarını aldı ve izlerini salona uzatmadan geri döndü.",
+      "21:52–21:55 arasında Ece sıradayken / içerideyken Mert masadaki çantadan USB'yi aldı; telefonu düşürüp banka bıraktı. 22:05 EsTram ile Odunpazarı'ndan ayrılırken boş kılıf cebinde kaldı.",
     realTimeline: [
       {
-        id: "tl-c2-1",
+        id: "tl-c3-1",
         order: 1,
-        timeLabel: "19:05",
+        timeLabel: "21:35",
         description:
-          "Deniz Acar yağmurda binaya gelir. Ayakkabıları ıslaktır; yönetici dairesine girer.",
-        involvedSuspectIds: ["suspect-deniz"],
+          "Etkinlik biter. Ece, Mert ve Selin Odunpazarı'ndaki kafeye yürür.",
+        involvedSuspectIds: ["suspect-c3-mert", "suspect-c3-selin"],
         isPubliclyKnown: true,
       },
       {
-        id: "tl-c2-2",
+        id: "tl-c3-2",
         order: 2,
-        timeLabel: "19:10",
+        timeLabel: "21:50",
         description:
-          "Emre Yıldız aidat konuşmak için uğrar. Murat salonda çay koyar.",
-        involvedSuspectIds: ["suspect-emre"],
+          "Üçü dış masada oturur. Selin sipariş için sıraya gider; Ece kısa süreliğine içeride / sırada kaybolur.",
+        involvedSuspectIds: ["suspect-c3-selin"],
         isPubliclyKnown: true,
       },
       {
-        id: "tl-c2-3",
+        id: "tl-c3-3",
         order: 3,
-        timeLabel: "19:20–19:25",
+        timeLabel: "21:52–21:55",
         description:
-          "Murat ve Emre salonda konuşurken Deniz hol'e geçer, askıdan kasa anahtarını alır. Islak izler askıda kalır.",
-        involvedSuspectIds: ["suspect-deniz"],
+          "Çanta yalnızken Mert USB'yi alır. Telefon kayıp gibi görünür; aslında ıslak banka düşmüştür.",
+        involvedSuspectIds: ["suspect-c3-mert"],
         isPubliclyKnown: false,
       },
       {
-        id: "tl-c2-4",
+        id: "tl-c3-4",
         order: 4,
-        timeLabel: "19:45",
+        timeLabel: "22:05",
         description:
-          "Murat anahtarı arar; askı boştur. Polis çağrılır, iki şüpheli ifadeye alınır.",
-        involvedSuspectIds: ["suspect-deniz", "suspect-emre"],
+          "Mert Odunpazarı EsTram durağına biner (son seferlerden). Bilet damgası 22:05.",
+        involvedSuspectIds: ["suspect-c3-mert"],
+        isPubliclyKnown: false,
+      },
+      {
+        id: "tl-c3-5",
+        order: 5,
+        timeLabel: "22:10",
+        description:
+          "Ece USB'sinin olmadığını fark eder. Selin yanındadır; Mert çoktan tramvaydadır.",
+        involvedSuspectIds: ["suspect-c3-selin"],
         isPubliclyKnown: true,
       },
     ],
-    trueStatementIds: ["stmt-emre-1", "stmt-emre-2"],
-    falseStatementIds: ["stmt-deniz-1", "stmt-deniz-2"],
+    trueStatementIds: ["stmt-c3-selin-1", "stmt-c3-selin-2"],
+    falseStatementIds: ["stmt-c3-mert-1", "stmt-c3-mert-2"],
     criticalEvidenceIds: [
-      "evidence-key-hook",
-      "evidence-c2-hall-prints",
-      "evidence-debt-sms",
+      "evidence-c3-cctv-time",
+      "evidence-c3-tram-ticket",
+      "evidence-c3-usb-sleeve",
     ],
   },
 
   endings: [
     {
-      id: "ending-c2-correct",
+      id: "ending-c3-correct",
       type: "dogru_suclama",
-      title: "Askıdaki Boşluk",
+      title: "Son Sefer",
       description:
-        "Deniz Acar suçlanır. Islak ayak izleri ve boş askı, hol'e uğramadığını söyleyen ifadesini çürütür. Anahtar hırsızlığı kapanır.",
-      requiredSuspectId: "suspect-deniz",
-      requiredEvidenceIds: ["evidence-key-hook", "evidence-c2-hall-prints"],
-    },
-    {
-      id: "ending-c2-wrong",
-      type: "yanlis_suclama",
-      title: "Yanlış Kapı",
-      description:
-        "Suç Emre'ye yıkılır. Salondaki çay fincanları yanıltıcı bir gölge olur; gerçek hırsız kayıplara karışır. Dosya erken kapanır.",
-      requiredEvidenceIds: ["evidence-tea-cups"],
-    },
-    {
-      id: "ending-c2-perfect",
-      type: "mukemmel_cozum",
-      title: "Anahtar Yerinde",
-      description:
-        "Deniz doğru suçlanır; ıslak izler, boş askı ve borç SMS'i birleştirilir. Motivasyon netleşir, Emre aklanır. Vaka temiz bir kapanışla biter.",
-      requiredSuspectId: "suspect-deniz",
+        "Mert Kaya suçlanır. Saat penceresi ve 22:05 bileti, erken ayrıldığı yalanını çürütür. USB hırsızlığı kapanır.",
+      requiredSuspectId: "suspect-c3-mert",
       requiredEvidenceIds: [
-        "evidence-key-hook",
-        "evidence-c2-hall-prints",
-        "evidence-debt-sms",
+        "evidence-c3-cctv-time",
+        "evidence-c3-tram-ticket",
+      ],
+    },
+    {
+      id: "ending-c3-wrong",
+      type: "yanlis_suclama",
+      title: "Yanlış Durak",
+      description:
+        "Suç Selin'e yıkılır. Yaka kartı yanıltıcı bir gölge olur; gerçek hırsız son tramvayla kaybolur.",
+      requiredEvidenceIds: ["evidence-c3-event-badge"],
+    },
+    {
+      id: "ending-c3-perfect",
+      type: "mukemmel_cozum",
+      title: "Hat Tamam",
+      description:
+        "Mert doğru suçlanır; kamera saati, tramvay bileti ve boş USB kılıfı birleştirilir. Motivasyon netleşir, Selin aklanır.",
+      requiredSuspectId: "suspect-c3-mert",
+      requiredEvidenceIds: [
+        "evidence-c3-cctv-time",
+        "evidence-c3-tram-ticket",
+        "evidence-c3-usb-sleeve",
       ],
     },
   ],
@@ -238,7 +251,7 @@ export const case002: Case = {
     notes: "",
     accusedSuspectId: null,
     unlockedEndingId: null,
-    startedAt: "2026-09-16T00:00:00.000Z",
-    updatedAt: "2026-09-16T00:00:00.000Z",
+    startedAt: "2026-09-16T12:00:00.000Z",
+    updatedAt: "2026-09-16T12:00:00.000Z",
   },
 };

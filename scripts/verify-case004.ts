@@ -1,5 +1,5 @@
 /**
- * Case Engine smoke: registry, contradictions, unlock chain, solve Case 004.
+ * Case Engine smoke: kolay→zor sıralama + registry/solve.
  * Çalıştır: npx tsx scripts/verify-case004.ts
  */
 import {
@@ -29,74 +29,64 @@ function main() {
   assert(ids.includes("case-003"), "registry has case-003");
   assert(ids.includes("case-004"), "registry has case-004");
 
+  const c1 = getSupportedCase("case-001");
+  const c2 = getSupportedCase("case-002");
+  const c3 = getSupportedCase("case-003");
   const c4 = getSupportedCase("case-004");
-  assert(!!c4, "case-004 loads");
-  assert(c4!.meta.factsLocked === true, "factsLocked");
-  assert(c4!.meta.title === "Kırık Çini", "title");
-  assert(
-    /konya/i.test(c4!.story) && /konya/i.test(c4!.scene.name),
-    "location Konya"
-  );
-  assert(c4!.suspects.length === 3, "3 suspects");
-  assert(c4!.canon.killerSuspectId === "suspect-c4-cem", "canon killer");
-  assert(!("canon" in toPlayerSafeCase(c4!)), "player-safe strips canon");
 
-  const contradictions = getRegisteredContradictions("case-004");
-  assert(contradictions.length === 3, "3 contradictions");
-  assert(getMotiveKeywords("case-004").length > 0, "motive keywords");
+  assert(c1?.meta.title === "Kayıp Anahtar", "001 = Kayıp Anahtar (kolay)");
+  assert(c2?.meta.title === "Son Metro", "002 = Son Metro (kolay-orta)");
+  assert(c3?.meta.title === "Kırık Çini", "003 = Kırık Çini (orta)");
+  assert(c4?.meta.title === "03:17'deki Telefon", "004 = 03:17 (zor)");
+
+  assert(!!c3 && /konya/i.test(c3.story), "003 location Konya");
+  assert(c3!.suspects.length === 3, "003 has 3 suspects");
+  assert(c3!.canon.killerSuspectId === "suspect-c4-cem", "003 canon killer");
+  assert(c1!.suspects.length === 2, "001 has 2 suspects");
+  assert(c4!.suspects.length === 3, "004 has 3 suspects");
+
+  assert(c1!.meta.factsLocked && c4!.meta.factsLocked, "factsLocked");
+  assert(!("canon" in toPlayerSafeCase(c3!)), "player-safe strips canon");
+
+  assert(getRegisteredContradictions("case-003").length === 3, "003 contradictions");
+  assert(getMotiveKeywords("case-001").includes("anahtar"), "001 motive keys");
+  assert(getMotiveKeywords("case-004").includes("sponsor"), "004 motive keys");
 
   const hit = checkContradiction(
-    "case-004",
+    "case-003",
     "suspect-c4-cem",
     "evidence-c4-shift-log"
   );
-  assert(hit.found === true, "contradiction cem+log found");
+  assert(hit.found === true, "contradiction cem+log on 003");
 
-  const miss = checkContradiction(
-    "case-004",
-    "suspect-c4-bahar",
-    "evidence-c4-shift-log"
-  );
-  assert(miss.found === false, "no false contradiction bahar+log");
-
-  assert(isCasePlayable("case-004", []) === false, "004 locked empty");
+  assert(isCasePlayable("case-001", []) === true, "001 always open");
+  assert(isCasePlayable("case-002", []) === false, "002 locked");
   assert(
-    isCasePlayable("case-004", ["case-003"]) === true,
+    isCasePlayable("case-004", ["case-001", "case-002", "case-003"]) === true,
     "004 unlocks after 003"
   );
-  assert(
-    isCasePlayable("case-003", ["case-002"]) === true,
-    "003 still unlocks after 002"
-  );
 
-  resetInvestigationState("case-004");
-  for (const id of c4!.canon.criticalEvidenceIds) {
-    discoverEvidence("case-004", id);
+  resetInvestigationState("case-003");
+  for (const id of c3!.canon.criticalEvidenceIds) {
+    discoverEvidence("case-003", id);
   }
 
-  const perfect = solveCase("case-004", {
+  const perfect = solveCase("case-003", {
     suspectId: "suspect-c4-cem",
     motive:
       "Karaborsa alıcıya satmak ve sahte ihracat belgesi için çini parçasını çaldı, borç baskısıyla.",
-    evidenceIds: [...c4!.canon.criticalEvidenceIds],
+    evidenceIds: [...c3!.canon.criticalEvidenceIds],
   });
-  assert(perfect.correct === true, "perfect solve correct");
-  assert(perfect.result === "perfect", "perfect result");
+  assert(perfect.correct === true && perfect.result === "perfect", "003 perfect");
 
-  const wrong = solveCase("case-004", {
+  const wrong = solveCase("case-003", {
     suspectId: "suspect-c4-bahar",
     motive: "Kişisel intikam için yaptı belki",
     evidenceIds: ["evidence-c4-visitor-badge"],
   });
-  assert(wrong.correct === false, "wrong accuse not correct");
-  assert(wrong.result === "wrong", "wrong result");
+  assert(wrong.correct === false && wrong.result === "wrong", "003 wrong");
 
-  // Regression: prior cases still registered
-  assert(!!getSupportedCase("case-001"), "001 intact");
-  assert(!!getSupportedCase("case-002"), "002 intact");
-  assert(!!getSupportedCase("case-003"), "003 intact");
-
-  console.log("\nALL CASE-004 CHECKS PASSED");
+  console.log("\nALL DIFFICULTY-ORDER CHECKS PASSED");
 }
 
 main();

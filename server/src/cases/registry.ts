@@ -24,20 +24,7 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
   "case-001": {
     caseData: case001,
     contradictions: case001Contradictions,
-    motiveKeywords: [
-      "sponsor",
-      "usulsuz",
-      "usb",
-      "yayin",
-      "aciga",
-      "kanit",
-      "hesap",
-      "engelle",
-    ],
-  },
-  "case-002": {
-    caseData: case002,
-    contradictions: case002Contradictions,
+    // Kayıp Anahtar (kolay)
     motiveKeywords: [
       "kasa",
       "anahtar",
@@ -49,9 +36,10 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "kart",
     ],
   },
-  "case-003": {
-    caseData: case003,
-    contradictions: case003Contradictions,
+  "case-002": {
+    caseData: case002,
+    contradictions: case002Contradictions,
+    // Son Metro (kolay-orta)
     motiveKeywords: [
       "usb",
       "belge",
@@ -64,9 +52,10 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "liste",
     ],
   },
-  "case-004": {
-    caseData: case004,
-    contradictions: case004Contradictions,
+  "case-003": {
+    caseData: case003,
+    contradictions: case003Contradictions,
+    // Kırık Çini (orta)
     motiveKeywords: [
       "cini",
       "parca",
@@ -77,6 +66,21 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "belge",
       "sahte",
       "borc",
+    ],
+  },
+  "case-004": {
+    caseData: case004,
+    contradictions: case004Contradictions,
+    // 03:17'deki Telefon (zor)
+    motiveKeywords: [
+      "sponsor",
+      "usulsuz",
+      "usb",
+      "yayin",
+      "aciga",
+      "kanit",
+      "hesap",
+      "engelle",
     ],
   },
 };

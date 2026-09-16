@@ -1,295 +1,288 @@
 import type { Case } from "../../../src/types/case";
 
 /**
- * Case #004 — "Kırık Çini"
- * Orta: 3 şüpheli, nöbet defteri + iz delilleri, net çelişkiler.
- * Konum: Konya, Karatay (restorasyon atölyesi — Alaaddin civarı).
+ * Örnek vaka: "03:17'deki Telefon"
  * Gerçekler `canon` içinde kilitlidir (`factsLocked: true`).
  */
 export const case004: Case = {
   meta: {
     id: "case-004",
-    title: "Kırık Çini",
+    title: "03:17'deki Telefon",
     summary:
-      "Konya Karatay'da soğuk bir gece, Selçuklu çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
+      "Kadıköy'de bir gece, kurbanın telefonu 03:17'de çalar. Sabah ise cesedi bulunur. Üç şüpheli, bir sessiz arama ve karanlık bir sır.",
     locale: "tr",
     schemaVersion: 1,
-    createdAt: "2026-09-16T14:00:00.000Z",
+    createdAt: "2026-09-14T00:00:00.000Z",
     factsLocked: true,
   },
 
   story:
-    "Konya'nın Karatay semtinde hava keskindir; Alaaddin Tepesi'nin silüeti uzakta, sokak lambaları mavi-beyaz yanar. Küçük bir restorasyon atölyesinde, 13. yüzyıldan kalma nadir bir Selçuklu çini paneli parçası gece boyunca kaybolur. Atölye sorumlusu Leyla Demir sabah dolabı zorlanmış bulur; vitrindeki parça yerinde yoktur. O gece sahada üç kişi anılır: gece bekçisi Cem Yıldırım, Ankara'dan gelen araştırmacı Bahar Elçi ve genç restoratör Aylin Koç. Nöbet defterindeki tek satır ile ayakkabı tabanındaki çini tozu, ifadeleri birbirine düşürür.",
+    "İstanbul'un Kadıköy yakasında, Moda'ya inen dar bir sokağın üst katında yaşayan bağımsız belgeselci Kerem Aslan, son günlerde kimsenin bilmesini istemediği bir kayıt üzerinde çalışıyordu. Komşular gece yarısından sonra yüksek ses duymadıklarını söylüyor; ama telefon kayıtları başka bir şey fısıldıyor: 03:17'de gelen, yanıtlanmayan bir arama. Sabah kapısı aralık bulunan dairede Kerem yerde yatıyor, yanında kırık bir fincan ve hâlâ titreşen ekran. Yağmur camlara vuruyor. Şehir uyanmadan önce, bu vakanın karanlığı çoktan yerleşmiş durumda.",
 
   scene: {
-    name: "Karatay restorasyon atölyesi — Konya",
+    name: "Kerem Aslan'ın dairesi — Kadıköy, Moda",
     description:
-      "Taş avluya bakan dar atölye. İş tezgâhlarında pigment kavanozları, eldivenler, büyütücü lamba. Arka duvarda kilitli cam dolap; dolabın kilidi zorlanmış, iç rafta boş bir kadife yastık.",
+      "Eski bir apartmanın üçüncü katında, tek odalı bir stüdyo daire. Perdeler yarı kapalı, masa üstü kayıt cihazları ve notlarla dolu. Işık loş; yalnızca mutfak tezgâhındaki lambadan sarı bir huzme sızıyor.",
     details:
-      "Dolap 21:15'te kilitlenmiş kaydedilmiş. Nöbet defterinde 22:10 giriş notu var. Tezgâh önünde ince mavi çini tozu; lavaboda pigment lekeli bir eldiven. Ziyaretçi kartı eşikte düşmüş.",
+      "Giriş holünde ıslak ayakkabı izleri var. Salonun ortasında ters dönmüş bir sandalye. Balkon kapısı kilitli. Cadde tarafındaki pencere aralık; uzaktan vapur düdüğü duyuluyor.",
   },
 
   time: {
-    dateLabel: "24 Eylül 2026, Perşembe gecesi",
-    timeOfCrime: "22:05–22:20 civarı",
+    dateLabel: "14 Mart 2026, Cumartesi'yi Pazar'a bağlayan gece",
+    timeOfCrime: "03:10 civarı",
     atmosphere:
-      "Soğuk Konya gecesi — kuru rüzgâr, uzak ezan sonrası sessizlik, atölyede tutkal ve kil kokusu",
+      "Karanlık, gizemli, sinematik — yağmurlu Kadıköy gecesi, ıslak sokaklar, uzak sirenler",
   },
 
   suspects: [
     {
-      id: "suspect-c4-cem",
-      name: "Cem Yıldırım",
-      age: 38,
-      occupation: "Gece bekçisi",
+      id: "suspect-ayse",
+      name: "Ayşe Demir",
+      age: 31,
+      occupation: "Yapımcı / eski iş ortağı",
       biography:
-        "Atölye kompleksinde iki yıldır gece nöbeti tutuyor. Sessiz, kısa cevaplı. Son aylarda kumar borcu konuşuluyor; kimseyle fazla muhatap olmuyor.",
-      relationshipToVictim:
-        "Leyla Demir'in gece güvenliği; yedek anahtar dolabına erişimi var.",
+        "Kerem'le iki yıldır aynı yapım şirketinde çalışmış, üç ay önce yollarını ayırmış sert mizaçlı bir yapımcı. Sponsorluk sözleşmelerini o yönetirdi. Geceye damgasını vuran soğukkanlılığıyla tanınır.",
+      relationshipToVictim: "Eski iş ortağı; aralarında bitmemiş bir hesap ve gizli bir dosya vardı.",
       claimedAlibi:
-        "21:30'dan sonra yalnızca dış kapı nöbetindeydim. Atölyeye girmedim; çiniye dokunmadım.",
+        "O gece evde yalnızdım. Saat ikiden sonra uyudum, sabaha kadar kimseyle konuşmadım.",
     },
     {
-      id: "suspect-c4-bahar",
-      name: "Bahar Elçi",
+      id: "suspect-baran",
+      name: "Baran Kılıç",
+      age: 36,
+      occupation: "Komşu / müzisyen",
+      biography:
+        "Alt kattaki dairede yaşayan bar müzisyeni. Kerem'le sık sık geç saatlere kadar tartışırlardı; ses yalıtımı zayıf binada herkes bunu duyardı. Borç meseleleri ve gürültü şikayetleriyle bilinen gergin bir komşuluk.",
+      relationshipToVictim: "Alt komşu; gürültü ve borç yüzünden sürekli tartışıyorlardı.",
+      claimedAlibi:
+        "Caferağa'daki barda çalıyordum. Setim gece yarısından sonra bitti, sonra arkadaşlarla kaldım.",
+    },
+    {
+      id: "suspect-selim",
+      name: "Selim Arslan",
       age: 34,
-      occupation: "Sanat tarihçisi / misafir araştırmacı",
+      occupation: "Kuzen / yatırımcı",
       biography:
-        "Ankara'dan Selçuklu çini motifleri için kısa süreli araştırma izniyle gelmiş. Not defteri dolu, dikkatli konuşur; saatleri net hatırlar.",
-      relationshipToVictim:
-        "Leyla'nın davetlisi; envanter ve fotoğraf çekimi için gündüz atölyedeydi.",
+        "Kerem'in kuzeni. Belgesel projesine para yatırmış, son haftalarda geri ödeme konusunda baskı yapmaya başlamıştı. Düzenli, kontrollü konuşur; duygularını belli etmez.",
+      relationshipToVictim: "Kuzen ve proje yatırımcısı; alacak-verecek gerginliği vardı.",
       claimedAlibi:
-        "21:00'de envanteri bitirip ayrıldım. Gece geri dönmedim; kartımı eşikte düşürmüş olabilirim.",
-    },
-    {
-      id: "suspect-c4-aylin",
-      name: "Aylin Koç",
-      age: 26,
-      occupation: "Junior restoratör",
-      biography:
-        "Karatay ekibinde ikinci yılı. Titiz, endişeli; dolap prosedürüne bağlı. Sabah ilk o fark etmiş.",
-      relationshipToVictim:
-        "Leyla'nın asistanı; parçanın kadife yastığını her akşam yerleştirir.",
-      claimedAlibi:
-        "21:15'te dolabı kilitledim ve çıktım. Gece atölyede değildim; sabah kilidin zorlandığını gördüm.",
+        "Ankara'daydım. Gece uçuşum vardı, sabah erken toplantım için otelde kaldım.",
     },
   ],
 
   evidence: [
     {
-      id: "evidence-c4-shift-log",
-      name: "Nöbet defteri — 22:10 girişi",
+      id: "evidence-phone",
+      name: "Kilit ekranındaki 03:17 araması",
       description:
-        "Gece defterinde Cem Yıldırım imzasıyla '22:10 — atölye iç kontrol' satırı var. Dış kapı kamerası özeti de aynı dakikada içeride hareket gösteriyor.",
-      discoveryLocation: "Bekçi kulübesi / nöbet defteri",
-      relatedSuspectIds: ["suspect-c4-cem"],
+        "Kerem'in telefonunda 03:17'de Selim Arslan'dan gelen yanıtsız bir arama kaydı var. Arama 18 saniye çalmış, açılmamış.",
+      discoveryLocation: "Kurbanın sağ elinin yanında, halının üzerinde",
+      relatedSuspectIds: ["suspect-selim"],
       isRedHerring: false,
     },
     {
-      id: "evidence-c4-tile-dust",
-      name: "Bot tabanındaki mavi çini tozu",
+      id: "evidence-cup",
+      name: "Kırık fincan ve soğuk çay",
       description:
-        "Cem'in iş botlarının tabanında atölye zeminindekiyle aynı pigmentli mavi toz. Dış nöbet alanının zemini bu tozu taşımaz.",
-      discoveryLocation: "Bekçi dolabı / bot incelemesi",
-      relatedSuspectIds: ["suspect-c4-cem"],
+        "Salon zemininde kırık bir porselen fincan. İçinde yarım kalmış adaçayı. Kenarında ikinci bir dudak izine benzer leke var.",
+      discoveryLocation: "Salon ortası, ters dönmüş sandalyenin yanında",
+      relatedSuspectIds: ["suspect-ayse"],
       isRedHerring: false,
     },
     {
-      id: "evidence-c4-pigment-glove",
-      name: "Pigment lekeli eldiven",
+      id: "evidence-wet-prints",
+      name: "Islak ayakkabı izleri",
       description:
-        "Atölye lavabosunda tek sol eldiven; parmak uçlarında çini panelinin karakteristik kobalt pigmenti. Eldiven bedeni Cem'in nöbet eldivenleriyle aynı seri.",
-      discoveryLocation: "Atölye lavabosu",
-      relatedSuspectIds: ["suspect-c4-cem"],
+        "Giriş holünden salona doğru uzanan, yağmurdan ıslanmış ayakkabı tabanı izleri. İzler bir noktada duruyor; balkona gitmiyor.",
+      discoveryLocation: "Daire girişi ve salon halısı",
+      relatedSuspectIds: ["suspect-ayse", "suspect-baran"],
       isRedHerring: false,
     },
     {
-      id: "evidence-c4-visitor-badge",
-      name: "Bahar'ın ziyaretçi kartı",
+      id: "evidence-usb",
+      name: "Gizli USB bellek",
       description:
-        "Eşikte bulunan plastik ziyaretçi kartı: 'Bahar Elçi — Misafir Araştırmacı'. Kart, zorlanmış dolaba yakın düşmüş.",
-      discoveryLocation: "Atölye eşiği",
-      relatedSuspectIds: ["suspect-c4-bahar"],
+        "Kitaplığın arkasında bantlanmış küçük bir USB. Üzerinde 'SON KESİT — YEDEK' yazıyor. İçerik henüz açılmamış gibi görünüyor.",
+      discoveryLocation: "Kitaplık arkası",
+      relatedSuspectIds: ["suspect-ayse"],
+      isRedHerring: false,
+    },
+    {
+      id: "evidence-bar-receipt",
+      name: "Bar fişi",
+      description:
+        "Baran'ın ceket cebinden çıkan Caferağa bar fişi. Saat 01:40. Tek başına kanıtlamaz; ama geceyi orada geçirdiğini iddia ediyor.",
+      discoveryLocation: "Baran Kılıç'ın ceket cebi (ifade sırasında)",
+      relatedSuspectIds: ["suspect-baran"],
       isRedHerring: true,
-    },
-    {
-      id: "evidence-c4-buyer-note",
-      name: "Yırtık alıcı notu",
-      description:
-        "Cem'in dolabında yarım yırtık not: 'Parça elinde olsun — sahte ihracat belgesi hazır, gece teslim.' Tarih o geceye işaret ediyor.",
-      discoveryLocation: "Bekçi dolabı (iç cep)",
-      relatedSuspectIds: ["suspect-c4-cem"],
-      isRedHerring: false,
     },
   ],
 
   clues: [
     {
-      id: "clue-c4-night-window",
-      text: "Hırsızlık 21:15 kilit ile sabah keşfi arasında; nöbet defterindeki 22:10 satırı kritik pencereyi işaret ediyor.",
-      relatedEvidenceIds: ["evidence-c4-shift-log"],
-      relatedSuspectIds: ["suspect-c4-cem", "suspect-c4-aylin"],
+      id: "clue-second-cup",
+      text: "Mutfak lavabosunda ikinci bir fincanın ıslak tabanı var — evde yalnız değildi.",
+      relatedEvidenceIds: ["evidence-cup"],
+      relatedSuspectIds: ["suspect-ayse"],
     },
     {
-      id: "clue-c4-dust-vs-gate",
-      text: "Cem yalnızca dış kapıda kaldığını söylüyor; botundaki atölye çini tozu bunu zora sokuyor.",
-      relatedEvidenceIds: ["evidence-c4-tile-dust"],
-      relatedSuspectIds: ["suspect-c4-cem"],
+      id: "clue-usb-password",
+      text: "USB'nin yanında yırtık bir kâğıt parçası: 'sponsor_2025_ayse'. Dosya birini hedef alıyor olabilir.",
+      relatedEvidenceIds: ["evidence-usb"],
+      relatedSuspectIds: ["suspect-ayse"],
     },
     {
-      id: "clue-c4-badge-shadow",
-      text: "Ziyaretçi kartı Bahar'ı gölgede bırakır; kartın düşmüş olması gece dönüşü kanıtlamaz.",
-      relatedEvidenceIds: ["evidence-c4-visitor-badge"],
-      relatedSuspectIds: ["suspect-c4-bahar"],
+      id: "clue-call-not-killer",
+      text: "03:17 araması cinayet anından sonra geliyor. Arayan, öldüren olmak zorunda değil — belki yanlış zamanda doğru numarayı çevirdi.",
+      relatedEvidenceIds: ["evidence-phone"],
+      relatedSuspectIds: ["suspect-selim"],
+    },
+    {
+      id: "clue-shoe-size",
+      text: "Islak izler 38 numara civarı bir tabana uyuyor. Baran 43 numara giyiyor.",
+      relatedEvidenceIds: ["evidence-wet-prints"],
+      relatedSuspectIds: ["suspect-ayse", "suspect-baran"],
     },
   ],
 
   statements: [
     {
-      id: "stmt-c4-cem-1",
-      suspectId: "suspect-c4-cem",
-      text: "21:30'dan sonra yalnızca dış kapı nöbetindeydim. Atölyeye hiç girmedim; 22:00'den sonra içeride değildim.",
+      id: "stmt-ayse-1",
+      suspectId: "suspect-ayse",
+      text: "O gece Kerem'i aramadım ve evine hiç gitmedim. Saat ikiden sonra uyudum.",
     },
     {
-      id: "stmt-c4-cem-2",
-      suspectId: "suspect-c4-cem",
-      text: "Çini paneline ve dolaba dokunmadım. Üzerimde pigment veya atölye tozu olamaz.",
+      id: "stmt-ayse-2",
+      suspectId: "suspect-ayse",
+      text: "Sponsorluk hesaplarında bir usulsüzlük yoktu. Kerem abartıyordu.",
     },
     {
-      id: "stmt-c4-bahar-1",
-      suspectId: "suspect-c4-bahar",
-      text: "21:00'de fotoğrafları bitirip ayrıldım. Gece atölyeye geri dönmedim.",
+      id: "stmt-baran-1",
+      suspectId: "suspect-baran",
+      text: "Gece bar daydım. Kerem'in kapısına uğramadım; tartışmalarımız ses üzerinden olurdu.",
     },
     {
-      id: "stmt-c4-bahar-2",
-      suspectId: "suspect-c4-bahar",
-      text: "Kartımı çıkarken düşürmüş olabilirim; sabah duyunca şok oldum.",
+      id: "stmt-baran-2",
+      suspectId: "suspect-baran",
+      text: "Ondan 8000 lira alacağım vardı ama öldürecek kadar değil. Sabah kapısını aralık görünce polis çağırdım.",
     },
     {
-      id: "stmt-c4-aylin-1",
-      suspectId: "suspect-c4-aylin",
-      text: "21:15'te dolabı kilitledim, kadife yastığı yerinde bıraktım ve çıktım.",
+      id: "stmt-selim-1",
+      suspectId: "suspect-selim",
+      text: "Ankara'daydım. Kerem'i 03:17'de aradım çünkü paramı ne zaman ödeyeceğini soracaktım; açmadı.",
     },
     {
-      id: "stmt-c4-aylin-2",
-      suspectId: "suspect-c4-aylin",
-      text: "Sabah kilidin zorlandığını gördüm. Gece anahtar bende değildi; yedek anahtar bekçi kulübesinde durur.",
+      id: "stmt-selim-2",
+      suspectId: "suspect-selim",
+      text: "Projenin batacağını biliyordum ama ona zarar vermek istemezdim. O benim kuzenimdi.",
     },
   ],
 
   canon: {
-    victimName: "Leyla Demir",
+    victimName: "Kerem Aslan",
     victimDescription:
-      "42 yaşında restorasyon atölyesi sorumlusu. Gece kaybolan parça, sergilenecek nadir Selçuklu çini panelinin kritik bir bölümüydü.",
-    killerSuspectId: "suspect-c4-cem",
+      "34 yaşında, Kadıköy'de yaşayan bağımsız belgeselci. Son projesi, eski iş ortağının sponsorluk usulsüzlüklerini ortaya çıkaracaktı.",
+    killerSuspectId: "suspect-ayse",
     motive:
-      "Cem Yıldırım, karaborsa alıcıya satmak ve sahte ihracat belgesi düzenletebilmek için Selçuklu çini parçasını çaldı. Borç baskısı altında parçayı gece teslim etmesi gerekiyordu.",
+      "Ayşe Demir, Kerem'in USB'de sakladığı sponsorluk usulsüzlüğü kanıtlarını yayınlamasını engellemek için onu öldürdü. Açığa çıkması kariyerini ve özgürlüğünü bitirecekti.",
     methodOfCrime:
-      "21:15 kilidinden sonra Cem 22:10'da atölyeye girdi (nöbet defterine yazdı), yedek anahtarla dolabı zorladı/açtı, çini parçasını aldı. Eldiveni lavaboya bıraktı; botunda çini tozu kaldı. Bahar'ın gündüz düşen kartı yanıltıcı kaldı.",
+      "Ayşe daireye yağmurda girdi, çay eşliğinde kısa bir yüzleşme yaşandı; ardından Kerem'i boğarak öldürdü. Ayrılırken telefon 03:17'de Selim'den çaldı — Ayşe yanıtlamadı ve kaçtı.",
     realTimeline: [
       {
-        id: "tl-c4-1",
+        id: "tl-1",
         order: 1,
-        timeLabel: "20:40",
+        timeLabel: "02:35",
         description:
-          "Bahar Elçi envanter fotoğraflarını tamamlar; Aylin dolap hazırlığına yardım eder.",
-        involvedSuspectIds: ["suspect-c4-bahar", "suspect-c4-aylin"],
-        isPubliclyKnown: true,
+          "Ayşe Demir yağmurda binaya girer. Ayakkabıları ıslaktır.",
+        involvedSuspectIds: ["suspect-ayse"],
+        isPubliclyKnown: false,
       },
       {
-        id: "tl-c4-2",
+        id: "tl-2",
         order: 2,
-        timeLabel: "21:00",
+        timeLabel: "02:40–03:00",
         description:
-          "Bahar atölyeden ayrılır. Ziyaretçi kartı eşikte düşer (fark edilmez).",
-        involvedSuspectIds: ["suspect-c4-bahar"],
-        isPubliclyKnown: true,
+          "Kerem ve Ayşe salonda yüzleşir. İkinci fincan çay konur; tartışma büyür. Kerem USB'deki dosyayı yayınlamakla tehdit eder.",
+        involvedSuspectIds: ["suspect-ayse"],
+        isPubliclyKnown: false,
       },
       {
-        id: "tl-c4-3",
+        id: "tl-3",
         order: 3,
-        timeLabel: "21:15",
+        timeLabel: "03:10",
         description:
-          "Aylin dolabı kilitler, parçayı kadife yastığa yerleştirir ve evine gider.",
-        involvedSuspectIds: ["suspect-c4-aylin"],
+          "Ayşe Kerem'i boğarak öldürür. Sandalye devrilir, fincan kırılır.",
+        involvedSuspectIds: ["suspect-ayse"],
+        isPubliclyKnown: false,
+      },
+      {
+        id: "tl-4",
+        order: 4,
+        timeLabel: "03:17",
+        description:
+          "Selim Arslan Ankara'dan Kerem'i arar. Telefon çalar, kimse açmaz. Ayşe panikle daireden ayrılır.",
+        involvedSuspectIds: ["suspect-selim", "suspect-ayse"],
         isPubliclyKnown: true,
       },
       {
-        id: "tl-c4-4",
-        order: 4,
-        timeLabel: "22:10",
-        description:
-          "Cem atölyeye girer, dolabı açar, çini parçasını alır. Nöbet defterine iç kontrol yazar.",
-        involvedSuspectIds: ["suspect-c4-cem"],
-        isPubliclyKnown: false,
-      },
-      {
-        id: "tl-c4-5",
+        id: "tl-5",
         order: 5,
-        timeLabel: "22:20",
+        timeLabel: "08:20",
         description:
-          "Cem lavaboya pigmentli eldiveni bırakır, dış nöbete döner. Parça üzerinde gizlidir.",
-        involvedSuspectIds: ["suspect-c4-cem"],
-        isPubliclyKnown: false,
-      },
-      {
-        id: "tl-c4-6",
-        order: 6,
-        timeLabel: "08:05 (ertesi sabah)",
-        description:
-          "Aylin açılışta zorlanmış kilit ve boş yastığı görür; Leyla Demir polisi arar.",
-        involvedSuspectIds: ["suspect-c4-aylin"],
+          "Baran Kılıç üst katın kapısını aralık görünce polis çağırır. Ceset resmi olarak bulunur.",
+        involvedSuspectIds: ["suspect-baran"],
         isPubliclyKnown: true,
       },
     ],
     trueStatementIds: [
-      "stmt-c4-bahar-1",
-      "stmt-c4-bahar-2",
-      "stmt-c4-aylin-1",
-      "stmt-c4-aylin-2",
+      "stmt-baran-1",
+      "stmt-baran-2",
+      "stmt-selim-1",
+      "stmt-selim-2",
     ],
-    falseStatementIds: ["stmt-c4-cem-1", "stmt-c4-cem-2"],
+    falseStatementIds: ["stmt-ayse-1", "stmt-ayse-2"],
     criticalEvidenceIds: [
-      "evidence-c4-shift-log",
-      "evidence-c4-tile-dust",
-      "evidence-c4-pigment-glove",
-      "evidence-c4-buyer-note",
+      "evidence-cup",
+      "evidence-wet-prints",
+      "evidence-usb",
+      "evidence-phone",
     ],
   },
 
   endings: [
     {
-      id: "ending-c4-correct",
+      id: "ending-correct",
       type: "dogru_suclama",
-      title: "Nöbet Satırı",
+      title: "03:17'nin Gölgesi",
       description:
-        "Cem Yıldırım suçlanır. 22:10 defter kaydı ve çini tozu, dış kapıda kaldığı yalanını çürütür. Parça hırsızlığı kapanır.",
-      requiredSuspectId: "suspect-c4-cem",
+        "Ayşe Demir suçlanır. USB'deki kayıtlar ve olay yerindeki izler, 03:17 aramasının katilden değil kuzeninden geldiğini ortaya koyar. Gerçek, yağmurlu Kadıköy gecesinde kilitlenir.",
+      requiredSuspectId: "suspect-ayse",
       requiredEvidenceIds: [
-        "evidence-c4-shift-log",
-        "evidence-c4-tile-dust",
+        "evidence-usb",
+        "evidence-cup",
+        "evidence-wet-prints",
       ],
     },
     {
-      id: "ending-c4-wrong",
+      id: "ending-wrong",
       type: "yanlis_suclama",
-      title: "Yanlış Kart",
+      title: "Yanlış Numara",
       description:
-        "Suç Bahar Elçi'ye yıkılır. Düşmüş ziyaretçi kartı gölge olur; gerçek hırsız nöbet kulübesinde kalır.",
-      requiredEvidenceIds: ["evidence-c4-visitor-badge"],
+        "Suç Selim'e veya Baran'a yıkılır. 03:17 araması yanıltıcı bir gölge olur; gerçek katil kayıplara karışır. Dosya kapanır — ama hikâye bitmez.",
+      requiredEvidenceIds: ["evidence-phone"],
     },
     {
-      id: "ending-c4-perfect",
+      id: "ending-perfect",
       type: "mukemmel_cozum",
-      title: "Kobalt İzi",
+      title: "Kesim Tamam",
       description:
-        "Cem doğru suçlanır; nöbet kaydı, çini tozu, pigmentli eldiven ve alıcı notu birleşir. Motivasyon netleşir, Bahar ile Aylin aklanır.",
-      requiredSuspectId: "suspect-c4-cem",
+        "Ayşe doğru suçlanır; tüm kritik kanıtlar ve gizli ipuçları birleştirilir. USB açılır, zaman çizelgesi netleşir, 03:17'nin masum bir arama olduğu kanıtlanır. Vaka sinematik bir kapanışla sona erer.",
+      requiredSuspectId: "suspect-ayse",
       requiredEvidenceIds: [
-        "evidence-c4-shift-log",
-        "evidence-c4-tile-dust",
-        "evidence-c4-pigment-glove",
-        "evidence-c4-buyer-note",
+        "evidence-phone",
+        "evidence-cup",
+        "evidence-wet-prints",
+        "evidence-usb",
       ],
     },
   ],
@@ -304,7 +297,7 @@ export const case004: Case = {
     notes: "",
     accusedSuspectId: null,
     unlockedEndingId: null,
-    startedAt: "2026-09-16T14:00:00.000Z",
-    updatedAt: "2026-09-16T14:00:00.000Z",
+    startedAt: "2026-09-14T00:00:00.000Z",
+    updatedAt: "2026-09-14T00:00:00.000Z",
   },
 };

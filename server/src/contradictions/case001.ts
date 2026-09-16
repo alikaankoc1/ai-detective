@@ -1,45 +1,33 @@
 import type { ContradictionDefinition } from "./types";
 
 /**
- * Case #001 — tanımlı çelişkiler.
+ * Case #001 — tanımlı çelişkiler (kolay vaka: 2 net çelişki).
  * Kaynak: Case Engine ifadeleri + deliller (Gemini üretmez).
- * Açıklamalar oyuncuya güvenli; katil/motivasyon ifşa edilmez.
+ * Açıklamalar oyuncuya güvenli; suçlu/motivasyon ifşa edilmez.
  */
 export const case001Contradictions: readonly ContradictionDefinition[] = [
   {
-    id: "contradiction-ayse-cup",
+    id: "contradiction-deniz-prints",
     caseId: "case-001",
-    suspectId: "suspect-ayse",
-    relatedEvidenceId: "evidence-cup",
+    suspectId: "suspect-deniz",
+    relatedEvidenceId: "evidence-c2-hall-prints",
     severity: "high",
-    relatedStatementIds: ["stmt-ayse-1"],
+    relatedStatementIds: ["stmt-deniz-1"],
     contradictionDescription:
-      "Ayşe Demir o gece Kerem'in evine hiç gitmediğini söylüyor; ancak kırık fincan ve ikinci dudak izi, dairede başka birinin çay içtiğini gösteriyor.",
+      "Deniz Acar anahtar askısına hiç yaklaşmadığını ve yağmurdan ıslanmadığını söylüyor; ancak askının önündeki ıslak ayak izleri holde birinin durduğunu gösteriyor.",
     internalNote:
-      "Canon: Ayşe 02:40–03:00 yüzleşmesinde çay içti. stmt-ayse-1 yalan.",
+      "Canon: Deniz 19:20–19:25 askıdan anahtarı aldı; ayakkabıları ıslaktı. stmt-deniz-1 yalan.",
   },
   {
-    id: "contradiction-ayse-prints",
+    id: "contradiction-deniz-debt",
     caseId: "case-001",
-    suspectId: "suspect-ayse",
-    relatedEvidenceId: "evidence-wet-prints",
-    severity: "high",
-    relatedStatementIds: ["stmt-ayse-1"],
+    suspectId: "suspect-deniz",
+    relatedEvidenceId: "evidence-debt-sms",
+    severity: "medium",
+    relatedStatementIds: ["stmt-deniz-2"],
     contradictionDescription:
-      "Ayşe saat ikiden sonra evinde uyuduğunu iddia ediyor; olay yerindeki ıslak ayakkabı izleri ise yağmurdan gelen birinin daireye girdiğini ve izlerin 38 numara civarı olduğunu gösteriyor.",
+      "Deniz Acar parayla ilgili sıkıntısı olmadığını söylüyor; telefonundaki vadesi geçmiş borç SMS'i ise tam tersini gösteriyor.",
     internalNote:
-      "Canon: Ayşe 02:35'te ıslak ayakkabıyla girdi. Baran 43 numara — izler Ayşe ile uyumlu.",
-  },
-  {
-    id: "contradiction-ayse-usb",
-    caseId: "case-001",
-    suspectId: "suspect-ayse",
-    relatedEvidenceId: "evidence-usb",
-    severity: "critical",
-    relatedStatementIds: ["stmt-ayse-2"],
-    contradictionDescription:
-      "Ayşe sponsorluk hesaplarında usulsüzlük olmadığını söylüyor; kitaplık arkasındaki USB ve 'sponsor_2025_ayse' notu ise tam tersine işaret ediyor.",
-    internalNote:
-      "Canon: USB usulsüzlük kanıtı; motivasyonun kaynağı. stmt-ayse-2 yalan. Oyuncuya katil denmez.",
+      "Canon: Motivasyon borç baskısı. stmt-deniz-2 yalan. Oyuncuya suçlu denmez.",
   },
 ];

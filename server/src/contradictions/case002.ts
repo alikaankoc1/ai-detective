@@ -1,33 +1,32 @@
 import type { ContradictionDefinition } from "./types";
 
 /**
- * Case #002 — tanımlı çelişkiler (kolay vaka: 2 net çelişki).
+ * Case #002 — tanımlı çelişkiler (zaman çizelgesi odaklı).
  * Kaynak: Case Engine ifadeleri + deliller (Gemini üretmez).
- * Açıklamalar oyuncuya güvenli; suçlu/motivasyon ifşa edilmez.
  */
 export const case002Contradictions: readonly ContradictionDefinition[] = [
   {
-    id: "contradiction-deniz-prints",
+    id: "contradiction-c3-mert-ticket",
     caseId: "case-002",
-    suspectId: "suspect-deniz",
-    relatedEvidenceId: "evidence-c2-hall-prints",
+    suspectId: "suspect-c3-mert",
+    relatedEvidenceId: "evidence-c3-tram-ticket",
     severity: "high",
-    relatedStatementIds: ["stmt-deniz-1"],
+    relatedStatementIds: ["stmt-c3-mert-1"],
     contradictionDescription:
-      "Deniz Acar anahtar askısına hiç yaklaşmadığını ve yağmurdan ıslanmadığını söylüyor; ancak askının önündeki ıslak ayak izleri holde birinin durduğunu gösteriyor.",
+      "Mert Kaya 21:40'tan sonra ayrıldığını ve son tramvaya binmediğini söylüyor; Odunpazarı durağındaki 22:05 damgalı EsTram bileti ise geç bir binişe işaret ediyor.",
     internalNote:
-      "Canon: Deniz 19:20–19:25 askıdan anahtarı aldı; ayakkabıları ıslaktı. stmt-deniz-1 yalan.",
+      "Canon: Mert 22:05 tramvayına bindi. stmt-c3-mert-1 yalan. Zaman çizelgesi çelişkisi.",
   },
   {
-    id: "contradiction-deniz-debt",
+    id: "contradiction-c3-mert-sleeve",
     caseId: "case-002",
-    suspectId: "suspect-deniz",
-    relatedEvidenceId: "evidence-debt-sms",
-    severity: "medium",
-    relatedStatementIds: ["stmt-deniz-2"],
+    suspectId: "suspect-c3-mert",
+    relatedEvidenceId: "evidence-c3-usb-sleeve",
+    severity: "critical",
+    relatedStatementIds: ["stmt-c3-mert-2"],
     contradictionDescription:
-      "Deniz Acar parayla ilgili sıkıntısı olmadığını söylüyor; telefonundaki vadesi geçmiş borç SMS'i ise tam tersini gösteriyor.",
+      "Mert Kaya USB'ye ve şirket kılıfına hiç dokunmadığını söylüyor; yağmurluk cebindeki boş, nemli USB kılıfı bununla çelişiyor.",
     internalNote:
-      "Canon: Motivasyon borç baskısı. stmt-deniz-2 yalan. Oyuncuya suçlu denmez.",
+      "Canon: Mert USB'yi aldı, boş kılıf cebinde kaldı. stmt-c3-mert-2 yalan.",
   },
 ];

@@ -1,44 +1,45 @@
 import type { ContradictionDefinition } from "./types";
 
 /**
- * Case #004 — tanımlı çelişkiler (nöbet / iz odaklı).
+ * Case #004 — tanımlı çelişkiler.
  * Kaynak: Case Engine ifadeleri + deliller (Gemini üretmez).
+ * Açıklamalar oyuncuya güvenli; katil/motivasyon ifşa edilmez.
  */
 export const case004Contradictions: readonly ContradictionDefinition[] = [
   {
-    id: "contradiction-c4-cem-log",
+    id: "contradiction-ayse-cup",
     caseId: "case-004",
-    suspectId: "suspect-c4-cem",
-    relatedEvidenceId: "evidence-c4-shift-log",
+    suspectId: "suspect-ayse",
+    relatedEvidenceId: "evidence-cup",
     severity: "high",
-    relatedStatementIds: ["stmt-c4-cem-1"],
+    relatedStatementIds: ["stmt-ayse-1"],
     contradictionDescription:
-      "Cem Yıldırım 21:30'dan sonra yalnızca dış kapıda kaldığını ve atölyeye girmediğini söylüyor; nöbet defterindeki 22:10 'atölye iç kontrol' satırı bununla çelişiyor.",
+      "Ayşe Demir o gece Kerem'in evine hiç gitmediğini söylüyor; ancak kırık fincan ve ikinci dudak izi, dairede başka birinin çay içtiğini gösteriyor.",
     internalNote:
-      "Canon: Cem 22:10'da atölyeye girdi. stmt-c4-cem-1 yalan. Zaman/mekân çelişkisi.",
+      "Canon: Ayşe 02:40–03:00 yüzleşmesinde çay içti. stmt-ayse-1 yalan.",
   },
   {
-    id: "contradiction-c4-cem-dust",
+    id: "contradiction-ayse-prints",
     caseId: "case-004",
-    suspectId: "suspect-c4-cem",
-    relatedEvidenceId: "evidence-c4-tile-dust",
+    suspectId: "suspect-ayse",
+    relatedEvidenceId: "evidence-wet-prints",
     severity: "high",
-    relatedStatementIds: ["stmt-c4-cem-1", "stmt-c4-cem-2"],
+    relatedStatementIds: ["stmt-ayse-1"],
     contradictionDescription:
-      "Cem Yıldırım atölyeye girmediğini ve üzerinde toz olamayacağını söylüyor; bot tabanındaki atölyeye özgü mavi çini tozu aksini gösteriyor.",
+      "Ayşe saat ikiden sonra evinde uyuduğunu iddia ediyor; olay yerindeki ıslak ayakkabı izleri ise yağmurdan gelen birinin daireye girdiğini ve izlerin 38 numara civarı olduğunu gösteriyor.",
     internalNote:
-      "Canon: Cem atölye zemininde yürüdü. Çini tozu fiziksel çelişki.",
+      "Canon: Ayşe 02:35'te ıslak ayakkabıyla girdi. Baran 43 numara — izler Ayşe ile uyumlu.",
   },
   {
-    id: "contradiction-c4-cem-glove",
+    id: "contradiction-ayse-usb",
     caseId: "case-004",
-    suspectId: "suspect-c4-cem",
-    relatedEvidenceId: "evidence-c4-pigment-glove",
+    suspectId: "suspect-ayse",
+    relatedEvidenceId: "evidence-usb",
     severity: "critical",
-    relatedStatementIds: ["stmt-c4-cem-2"],
+    relatedStatementIds: ["stmt-ayse-2"],
     contradictionDescription:
-      "Cem Yıldırım çiniye dokunmadığını söylüyor; lavabodaki pigment lekeli, aynı seri nöbet eldiveni bununla çelişiyor.",
+      "Ayşe sponsorluk hesaplarında usulsüzlük olmadığını söylüyor; kitaplık arkasındaki USB ve 'sponsor_2025_ayse' notu ise tam tersine işaret ediyor.",
     internalNote:
-      "Canon: Cem eldivenle parçayı aldı. stmt-c4-cem-2 yalan.",
+      "Canon: USB usulsüzlük kanıtı; motivasyonun kaynağı. stmt-ayse-2 yalan. Oyuncuya katil denmez.",
   },
 ];

@@ -1,288 +1,229 @@
 import type { Case } from "../../../src/types/case";
 
 /**
- * Örnek vaka: "03:17'deki Telefon"
+ * Case #001 — "Kayıp Anahtar"
+ * Kolay giriş vakası: 2 şüpheli, az delil, net çelişki.
  * Gerçekler `canon` içinde kilitlidir (`factsLocked: true`).
  */
 export const case001: Case = {
   meta: {
     id: "case-001",
-    title: "03:17'deki Telefon",
+    title: "Kayıp Anahtar",
     summary:
-      "Kadıköy'de bir gece, kurbanın telefonu 03:17'de çalar. Sabah ise cesedi bulunur. Üç şüpheli, bir sessiz arama ve karanlık bir sır.",
+      "Kadıköy'de yağmurlu bir akşam, apartman yöneticisi Murat Yalçın'ın kasa anahtarı kaybolur. Dairede yalnızca iki kişi vardır — ve küçük bir ıslak iz yalanı ele verir.",
     locale: "tr",
     schemaVersion: 1,
-    createdAt: "2026-09-14T00:00:00.000Z",
+    createdAt: "2026-09-16T00:00:00.000Z",
     factsLocked: true,
   },
 
   story:
-    "İstanbul'un Kadıköy yakasında, Moda'ya inen dar bir sokağın üst katında yaşayan bağımsız belgeselci Kerem Aslan, son günlerde kimsenin bilmesini istemediği bir kayıt üzerinde çalışıyordu. Komşular gece yarısından sonra yüksek ses duymadıklarını söylüyor; ama telefon kayıtları başka bir şey fısıldıyor: 03:17'de gelen, yanıtlanmayan bir arama. Sabah kapısı aralık bulunan dairede Kerem yerde yatıyor, yanında kırık bir fincan ve hâlâ titreşen ekran. Yağmur camlara vuruyor. Şehir uyanmadan önce, bu vakanın karanlığı çoktan yerleşmiş durumda.",
+    "Kadıköy'de sıradan bir apartmanın zemin katındaki yönetici dairesi, yağmurlu bir akşam loş ışıklarla aydınlanır. Apartman yöneticisi Murat Yalçın, kiracı aidatlarını sakladığı küçük kasasının anahtarını her zamanki yerinde — giriş holündeki askıda — arar. Askı boştur. Anahtarın kaybolduğu saatte dairede yalnızca iki kişi vardır: temizlik görevlisi Deniz Acar ve üst kat komşusu Emre Yıldız. Hırsızlık basit görünür. Ama askının önündeki ıslak ayak izi, şüphelilerden birinin sözünü bozar.",
 
   scene: {
-    name: "Kerem Aslan'ın dairesi — Kadıköy, Moda",
+    name: "Murat Yalçın'ın yönetici dairesi — Kadıköy",
     description:
-      "Eski bir apartmanın üçüncü katında, tek odalı bir stüdyo daire. Perdeler yarı kapalı, masa üstü kayıt cihazları ve notlarla dolu. Işık loş; yalnızca mutfak tezgâhındaki lambadan sarı bir huzme sızıyor.",
+      "Küçük, düzenli bir zemin kat dairesi. Salon sade mobilyalı; giriş holünde ahşap bir anahtar askısı asılı. Yağmur camlara vuruyor; holün tahta zemini yer yer nemli.",
     details:
-      "Giriş holünde ıslak ayakkabı izleri var. Salonun ortasında ters dönmüş bir sandalye. Balkon kapısı kilitli. Cadde tarafındaki pencere aralık; uzaktan vapur düdüğü duyuluyor.",
+      "Askı boş. Askının hemen önünde kısa bir ıslak ayak izi dizisi var; izler salona uzanmıyor. Salonda iki çay fincanı duruyor. Kasa, çalışma odasındaki dolabın içinde kilitli — anahtar olmadan açılamaz.",
   },
 
   time: {
-    dateLabel: "14 Mart 2026, Cumartesi'yi Pazar'a bağlayan gece",
-    timeOfCrime: "03:10 civarı",
+    dateLabel: "16 Eylül 2026, Çarşamba akşamı",
+    timeOfCrime: "19:20–19:25 civarı",
     atmosphere:
-      "Karanlık, gizemli, sinematik — yağmurlu Kadıköy gecesi, ıslak sokaklar, uzak sirenler",
+      "Yağmurlu Kadıköy akşamı — ıslak kaldırımlar, loş hol, apartman sessizliği",
   },
 
   suspects: [
     {
-      id: "suspect-ayse",
-      name: "Ayşe Demir",
-      age: 31,
-      occupation: "Yapımcı / eski iş ortağı",
+      id: "suspect-deniz",
+      name: "Deniz Acar",
+      age: 29,
+      occupation: "Apartman temizlik görevlisi",
       biography:
-        "Kerem'le iki yıldır aynı yapım şirketinde çalışmış, üç ay önce yollarını ayırmış sert mizaçlı bir yapımcı. Sponsorluk sözleşmelerini o yönetirdi. Geceye damgasını vuran soğukkanlılığıyla tanınır.",
-      relationshipToVictim: "Eski iş ortağı; aralarında bitmemiş bir hesap ve gizli bir dosya vardı.",
+        "Binada haftada üç gün çalışan, sessiz ve dikkatli bir temizlik görevlisi. Son haftalarda para konusunda gergin görünüyor; ama kimseyle sorun çıkarmıyor.",
+      relationshipToVictim:
+        "Murat'ın çalışanı; daireye ve yönetici rutinlerine aşina.",
       claimedAlibi:
-        "O gece evde yalnızdım. Saat ikiden sonra uyudum, sabaha kadar kimseyle konuşmadım.",
+        "Sadece salonda oturdum. Anahtar askısına hiç yaklaşmadım, hol'e uğramadım. Yağmurdan ıslanmadım.",
     },
     {
-      id: "suspect-baran",
-      name: "Baran Kılıç",
-      age: 36,
-      occupation: "Komşu / müzisyen",
+      id: "suspect-emre",
+      name: "Emre Yıldız",
+      age: 41,
+      occupation: "Üst kat komşusu / muhasebeci",
       biography:
-        "Alt kattaki dairede yaşayan bar müzisyeni. Kerem'le sık sık geç saatlere kadar tartışırlardı; ses yalıtımı zayıf binada herkes bunu duyardı. Borç meseleleri ve gürültü şikayetleriyle bilinen gergin bir komşuluk.",
-      relationshipToVictim: "Alt komşu; gürültü ve borç yüzünden sürekli tartışıyorlardı.",
+        "Üçüncü kattaki dairede yaşayan düzenli bir muhasebeci. Aidat ve tadilat konularında Murat'la sık konuşur. Sakin, net konuşur.",
+      relationshipToVictim:
+        "Komşu; o akşam aidat ve çatı tamiri için uğramıştı.",
       claimedAlibi:
-        "Caferağa'daki barda çalıyordum. Setim gece yarısından sonra bitti, sonra arkadaşlarla kaldım.",
-    },
-    {
-      id: "suspect-selim",
-      name: "Selim Arslan",
-      age: 34,
-      occupation: "Kuzen / yatırımcı",
-      biography:
-        "Kerem'in kuzeni. Belgesel projesine para yatırmış, son haftalarda geri ödeme konusunda baskı yapmaya başlamıştı. Düzenli, kontrollü konuşur; duygularını belli etmez.",
-      relationshipToVictim: "Kuzen ve proje yatırımcısı; alacak-verecek gerginliği vardı.",
-      claimedAlibi:
-        "Ankara'daydım. Gece uçuşum vardı, sabah erken toplantım için otelde kaldım.",
+        "Murat'la salonda oturup aidat konuştuk. Anahtarı görmedim; askıya hiç gitmedim.",
     },
   ],
 
   evidence: [
     {
-      id: "evidence-phone",
-      name: "Kilit ekranındaki 03:17 araması",
+      id: "evidence-key-hook",
+      name: "Boş anahtar askısı",
       description:
-        "Kerem'in telefonunda 03:17'de Selim Arslan'dan gelen yanıtsız bir arama kaydı var. Arama 18 saniye çalmış, açılmamış.",
-      discoveryLocation: "Kurbanın sağ elinin yanında, halının üzerinde",
-      relatedSuspectIds: ["suspect-selim"],
+        "Giriş holündeki ahşap askıda kasa anahtarı yok. Askının çengeli boş; anahtar her zaman burada asılı dururmuş.",
+      discoveryLocation: "Daire giriş holü",
+      relatedSuspectIds: ["suspect-deniz", "suspect-emre"],
       isRedHerring: false,
     },
     {
-      id: "evidence-cup",
-      name: "Kırık fincan ve soğuk çay",
+      id: "evidence-c2-hall-prints",
+      name: "Askı önündeki ıslak ayak izleri",
       description:
-        "Salon zemininde kırık bir porselen fincan. İçinde yarım kalmış adaçayı. Kenarında ikinci bir dudak izine benzer leke var.",
-      discoveryLocation: "Salon ortası, ters dönmüş sandalyenin yanında",
-      relatedSuspectIds: ["suspect-ayse"],
+        "Anahtar askısının hemen önünde, yağmurdan ıslanmış kısa ayak izleri var. İzler askıya kadar geliyor; salona uzanmıyor.",
+      discoveryLocation: "Giriş holü, anahtar askısının önü",
+      relatedSuspectIds: ["suspect-deniz"],
       isRedHerring: false,
     },
     {
-      id: "evidence-wet-prints",
-      name: "Islak ayakkabı izleri",
+      id: "evidence-debt-sms",
+      name: "Vadesi geçmiş borç SMS'i",
       description:
-        "Giriş holünden salona doğru uzanan, yağmurdan ıslanmış ayakkabı tabanı izleri. İzler bir noktada duruyor; balkona gitmiyor.",
-      discoveryLocation: "Daire girişi ve salon halısı",
-      relatedSuspectIds: ["suspect-ayse", "suspect-baran"],
+        "Deniz'in telefonunda bankadan gelen kısa mesaj: 'Kart borcunuzun son ödeme tarihi geçti. Acil ödeme bekleniyor.'",
+      discoveryLocation: "Deniz Acar'ın çantası (ifade sırasında)",
+      relatedSuspectIds: ["suspect-deniz"],
       isRedHerring: false,
     },
     {
-      id: "evidence-usb",
-      name: "Gizli USB bellek",
+      id: "evidence-tea-cups",
+      name: "Salondaki iki çay fincanı",
       description:
-        "Kitaplığın arkasında bantlanmış küçük bir USB. Üzerinde 'SON KESİT — YEDEK' yazıyor. İçerik henüz açılmamış gibi görünüyor.",
-      discoveryLocation: "Kitaplık arkası",
-      relatedSuspectIds: ["suspect-ayse"],
-      isRedHerring: false,
-    },
-    {
-      id: "evidence-bar-receipt",
-      name: "Bar fişi",
-      description:
-        "Baran'ın ceket cebinden çıkan Caferağa bar fişi. Saat 01:40. Tek başına kanıtlamaz; ama geceyi orada geçirdiğini iddia ediyor.",
-      discoveryLocation: "Baran Kılıç'ın ceket cebi (ifade sırasında)",
-      relatedSuspectIds: ["suspect-baran"],
+        "Salondaki sehpada iki fincan çay duruyor. Biri Murat'a, diğeri Emre'ye ait gibi; konuşmanın salonda geçtiğini destekliyor.",
+      discoveryLocation: "Salon sehpası",
+      relatedSuspectIds: ["suspect-emre"],
       isRedHerring: true,
     },
   ],
 
   clues: [
     {
-      id: "clue-second-cup",
-      text: "Mutfak lavabosunda ikinci bir fincanın ıslak tabanı var — evde yalnız değildi.",
-      relatedEvidenceIds: ["evidence-cup"],
-      relatedSuspectIds: ["suspect-ayse"],
+      id: "clue-prints-stop",
+      text: "Islak izler yalnızca askıya kadar geliyor — salona değil. Anahtarı alan kişi holde kısa durmuş.",
+      relatedEvidenceIds: ["evidence-c2-hall-prints", "evidence-key-hook"],
+      relatedSuspectIds: ["suspect-deniz"],
     },
     {
-      id: "clue-usb-password",
-      text: "USB'nin yanında yırtık bir kâğıt parçası: 'sponsor_2025_ayse'. Dosya birini hedef alıyor olabilir.",
-      relatedEvidenceIds: ["evidence-usb"],
-      relatedSuspectIds: ["suspect-ayse"],
-    },
-    {
-      id: "clue-call-not-killer",
-      text: "03:17 araması cinayet anından sonra geliyor. Arayan, öldüren olmak zorunda değil — belki yanlış zamanda doğru numarayı çevirdi.",
-      relatedEvidenceIds: ["evidence-phone"],
-      relatedSuspectIds: ["suspect-selim"],
-    },
-    {
-      id: "clue-shoe-size",
-      text: "Islak izler 38 numara civarı bir tabana uyuyor. Baran 43 numara giyiyor.",
-      relatedEvidenceIds: ["evidence-wet-prints"],
-      relatedSuspectIds: ["suspect-ayse", "suspect-baran"],
+      id: "clue-money-pressure",
+      text: "Deniz 'paramla ilgili sıkıntım yok' diyor; telefonundaki borç SMS'i aksini söylüyor.",
+      relatedEvidenceIds: ["evidence-debt-sms"],
+      relatedSuspectIds: ["suspect-deniz"],
     },
   ],
 
   statements: [
     {
-      id: "stmt-ayse-1",
-      suspectId: "suspect-ayse",
-      text: "O gece Kerem'i aramadım ve evine hiç gitmedim. Saat ikiden sonra uyudum.",
+      id: "stmt-deniz-1",
+      suspectId: "suspect-deniz",
+      text: "Anahtar askısına hiç yaklaşmadım. Sadece salonda oturdum, hol'e uğramadım. Yağmurdan da ıslanmadım.",
     },
     {
-      id: "stmt-ayse-2",
-      suspectId: "suspect-ayse",
-      text: "Sponsorluk hesaplarında bir usulsüzlük yoktu. Kerem abartıyordu.",
+      id: "stmt-deniz-2",
+      suspectId: "suspect-deniz",
+      text: "Paramla ilgili bir sıkıntım yok. Kasadaki parayla veya anahtarla işim olmaz.",
     },
     {
-      id: "stmt-baran-1",
-      suspectId: "suspect-baran",
-      text: "Gece bar daydım. Kerem'in kapısına uğramadım; tartışmalarımız ses üzerinden olurdu.",
+      id: "stmt-emre-1",
+      suspectId: "suspect-emre",
+      text: "Murat'la salonda aidat konuştuk. Askıya gitmedim; anahtarı görmedim.",
     },
     {
-      id: "stmt-baran-2",
-      suspectId: "suspect-baran",
-      text: "Ondan 8000 lira alacağım vardı ama öldürecek kadar değil. Sabah kapısını aralık görünce polis çağırdım.",
-    },
-    {
-      id: "stmt-selim-1",
-      suspectId: "suspect-selim",
-      text: "Ankara'daydım. Kerem'i 03:17'de aradım çünkü paramı ne zaman ödeyeceğini soracaktım; açmadı.",
-    },
-    {
-      id: "stmt-selim-2",
-      suspectId: "suspect-selim",
-      text: "Projenin batacağını biliyordum ama ona zarar vermek istemezdim. O benim kuzenimdi.",
+      id: "stmt-emre-2",
+      suspectId: "suspect-emre",
+      text: "Deniz birkaç kez mutfağa ve hol tarafına gitti. Ben salondan kalkmadım.",
     },
   ],
 
   canon: {
-    victimName: "Kerem Aslan",
+    victimName: "Murat Yalçın",
     victimDescription:
-      "34 yaşında, Kadıköy'de yaşayan bağımsız belgeselci. Son projesi, eski iş ortağının sponsorluk usulsüzlüklerini ortaya çıkaracaktı.",
-    killerSuspectId: "suspect-ayse",
+      "48 yaşında apartman yöneticisi. Aidat nakitlerini çalışma odasındaki küçük kasada saklar; kasa anahtarı giriş holündeki askıda durur.",
+    killerSuspectId: "suspect-deniz",
     motive:
-      "Ayşe Demir, Kerem'in USB'de sakladığı sponsorluk usulsüzlüğü kanıtlarını yayınlamasını engellemek için onu öldürdü. Açığa çıkması kariyerini ve özgürlüğünü bitirecekti.",
+      "Deniz Acar, vadesi geçmiş kart borcunu kapatmak için kasadaki aidat nakitine ulaşmak istedi. Anahtarı çalarak kasayı sonra açmayı planladı.",
     methodOfCrime:
-      "Ayşe daireye yağmurda girdi, çay eşliğinde kısa bir yüzleşme yaşandı; ardından Kerem'i boğarak öldürdü. Ayrılırken telefon 03:17'de Selim'den çaldı — Ayşe yanıtlamadı ve kaçtı.",
+      "Yağmurda ıslak ayakkabılarıyla daireye giren Deniz, Murat ve Emre salonda konuşurken holdeki askıdan kasa anahtarını aldı ve izlerini salona uzatmadan geri döndü.",
     realTimeline: [
       {
-        id: "tl-1",
+        id: "tl-c2-1",
         order: 1,
-        timeLabel: "02:35",
+        timeLabel: "19:05",
         description:
-          "Ayşe Demir yağmurda binaya girer. Ayakkabıları ıslaktır.",
-        involvedSuspectIds: ["suspect-ayse"],
-        isPubliclyKnown: false,
+          "Deniz Acar yağmurda binaya gelir. Ayakkabıları ıslaktır; yönetici dairesine girer.",
+        involvedSuspectIds: ["suspect-deniz"],
+        isPubliclyKnown: true,
       },
       {
-        id: "tl-2",
+        id: "tl-c2-2",
         order: 2,
-        timeLabel: "02:40–03:00",
+        timeLabel: "19:10",
         description:
-          "Kerem ve Ayşe salonda yüzleşir. İkinci fincan çay konur; tartışma büyür. Kerem USB'deki dosyayı yayınlamakla tehdit eder.",
-        involvedSuspectIds: ["suspect-ayse"],
-        isPubliclyKnown: false,
+          "Emre Yıldız aidat konuşmak için uğrar. Murat salonda çay koyar.",
+        involvedSuspectIds: ["suspect-emre"],
+        isPubliclyKnown: true,
       },
       {
-        id: "tl-3",
+        id: "tl-c2-3",
         order: 3,
-        timeLabel: "03:10",
+        timeLabel: "19:20–19:25",
         description:
-          "Ayşe Kerem'i boğarak öldürür. Sandalye devrilir, fincan kırılır.",
-        involvedSuspectIds: ["suspect-ayse"],
+          "Murat ve Emre salonda konuşurken Deniz hol'e geçer, askıdan kasa anahtarını alır. Islak izler askıda kalır.",
+        involvedSuspectIds: ["suspect-deniz"],
         isPubliclyKnown: false,
       },
       {
-        id: "tl-4",
+        id: "tl-c2-4",
         order: 4,
-        timeLabel: "03:17",
+        timeLabel: "19:45",
         description:
-          "Selim Arslan Ankara'dan Kerem'i arar. Telefon çalar, kimse açmaz. Ayşe panikle daireden ayrılır.",
-        involvedSuspectIds: ["suspect-selim", "suspect-ayse"],
-        isPubliclyKnown: true,
-      },
-      {
-        id: "tl-5",
-        order: 5,
-        timeLabel: "08:20",
-        description:
-          "Baran Kılıç üst katın kapısını aralık görünce polis çağırır. Ceset resmi olarak bulunur.",
-        involvedSuspectIds: ["suspect-baran"],
+          "Murat anahtarı arar; askı boştur. Polis çağrılır, iki şüpheli ifadeye alınır.",
+        involvedSuspectIds: ["suspect-deniz", "suspect-emre"],
         isPubliclyKnown: true,
       },
     ],
-    trueStatementIds: [
-      "stmt-baran-1",
-      "stmt-baran-2",
-      "stmt-selim-1",
-      "stmt-selim-2",
-    ],
-    falseStatementIds: ["stmt-ayse-1", "stmt-ayse-2"],
+    trueStatementIds: ["stmt-emre-1", "stmt-emre-2"],
+    falseStatementIds: ["stmt-deniz-1", "stmt-deniz-2"],
     criticalEvidenceIds: [
-      "evidence-cup",
-      "evidence-wet-prints",
-      "evidence-usb",
-      "evidence-phone",
+      "evidence-key-hook",
+      "evidence-c2-hall-prints",
+      "evidence-debt-sms",
     ],
   },
 
   endings: [
     {
-      id: "ending-correct",
+      id: "ending-c2-correct",
       type: "dogru_suclama",
-      title: "03:17'nin Gölgesi",
+      title: "Askıdaki Boşluk",
       description:
-        "Ayşe Demir suçlanır. USB'deki kayıtlar ve olay yerindeki izler, 03:17 aramasının katilden değil kuzeninden geldiğini ortaya koyar. Gerçek, yağmurlu Kadıköy gecesinde kilitlenir.",
-      requiredSuspectId: "suspect-ayse",
-      requiredEvidenceIds: [
-        "evidence-usb",
-        "evidence-cup",
-        "evidence-wet-prints",
-      ],
+        "Deniz Acar suçlanır. Islak ayak izleri ve boş askı, hol'e uğramadığını söyleyen ifadesini çürütür. Anahtar hırsızlığı kapanır.",
+      requiredSuspectId: "suspect-deniz",
+      requiredEvidenceIds: ["evidence-key-hook", "evidence-c2-hall-prints"],
     },
     {
-      id: "ending-wrong",
+      id: "ending-c2-wrong",
       type: "yanlis_suclama",
-      title: "Yanlış Numara",
+      title: "Yanlış Kapı",
       description:
-        "Suç Selim'e veya Baran'a yıkılır. 03:17 araması yanıltıcı bir gölge olur; gerçek katil kayıplara karışır. Dosya kapanır — ama hikâye bitmez.",
-      requiredEvidenceIds: ["evidence-phone"],
+        "Suç Emre'ye yıkılır. Salondaki çay fincanları yanıltıcı bir gölge olur; gerçek hırsız kayıplara karışır. Dosya erken kapanır.",
+      requiredEvidenceIds: ["evidence-tea-cups"],
     },
     {
-      id: "ending-perfect",
+      id: "ending-c2-perfect",
       type: "mukemmel_cozum",
-      title: "Kesim Tamam",
+      title: "Anahtar Yerinde",
       description:
-        "Ayşe doğru suçlanır; tüm kritik kanıtlar ve gizli ipuçları birleştirilir. USB açılır, zaman çizelgesi netleşir, 03:17'nin masum bir arama olduğu kanıtlanır. Vaka sinematik bir kapanışla sona erer.",
-      requiredSuspectId: "suspect-ayse",
+        "Deniz doğru suçlanır; ıslak izler, boş askı ve borç SMS'i birleştirilir. Motivasyon netleşir, Emre aklanır. Vaka temiz bir kapanışla biter.",
+      requiredSuspectId: "suspect-deniz",
       requiredEvidenceIds: [
-        "evidence-phone",
-        "evidence-cup",
-        "evidence-wet-prints",
-        "evidence-usb",
+        "evidence-key-hook",
+        "evidence-c2-hall-prints",
+        "evidence-debt-sms",
       ],
     },
   ],
@@ -297,7 +238,7 @@ export const case001: Case = {
     notes: "",
     accusedSuspectId: null,
     unlockedEndingId: null,
-    startedAt: "2026-09-14T00:00:00.000Z",
-    updatedAt: "2026-09-14T00:00:00.000Z",
+    startedAt: "2026-09-16T00:00:00.000Z",
+    updatedAt: "2026-09-16T00:00:00.000Z",
   },
 };
