@@ -56,6 +56,11 @@ const MOTIVE_HYPOTHESES_BY_CASE: Record<string, readonly string[]> = {
     "Şirket dosyalarını ele geçirip teklifi garantiye almak",
     "Kişisel intikam",
   ],
+  "case-004": [
+    "Karaborsa alıcıya satmak için Selçuklu çini parçasını çalmak",
+    "Sahte ihracat belgesi için parçayı ele geçirmek",
+    "Kişisel intikam",
+  ],
 };
 
 function motiveHypothesesFor(caseId: string): readonly string[] {
@@ -64,7 +69,11 @@ function motiveHypothesesFor(caseId: string): readonly string[] {
 
 /** Cinayet / hırsızlık vakalarına göre solve metinleri. */
 function solveCopyFor(caseId: string) {
-  if (caseId === "case-002" || caseId === "case-003") {
+  if (
+    caseId === "case-002" ||
+    caseId === "case-003" ||
+    caseId === "case-004"
+  ) {
     return {
       lead: "Sorumluyu seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.",
       suspectTitle: "Sorumlu seçimi",

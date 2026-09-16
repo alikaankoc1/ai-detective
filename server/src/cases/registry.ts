@@ -3,9 +3,11 @@ import type { ContradictionDefinition } from "../contradictions/types";
 import { case001 } from "./case001";
 import { case002 } from "./case002";
 import { case003 } from "./case003";
+import { case004 } from "./case004";
 import { case001Contradictions } from "../contradictions/case001";
 import { case002Contradictions } from "../contradictions/case002";
 import { case003Contradictions } from "../contradictions/case003";
+import { case004Contradictions } from "../contradictions/case004";
 
 /**
  * Tek vaka kayıt defteri.
@@ -60,6 +62,21 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "dosya",
       "sirket",
       "liste",
+    ],
+  },
+  "case-004": {
+    caseData: case004,
+    contradictions: case004Contradictions,
+    motiveKeywords: [
+      "cini",
+      "parca",
+      "cal",
+      "sat",
+      "karaborsa",
+      "ihrac",
+      "belge",
+      "sahte",
+      "borc",
     ],
   },
 };

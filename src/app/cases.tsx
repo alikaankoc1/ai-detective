@@ -71,6 +71,17 @@ const CASE_LIBRARY: CaseFileBase[] = [
     lockHint: "Önceki vakayı çözerek açılır.",
     cover: getCaseCover("case-003"),
   },
+  {
+    id: "case-004",
+    fileLabel: "DOSYA CASE-004",
+    title: "Kırık Çini",
+    summary:
+      "Konya Karatay'da soğuk bir gece, Selçuklu çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
+    location: "Konya, Karatay",
+    difficulty: "ORTA",
+    lockHint: "Önceki vakayı çözerek açılır.",
+    cover: getCaseCover("case-004"),
+  },
 ];
 
 function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {

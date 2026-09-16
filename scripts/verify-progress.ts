@@ -12,6 +12,24 @@ import { isCasePlayable } from "../src/utils/caseRoute";
 import { xpRewardForSolveResult } from "../src/utils/progression";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+/** Node smoke için AsyncStorage'ın beklediği localStorage yüzeyi */
+const memoryStore = new Map<string, string>();
+(globalThis as { window?: unknown }).window = {
+  localStorage: {
+    getItem: (key: string) =>
+      memoryStore.has(key) ? memoryStore.get(key)! : null,
+    setItem: (key: string, value: string) => {
+      memoryStore.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      memoryStore.delete(key);
+    },
+    clear: () => {
+      memoryStore.clear();
+    },
+  },
+};
+
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error("FAIL: " + msg);
   console.log("PASS:", msg);
@@ -123,6 +141,28 @@ async function main() {
   });
   assert(c2b.claimed === false, "case-002 duplicate blocked");
   assert(getSolvedCaseIds().includes("case-002"), "case-002 solved");
+
+  assert(
+    isCasePlayable("case-003", getSolvedCaseIds()) === true,
+    "case-003 unlocks after 002"
+  );
+  assert(
+    isCasePlayable("case-004", getSolvedCaseIds()) === false,
+    "case-004 locked until 003"
+  );
+
+  const c3 = applyCaseResultProgress({
+    caseId: "case-003",
+    result: "perfect",
+    xpAmount: xpRewardForSolveResult("perfect"),
+    markSolved: true,
+  });
+  assert(c3.claimed === true, "case-003 perfect XP once");
+  assert(getSolvedCaseIds().includes("case-003"), "case-003 solved");
+  assert(
+    isCasePlayable("case-004", getSolvedCaseIds()) === true,
+    "case-004 unlocks after 003"
+  );
 
   await flushPlayerProgressPersist();
   console.log("\nALL PROGRESS CHECKS PASSED");

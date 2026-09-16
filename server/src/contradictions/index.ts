@@ -8,6 +8,7 @@ export {
 export { case001Contradictions } from "./case001";
 export { case002Contradictions } from "./case002";
 export { case003Contradictions } from "./case003";
+export { case004Contradictions } from "./case004";
 export {
   checkContradiction,
   findContradiction,
