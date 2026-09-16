@@ -56,7 +56,7 @@ type TabItem = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
-  href?: "/case-story" | "/cases" | "/profile";
+  href?: "/case-story" | "/cases" | "/profile" | "/shop";
 };
 
 const TABS: TabItem[] = [
@@ -85,6 +85,7 @@ const TABS: TabItem[] = [
     label: "Mağaza",
     icon: "storefront-outline",
     iconActive: "storefront",
+    href: "/shop",
   },
 ];
 
@@ -315,7 +316,6 @@ export default function HomeScreen() {
       router.push(tab.href);
       return;
     }
-    // Profil / Mağaza — henüz route yok; UI yerinde kalır
   };
 
   return (
