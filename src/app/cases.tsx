@@ -63,10 +63,13 @@ const CASE_LIBRARY: CaseFileBase[] = [
   {
     id: "case-003",
     fileLabel: "DOSYA CASE-003",
-    title: "Son Tren",
-    summary: "Daha fazla soruşturma gerekli.",
-    lockHint: "Daha fazla soruşturma gerekli.",
-    cover: gameImages.homeHeader,
+    title: "Son Metro",
+    summary:
+      "Eskişehir Odunpazarı'nda yağmurlu bir gece, yazılımcı Ece Karaca şirket USB'sini kaybeder. İki şüpheli, çelişen saatler ve son tramvay bileti.",
+    location: "Eskişehir, Odunpazarı",
+    difficulty: "KOLAY-ORTA",
+    lockHint: "Önceki vakayı çözerek açılır.",
+    cover: getCaseCover("case-003"),
   },
 ];
 

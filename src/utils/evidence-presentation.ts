@@ -15,15 +15,19 @@ function resolveCategory(evidenceId: string): EvidenceCategory {
     case "evidence-phone":
     case "evidence-usb":
     case "evidence-debt-sms":
+    case "evidence-c3-cctv-time":
       return "dijital";
     case "evidence-cup":
     case "evidence-key-hook":
     case "evidence-tea-cups":
+    case "evidence-c3-usb-sleeve":
+    case "evidence-c3-event-badge":
       return "fiziksel";
     case "evidence-wet-prints":
     case "evidence-c2-hall-prints":
       return "iz";
     case "evidence-bar-receipt":
+    case "evidence-c3-tram-ticket":
       return "belge";
     default:
       return "diger";

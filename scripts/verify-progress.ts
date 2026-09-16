@@ -1,53 +1,27 @@
-const Module = require("module");
-const path = require("path");
+import {
+  resetPlayerProgress,
+  applyCaseResultProgress,
+  claimCaseResultXp,
+  buildCaseResultXpAwardKey,
+  getPlayerProgress,
+  getSolvedCaseIds,
+  flushPlayerProgressPersist,
+  addPlayerXp,
+} from "../src/store/playerProgress";
+import { isCasePlayable } from "../src/utils/caseRoute";
+import { xpRewardForSolveResult } from "../src/utils/progression";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const memory = new Map();
-const AsyncStorageMock = {
-  getItem: async (key) => (memory.has(key) ? memory.get(key) : null),
-  setItem: async (key, value) => {
-    memory.set(key, value);
-  },
-  removeItem: async (key) => {
-    memory.delete(key);
-  },
-  clear: async () => {
-    memory.clear();
-  },
-};
-
-const abs = require.resolve("@react-native-async-storage/async-storage");
-require.cache[abs] = {
-  id: abs,
-  filename: abs,
-  loaded: true,
-  exports: AsyncStorageMock,
-};
-
-require("tsx/cjs/api").register();
+function assert(cond: boolean, msg: string) {
+  if (!cond) throw new Error("FAIL: " + msg);
+  console.log("PASS:", msg);
+}
 
 async function main() {
-  const {
-    resetPlayerProgress,
-    applyCaseResultProgress,
-    claimCaseResultXp,
-    buildCaseResultXpAwardKey,
-    getPlayerProgress,
-    getSolvedCaseIds,
-    flushPlayerProgressPersist,
-    addPlayerXp,
-  } = require("../src/store/playerProgress.ts");
-  const { isCasePlayable } = require("../src/utils/caseRoute.ts");
-  const { xpRewardForSolveResult } = require("../src/utils/progression.ts");
-
-  function assert(cond, msg) {
-    if (!cond) throw new Error("FAIL: " + msg);
-    console.log("PASS:", msg);
-  }
-
-  await AsyncStorageMock.clear();
+  await AsyncStorage.clear();
   resetPlayerProgress();
   await flushPlayerProgressPersist();
-  await AsyncStorageMock.clear();
+  await AsyncStorage.clear();
   resetPlayerProgress();
 
   const h = getPlayerProgress();
@@ -122,7 +96,7 @@ async function main() {
   assert(wrong2.claimed === false, "duplicate wrong blocked");
 
   await flushPlayerProgressPersist();
-  const raw = await AsyncStorageMock.getItem("ai-detective.playerProgress.v1");
+  const raw = await AsyncStorage.getItem("ai-detective.playerProgress.v1");
   assert(!!raw && raw.includes("case-001"), "persisted solved case-001");
   assert(!!raw && raw.includes("case-001:perfect"), "persisted award key");
 

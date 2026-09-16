@@ -11,11 +11,12 @@ export const DEFAULT_CASE_ID = "case-001";
 
 /**
  * Vaka kilit önkoşulları.
- * Case 003+: buraya `"case-003": ["case-002"]` ekle.
+ * Case 004+: buraya yeni satır ekle.
  */
 export const CASE_UNLOCK_REQUIRES: Record<string, readonly string[]> = {
   "case-001": [],
   "case-002": ["case-001"],
+  "case-003": ["case-002"],
 };
 
 /** Route paramından caseId çöz; yoksa Case 001. */

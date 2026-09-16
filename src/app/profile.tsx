@@ -37,7 +37,7 @@ import { gameImages, getCaseCover } from "@/constants/images";
 const CASE_CATALOG = [
   { id: "case-001", title: "03:17'deki Telefon", fileLabel: "CASE-001" },
   { id: "case-002", title: "Kayıp Anahtar", fileLabel: "CASE-002" },
-  { id: "case-003", title: "Son Tren", fileLabel: "CASE-003" },
+  { id: "case-003", title: "Son Metro", fileLabel: "CASE-003" },
 ] as const;
 
 const LIBRARY_TOTAL = CASE_CATALOG.length;

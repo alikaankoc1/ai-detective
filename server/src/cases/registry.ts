@@ -2,12 +2,14 @@ import type { Case } from "../../../src/types/case";
 import type { ContradictionDefinition } from "../contradictions/types";
 import { case001 } from "./case001";
 import { case002 } from "./case002";
+import { case003 } from "./case003";
 import { case001Contradictions } from "../contradictions/case001";
 import { case002Contradictions } from "../contradictions/case002";
+import { case003Contradictions } from "../contradictions/case003";
 
 /**
  * Tek vaka kayıt defteri.
- * Yeni vaka (Case 003+): case dosyası + contradictions + motiveKeywords buraya eklenir.
+ * Yeni vaka (Case 004+): case dosyası + contradictions + motiveKeywords buraya eklenir.
  */
 export type RegisteredCase = {
   caseData: Case;
@@ -43,6 +45,21 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
       "aidat",
       "nakit",
       "kart",
+    ],
+  },
+  "case-003": {
+    caseData: case003,
+    contradictions: case003Contradictions,
+    motiveKeywords: [
+      "usb",
+      "belge",
+      "musteri",
+      "proje",
+      "rakip",
+      "cal",
+      "dosya",
+      "sirket",
+      "liste",
     ],
   },
 };
