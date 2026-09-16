@@ -31,11 +31,11 @@ import {
   fetchCase,
   fetchInvestigationState,
 } from "@/services/cases";
-import { getPlayerProgressDetail } from "@/store/playerProgress";
+import { getPlayerProgressDetail, getSolvedCaseIds } from "@/store/playerProgress";
 import { getLevelProgress, type LevelProgress } from "@/utils/progression";
 import { detectiveTheme as t } from "@/constants/theme";
 import { gameImages, getCaseCover } from "@/constants/images";
-import { DEFAULT_CASE_ID } from "@/utils/caseRoute";
+import { getHomeFocusCaseId } from "@/utils/caseRoute";
 import type { PlayerSafeCase } from "@/types/case";
 import type { InvestigationState } from "@/types/investigation";
 
@@ -238,11 +238,17 @@ export default function HomeScreen() {
     getPlayerProgressDetail()
   );
 
+  const [focusCaseId, setFocusCaseId] = useState(() =>
+    getHomeFocusCaseId(getSolvedCaseIds())
+  );
+
   useFocusEffect(
     useCallback(() => {
       const detail = getPlayerProgressDetail();
       setLevelProgress(getLevelProgress(detail.totalXp));
       setActiveTab("home");
+      const nextFocus = getHomeFocusCaseId(getSolvedCaseIds());
+      setFocusCaseId(nextFocus);
     }, [])
   );
 
@@ -254,7 +260,7 @@ export default function HomeScreen() {
 
     (async () => {
       try {
-        const data = await fetchCase(DEFAULT_CASE_ID);
+        const data = await fetchCase(focusCaseId);
         if (cancelled) return;
         setCaseData(data);
         try {
@@ -273,7 +279,7 @@ export default function HomeScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, focusCaseId]);
 
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const heroHeight = Math.min(Math.max(height * 0.42, 280), 420);
@@ -292,9 +298,15 @@ export default function HomeScreen() {
     };
   }, [caseData, investigation]);
 
+  const featuredSolved = caseData
+    ? getSolvedCaseIds().includes(caseData.meta.id)
+    : false;
+
+  /** Çözülmüş dosyada "devam et" gösterme — sıradaki vakaya geç. */
   const hasActiveInvestigation =
-    (investigation?.discoveredEvidenceIds.length ?? 0) > 0 ||
-    (investigation?.interrogatedSuspectIds.length ?? 0) > 0;
+    !featuredSolved &&
+    ((investigation?.discoveredEvidenceIds.length ?? 0) > 0 ||
+      (investigation?.interrogatedSuspectIds.length ?? 0) > 0);
 
   const onTabSelect = (tab: TabItem) => {
     setActiveTab(tab.id);

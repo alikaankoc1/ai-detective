@@ -46,6 +46,26 @@ export function isKnownCaseId(caseId: string): boolean {
   return Object.prototype.hasOwnProperty.call(CASE_UNLOCK_REQUIRES, caseId);
 }
 
+/** Oynanış sırası (kolay → zor). */
+export const CASE_PLAY_ORDER: readonly string[] = Object.keys(
+  CASE_UNLOCK_REQUIRES
+);
+
+/**
+ * Anasayfa odak vakası: ilk çözülmemiş + oynanabilir dosya.
+ * Hepsi çözüldüyse son vakayı döner.
+ */
+export function getHomeFocusCaseId(
+  solvedCaseIds: readonly string[]
+): string {
+  for (const id of CASE_PLAY_ORDER) {
+    if (isCasePlayable(id, solvedCaseIds) && !solvedCaseIds.includes(id)) {
+      return id;
+    }
+  }
+  return CASE_PLAY_ORDER[CASE_PLAY_ORDER.length - 1] ?? DEFAULT_CASE_ID;
+}
+
 /** UI kilit mesajı — önkoşul vakasını doğru gösterir. */
 export function caseUnlockMessage(caseId: string): string {
   const required = CASE_UNLOCK_REQUIRES[caseId];
