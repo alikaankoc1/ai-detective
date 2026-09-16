@@ -1,6 +1,12 @@
 import type { Case, Suspect } from "../../src/types/case";
 import { case001 } from "./cases/case001";
+import { case002 } from "./cases/case002";
 import { getGeminiClient } from "./gemini";
+
+const SUPPORTED_CASES: Record<string, Case> = {
+  "case-001": case001,
+  "case-002": case002,
+};
 
 export type InterrogationRequest = {
   caseId: string;
@@ -29,10 +35,7 @@ type PlayerSafeEvidence = {
 };
 
 export function getSupportedCase(caseId: string): Case | null {
-  if (caseId === "case-001") {
-    return case001;
-  }
-  return null;
+  return SUPPORTED_CASES[caseId] ?? null;
 }
 
 function toPlayerSafeEvidence(
@@ -199,7 +202,7 @@ export async function runInterrogation(
 
   const caseData = getSupportedCase(caseId);
   if (!caseData) {
-    throw new Error("Bu vaka henüz desteklenmiyor. Şimdilik yalnızca case-001.");
+    throw new Error("Bu vaka henüz desteklenmiyor.");
   }
 
   const suspect = caseData.suspects.find((s) => s.id === suspectId);

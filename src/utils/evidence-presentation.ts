@@ -14,8 +14,11 @@ function resolveCategory(evidenceId: string): EvidenceCategory {
   switch (evidenceId) {
     case "evidence-phone":
     case "evidence-usb":
+    case "evidence-debt-sms":
       return "dijital";
     case "evidence-cup":
+    case "evidence-key-hook":
+    case "evidence-tea-cups":
       return "fiziksel";
     case "evidence-wet-prints":
       return "iz";

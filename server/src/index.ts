@@ -2,7 +2,6 @@ import http from "http";
 import { config } from "dotenv";
 import path from "path";
 import { runGeminiTest } from "./gemini";
-import { case001 } from "./cases/case001";
 import { getSupportedCase, runInterrogation } from "./interrogation";
 import { checkContradiction } from "./contradictions";
 import {
@@ -124,8 +123,16 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "GET" && pathname === "/api/cases/case-001") {
-    sendJson(res, 200, case001);
+  // GET /api/cases/:caseId
+  const caseGetMatch = pathname.match(/^\/api\/cases\/([^/]+)$/);
+  if (req.method === "GET" && caseGetMatch) {
+    const caseId = decodeURIComponent(caseGetMatch[1] ?? "");
+    const caseData = getSupportedCase(caseId);
+    if (!caseData) {
+      sendJson(res, 404, { error: "Bu vaka henüz desteklenmiyor." });
+      return;
+    }
+    sendJson(res, 200, caseData);
     return;
   }
 
@@ -284,7 +291,7 @@ const server = http.createServer(async (req, res) => {
 
       const caseData = getSupportedCase(caseId);
       if (!caseData) {
-        throw new Error("Bu vaka henüz desteklenmiyor. Şimdilik yalnızca case-001.");
+        throw new Error("Bu vaka henüz desteklenmiyor.");
       }
 
       const suspectExists = caseData.suspects.some((s) => s.id === suspectId);

@@ -6,6 +6,7 @@ export {
   toCheckResult,
 } from "./types";
 export { case001Contradictions } from "./case001";
+export { case002Contradictions } from "./case002";
 export {
   checkContradiction,
   findContradiction,

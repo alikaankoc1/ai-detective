@@ -16,7 +16,7 @@ function touch(state: InvestigationState): InvestigationState {
 function assertCaseSupported(caseId: string) {
   const caseData = getSupportedCase(caseId);
   if (!caseData) {
-    throw new Error("Bu vaka henüz desteklenmiyor. Şimdilik yalnızca case-001.");
+    throw new Error("Bu vaka henüz desteklenmiyor.");
   }
   return caseData;
 }

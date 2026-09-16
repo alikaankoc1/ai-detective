@@ -36,7 +36,7 @@ import { gameImages, getCaseCover } from "@/constants/images";
 
 const CASE_CATALOG = [
   { id: "case-001", title: "03:17'deki Telefon", fileLabel: "CASE-001" },
-  { id: "case-002", title: "Kayıp Paket", fileLabel: "CASE-002" },
+  { id: "case-002", title: "Kayıp Anahtar", fileLabel: "CASE-002" },
   { id: "case-003", title: "Son Tren", fileLabel: "CASE-003" },
 ] as const;
 
@@ -309,11 +309,7 @@ export default function ProfileScreen() {
                   ]}
                 >
                   <Image
-                    source={
-                      item.id === "case-001"
-                        ? getCaseCover("case-001")
-                        : gameImages.homeHeader
-                    }
+                    source={getCaseCover(item.id)}
                     style={styles.archiveThumb}
                     contentFit="cover"
                   />

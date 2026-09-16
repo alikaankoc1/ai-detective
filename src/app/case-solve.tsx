@@ -14,7 +14,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeIn,
@@ -23,25 +23,38 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  fetchCase001,
+  fetchCase,
   fetchInvestigationState,
   submitCaseSolve,
 } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
+import { resolveCaseId } from "@/utils/caseRoute";
 import type { Case, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { InvestigationState } from "@/types/investigation";
 
 /** Oyuncu hipotezleri — canon motive metni değil; serbest metin düzenlenebilir. */
-const MOTIVE_HYPOTHESES = [
+const MOTIVE_HYPOTHESES_DEFAULT = [
   "Maddi çıkar veya iş anlaşmazlığı",
   "Kişisel intikam",
   "Bir sırrın açığa çıkmasını engellemek",
   "Borç baskısı ve tehdit",
   "Kaza sonrası örtbas",
 ] as const;
+
+const MOTIVE_HYPOTHESES_BY_CASE: Record<string, readonly string[]> = {
+  "case-002": [
+    "Borç baskısıyla kasa anahtarını çalıp aidat nakitine ulaşmak",
+    "Kart borcu yüzünden anahtarı çalmak",
+    "Kişisel intikam",
+  ],
+};
+
+function motiveHypothesesFor(caseId: string): readonly string[] {
+  return MOTIVE_HYPOTHESES_BY_CASE[caseId] ?? MOTIVE_HYPOTHESES_DEFAULT;
+}
 
 function LoadingState() {
   return (
@@ -201,6 +214,8 @@ export default function CaseSolveScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
+  const params = useLocalSearchParams<{ caseId?: string | string[] }>();
+  const caseId = resolveCaseId(params.caseId);
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [investigation, setInvestigation] = useState<InvestigationState | null>(
@@ -221,7 +236,7 @@ export default function CaseSolveScreen() {
     setLoading(true);
     setLoadError(null);
     try {
-      const data = await fetchCase001();
+      const data = await fetchCase(caseId);
       const state = await fetchInvestigationState(data.meta.id);
       setCaseData(data);
       setInvestigation(state);
@@ -237,7 +252,7 @@ export default function CaseSolveScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [caseId]);
 
   useEffect(() => {
     void load();
@@ -423,7 +438,7 @@ export default function CaseSolveScreen() {
           />
           <Animated.View entering={FadeInUp.delay(280).duration(550)}>
             <View style={styles.chipRow}>
-              {MOTIVE_HYPOTHESES.map((item) => {
+              {motiveHypothesesFor(caseData.meta.id).map((item) => {
                 const active = activeHypothesis === item;
                 return (
                   <Pressable

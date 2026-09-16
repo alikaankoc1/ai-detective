@@ -12,6 +12,7 @@ export const fallbackCover =
 /** Vaka kapakları; bilinmeyen vaka için `fallbackCover` kullanılır. */
 const caseCovers: Record<string, ImageSourcePropType> = {
   "case-001": require("../../assets/images/game/case-001-cover.jpg") as ImageSourcePropType,
+  "case-002": require("../../assets/images/game/case-cover-lost-parcel.jpg") as ImageSourcePropType,
 };
 
 export function getCaseCover(caseId: string): ImageSourcePropType {

@@ -3,15 +3,23 @@ import type { Case } from "@/types/case";
 import type { ContradictionCheckResult } from "@/types/contradiction";
 import type { InvestigationState } from "@/types/investigation";
 import type { SolveCaseRequest, SolveCaseResponse } from "@/types/solve";
+import { DEFAULT_CASE_ID } from "@/utils/caseRoute";
 
-export async function fetchCase001(): Promise<Case> {
-  const response = await fetch(`${API_BASE_URL}/api/cases/case-001`);
+export async function fetchCase(caseId: string = DEFAULT_CASE_ID): Promise<Case> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/cases/${encodeURIComponent(caseId)}`
+  );
 
   if (!response.ok) {
     throw new Error(`Vaka alınamadı (${response.status})`);
   }
 
   return response.json() as Promise<Case>;
+}
+
+/** @deprecated Prefer fetchCase(caseId) */
+export async function fetchCase001(): Promise<Case> {
+  return fetchCase(DEFAULT_CASE_ID);
 }
 
 export type InterrogationResponse = {

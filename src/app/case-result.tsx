@@ -20,7 +20,7 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCase001 } from "@/services/cases";
+import { fetchCase } from "@/services/cases";
 import {
   buildCaseResultXpAwardKey,
   claimCaseResultXp,
@@ -28,6 +28,7 @@ import {
 } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
+import { resolveCaseId } from "@/utils/caseRoute";
 import { xpRewardForSolveResult } from "@/utils/progression";
 import type { Case } from "@/types/case";
 import type { SolveResultKind } from "@/types/solve";
@@ -179,11 +180,12 @@ export default function CaseResultScreen() {
     kind === "wrong" ? 0 : 2
   );
   const caseIdParam = firstParam(params.caseId);
+  const resolvedCaseId = resolveCaseId(params.caseId);
 
   useEffect(() => {
     let cancelled = false;
     setLoadingCase(true);
-    fetchCase001()
+    fetchCase(resolvedCaseId)
       .then((data) => {
         if (!cancelled) setCaseData(data);
       })
@@ -196,28 +198,28 @@ export default function CaseResultScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [resolvedCaseId]);
 
   useEffect(() => {
-    const caseKey = caseIdParam ?? caseData?.meta.id ?? "case-001";
+    const caseKey = caseIdParam ?? caseData?.meta.id ?? resolvedCaseId;
     const awardKey = buildCaseResultXpAwardKey(caseKey, kind, score);
     claimCaseResultXp(awardKey, xpEarned);
 
     if (kind === "perfect" || kind === "correct") {
       markCaseSolved(caseKey);
     }
-  }, [caseIdParam, caseData?.meta.id, kind, score, xpEarned]);
+  }, [caseIdParam, caseData?.meta.id, kind, score, xpEarned, resolvedCaseId]);
 
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const heroHeight = Math.min(Math.max(height * 0.34, 240), 320);
 
   const caseTitle = useMemo(
-    () => caseData?.meta.title ?? "03:17'deki Telefon",
+    () => caseData?.meta.title ?? "Vaka Dosyası",
     [caseData]
   );
   const caseId = useMemo(
-    () => caseIdParam ?? caseData?.meta.id ?? "case-001",
-    [caseIdParam, caseData]
+    () => caseIdParam ?? caseData?.meta.id ?? resolvedCaseId,
+    [caseIdParam, caseData, resolvedCaseId]
   );
 
   if (loadingCase) {
@@ -400,7 +402,12 @@ export default function CaseResultScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/case-investigation")}
+              onPress={() =>
+                router.push({
+                  pathname: "/case-investigation",
+                  params: { caseId },
+                })
+              }
               style={({ pressed }) => [
                 styles.secondaryCta,
                 pressed && styles.pressed,

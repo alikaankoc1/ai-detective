@@ -16,7 +16,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated"
 import { Ionicons } from "@expo/vector-icons";
 import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
-import { fallbackCover, gameImages, getCaseCover } from "@/constants/images";
+import { gameImages, getCaseCover } from "@/constants/images";
 
 type CaseFileBase = {
   id: string;
@@ -51,13 +51,13 @@ const CASE_LIBRARY: CaseFileBase[] = [
   {
     id: "case-002",
     fileLabel: "DOSYA CASE-002",
-    title: "Kayıp Paket",
+    title: "Kayıp Anahtar",
     summary:
-      "Şehirde kaybolan bir kargo, yanlış adrese giden izler ve suskun bir tanık.",
-    location: "Karaköy",
-    difficulty: "ORTA",
+      "Kadıköy'de yağmurlu bir akşam, apartman yöneticisinin kasa anahtarı kaybolur. Dairede yalnızca iki kişi vardır — ve küçük bir ıslak iz yalanı ele verir.",
+    location: "Kadıköy",
+    difficulty: "KOLAY",
     lockHint: "Önceki vakayı çözerek açılır.",
-    cover: fallbackCover,
+    cover: getCaseCover("case-002"),
   },
   {
     id: "case-003",
@@ -344,10 +344,11 @@ export default function CasesScreen() {
               index={index}
               onOpen={() => {
                 if (item.locked) return;
-                // Case 001 oynanabilir; Case 002 açık olsa da gerçek veri yok —
-                // şimdilik yalnızca case-story'ye gider (placeholder).
                 if (item.id === "case-001" || item.id === "case-002") {
-                  router.push("/case-story");
+                  router.push({
+                    pathname: "/case-story",
+                    params: { caseId: item.id },
+                  });
                 }
               }}
             />

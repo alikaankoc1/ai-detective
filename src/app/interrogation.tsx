@@ -18,10 +18,11 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { askSuspect, checkContradiction, fetchCase001 } from "@/services/cases";
+import { askSuspect, checkContradiction, fetchCase } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
+import { resolveCaseId } from "@/utils/caseRoute";
 import type { Case, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { PlayerSafeContradiction } from "@/types/contradiction";
@@ -617,10 +618,14 @@ function InterrogationRoom({
 export default function InterrogationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ suspectId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    suspectId?: string | string[];
+    caseId?: string | string[];
+  }>();
   const suspectId = Array.isArray(params.suspectId)
     ? params.suspectId[0]
     : params.suspectId;
+  const caseId = resolveCaseId(params.caseId);
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -631,7 +636,7 @@ export default function InterrogationScreen() {
     setError(null);
     setCaseData(null);
 
-    fetchCase001()
+    fetchCase(caseId)
       .then((data) => {
         if (!cancelled) setCaseData(data);
       })
@@ -644,7 +649,7 @@ export default function InterrogationScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, caseId]);
 
   const suspect = useMemo(() => {
     if (!caseData || !suspectId) return null;

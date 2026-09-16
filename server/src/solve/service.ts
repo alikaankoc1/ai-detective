@@ -21,15 +21,11 @@ function normalizeText(value: string): string {
 }
 
 /**
- * Motive eşlemesi: oyuncu metni canon motive ile anlamlı anahtar kelimeleri paylaşmalı.
- * Tam metin sızdırılmaz; yalnızca boolean sonuç kullanılır.
+ * Vaka bazlı motive anahtarları.
+ * Oyuncu metni canon motive ile anlamlı kelimeleri paylaşmalı; tam metin sızdırılmaz.
  */
-function isMotiveAccepted(playerMotive: string, canonMotive: string): boolean {
-  const player = normalizeText(playerMotive);
-  if (player.length < 8) return false;
-
-  const canon = normalizeText(canonMotive);
-  const keywords = [
+const MOTIVE_KEYWORDS_BY_CASE: Record<string, readonly string[]> = {
+  "case-001": [
     "sponsor",
     "usulsuz",
     "usb",
@@ -38,7 +34,30 @@ function isMotiveAccepted(playerMotive: string, canonMotive: string): boolean {
     "kanit",
     "hesap",
     "engelle",
-  ];
+  ],
+  "case-002": [
+    "kasa",
+    "anahtar",
+    "borc",
+    "cal",
+    "para",
+    "aidat",
+    "nakit",
+    "kart",
+  ],
+};
+
+function isMotiveAccepted(
+  playerMotive: string,
+  canonMotive: string,
+  caseId: string
+): boolean {
+  const player = normalizeText(playerMotive);
+  if (player.length < 8) return false;
+
+  const canon = normalizeText(canonMotive);
+  const keywords = MOTIVE_KEYWORDS_BY_CASE[caseId] ?? [];
+  if (keywords.length === 0) return false;
 
   const presentInCanon = keywords.filter((k) => canon.includes(k));
   const hits = presentInCanon.filter((k) => player.includes(k));
@@ -82,7 +101,11 @@ function evaluateSolve(
     : submittedEvidenceIds.filter((id) => discoveredEvidenceIds.includes(id));
 
   const killerCorrect = input.suspectId === caseData.canon.killerSuspectId;
-  const motiveAccepted = isMotiveAccepted(input.motive, caseData.canon.motive);
+  const motiveAccepted = isMotiveAccepted(
+    input.motive,
+    caseData.canon.motive,
+    caseData.meta.id
+  );
 
   const perfectEnding = findEnding(caseData, "mukemmel_cozum");
   const correctEnding = findEnding(caseData, "dogru_suclama");
@@ -158,7 +181,7 @@ export function solveCase(
 ): SolveCaseResponse {
   const caseData = getSupportedCase(caseId);
   if (!caseData) {
-    throw new Error("Bu vaka henüz desteklenmiyor. Şimdilik yalnızca case-001.");
+    throw new Error("Bu vaka henüz desteklenmiyor.");
   }
 
   const suspectId = input.suspectId?.trim() ?? "";

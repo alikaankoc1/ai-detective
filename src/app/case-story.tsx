@@ -11,7 +11,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeIn,
@@ -19,9 +19,10 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCase001 } from "@/services/cases";
+import { fetchCase } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
+import { resolveCaseId } from "@/utils/caseRoute";
 import type { Case } from "@/types/case";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -244,6 +245,8 @@ function CaseStoryContent({
 export default function CaseStoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ caseId?: string | string[] }>();
+  const caseId = resolveCaseId(params.caseId);
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -254,7 +257,7 @@ export default function CaseStoryScreen() {
     setError(null);
     setCaseData(null);
 
-    fetchCase001()
+    fetchCase(caseId)
       .then((data) => {
         if (!cancelled) setCaseData(data);
       })
@@ -267,7 +270,7 @@ export default function CaseStoryScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, caseId]);
 
   return (
     <View style={styles.root}>
@@ -326,7 +329,12 @@ export default function CaseStoryScreen() {
       ) : caseData ? (
         <CaseStoryContent
           data={caseData}
-          onInvestigate={() => router.push("/case-investigation")}
+          onInvestigate={() =>
+            router.push({
+              pathname: "/case-investigation",
+              params: { caseId: caseData.meta.id },
+            })
+          }
         />
       ) : null}
     </View>

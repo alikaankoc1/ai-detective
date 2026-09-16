@@ -29,13 +29,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  fetchCase001,
+  fetchCase,
   fetchInvestigationState,
 } from "@/services/cases";
 import { getPlayerProgressDetail } from "@/store/playerProgress";
 import { getLevelProgress, type LevelProgress } from "@/utils/progression";
 import { detectiveTheme as t } from "@/constants/theme";
 import { gameImages, getCaseCover } from "@/constants/images";
+import { DEFAULT_CASE_ID } from "@/utils/caseRoute";
 import type { Case } from "@/types/case";
 import type { InvestigationState } from "@/types/investigation";
 
@@ -269,7 +270,7 @@ export default function HomeScreen() {
 
     (async () => {
       try {
-        const data = await fetchCase001();
+        const data = await fetchCase(DEFAULT_CASE_ID);
         if (cancelled) return;
         setCaseData(data);
         try {
@@ -472,7 +473,12 @@ export default function HomeScreen() {
                 style={t.shadow.deep}
               >
                 <Pressable
-                  onPress={() => router.push("/case-story")}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/case-story",
+                      params: { caseId: "case-001" },
+                    })
+                  }
                   style={({ pressed }) => [
                     styles.dayCase,
                     pressed && styles.pressed,
@@ -562,7 +568,12 @@ export default function HomeScreen() {
 
               <Animated.View entering={FadeInRight.delay(480).duration(700)}>
                 <Pressable
-                  onPress={() => router.push("/case-investigation")}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/case-investigation",
+                      params: { caseId: DEFAULT_CASE_ID },
+                    })
+                  }
                   style={({ pressed }) => [
                     styles.continuePlane,
                     pressed && styles.pressed,
@@ -638,7 +649,12 @@ export default function HomeScreen() {
                   style={styles.quickWideWrap}
                 >
                   <Pressable
-                    onPress={() => router.push("/case-investigation")}
+                    onPress={() =>
+                    router.push({
+                      pathname: "/case-investigation",
+                      params: { caseId: DEFAULT_CASE_ID },
+                    })
+                  }
                     style={({ pressed }) => [
                       styles.quickWide,
                       pressed && styles.pressed,
@@ -675,7 +691,12 @@ export default function HomeScreen() {
                   style={styles.quickHalf}
                 >
                   <Pressable
-                    onPress={() => router.push("/case-story")}
+                    onPress={() =>
+                    router.push({
+                      pathname: "/case-story",
+                      params: { caseId: "case-001" },
+                    })
+                  }
                     style={({ pressed }) => [
                       styles.quickTile,
                       pressed && styles.pressed,
@@ -700,7 +721,12 @@ export default function HomeScreen() {
                   style={styles.quickHalf}
                 >
                   <Pressable
-                    onPress={() => router.push("/case-solve")}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/case-solve",
+                        params: { caseId: DEFAULT_CASE_ID },
+                      })
+                    }
                     style={({ pressed }) => [
                       styles.quickTile,
                       styles.quickTileAccent,

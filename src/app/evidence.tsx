@@ -14,10 +14,11 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCase001 } from "@/services/cases";
+import { fetchCase } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { findEvidenceView } from "@/utils/evidence-presentation";
+import { resolveCaseId } from "@/utils/caseRoute";
 import type { Case } from "@/types/case";
 import type { EvidenceCategory, EvidenceView } from "@/types/evidence-view";
 
@@ -222,10 +223,14 @@ function EvidenceContent({
 export default function EvidenceScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ evidenceId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    evidenceId?: string | string[];
+    caseId?: string | string[];
+  }>();
   const evidenceId = Array.isArray(params.evidenceId)
     ? params.evidenceId[0]
     : params.evidenceId;
+  const caseId = resolveCaseId(params.caseId);
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -236,7 +241,7 @@ export default function EvidenceScreen() {
     setError(null);
     setCaseData(null);
 
-    fetchCase001()
+    fetchCase(caseId)
       .then((data) => {
         if (!cancelled) setCaseData(data);
       })
@@ -249,7 +254,7 @@ export default function EvidenceScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, caseId]);
 
   const evidence = useMemo(() => {
     if (!caseData || !evidenceId) return null;

@@ -1,4 +1,5 @@
 import { case001Contradictions } from "./case001";
+import { case002Contradictions } from "./case002";
 import {
   toCheckResult,
   type ContradictionDefinition,
@@ -10,6 +11,7 @@ const contradictionRegistry: Record<
   readonly ContradictionDefinition[]
 > = {
   "case-001": case001Contradictions,
+  "case-002": case002Contradictions,
 };
 
 /**
