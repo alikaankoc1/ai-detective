@@ -13,6 +13,7 @@ import {
   resetInvestigationState,
 } from "./investigation";
 import { solveCase } from "./solve";
+import { testSupabaseConnection } from "./supabase";
 
 config({ path: path.resolve(__dirname, "../.env") });
 
@@ -107,6 +108,28 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && pathname === "/health") {
     sendJson(res, 200, { status: "ok" });
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/supabase-test") {
+    try {
+      const status = await testSupabaseConnection();
+      if (!status.configured || !status.connected) {
+        sendJson(res, 503, {
+          configured: status.configured,
+          connected: false,
+          error: status.error ?? "Supabase kullanılamıyor.",
+        });
+        return;
+      }
+      sendJson(res, 200, { configured: true, connected: true });
+    } catch {
+      sendJson(res, 503, {
+        configured: false,
+        connected: false,
+        error: "Supabase bağlantı testi başarısız.",
+      });
+    }
     return;
   }
 
