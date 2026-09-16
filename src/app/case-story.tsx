@@ -20,9 +20,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCase } from "@/services/cases";
+import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
-import { resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
 import type { Case } from "@/types/case";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -108,6 +109,23 @@ function ErrorState({
       <Text style={styles.errorBody}>{message}</Text>
       <Pressable onPress={onRetry} style={styles.retryButton}>
         <Text style={styles.retryText}>Yeniden dene</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function LockedCaseState({ onBack }: { onBack: () => void }) {
+  return (
+    <View style={styles.stateCenter}>
+      <Ionicons name="lock-closed" size={28} color={t.colors.goldSoft} />
+      <Text style={[styles.errorTitle, { marginTop: t.spacing.md }]}>
+        Dosya kilitli
+      </Text>
+      <Text style={styles.errorBody}>
+        Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor.
+      </Text>
+      <Pressable onPress={onBack} style={styles.retryButton}>
+        <Text style={styles.retryText}>Vakalara dön</Text>
       </Pressable>
     </View>
   );
@@ -247,12 +265,19 @@ export default function CaseStoryScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ caseId?: string | string[] }>();
   const caseId = resolveCaseId(params.caseId);
+  const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    if (!playable) {
+      setCaseData(null);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
     setError(null);
     setCaseData(null);
@@ -270,7 +295,7 @@ export default function CaseStoryScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, caseId]);
+  }, [reloadKey, caseId, playable]);
 
   return (
     <View style={styles.root}>
@@ -319,7 +344,13 @@ export default function CaseStoryScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {(!caseData && !error) ? (
+      {!playable ? (
+        <LockedCaseState
+          onBack={() => {
+            router.replace("/cases");
+          }}
+        />
+      ) : !caseData && !error ? (
         <LoadingState />
       ) : error ? (
         <ErrorState

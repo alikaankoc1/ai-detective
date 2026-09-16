@@ -122,7 +122,7 @@ function DossierPanel({
         <Text style={styles.dossierBio}>{suspect.biography}</Text>
 
         <View style={styles.infoBlock}>
-          <Text style={styles.infoLabel}>KURBANLA BAĞ</Text>
+          <Text style={styles.infoLabel}>BAĞLANTI</Text>
           <Text style={styles.infoValue}>{suspect.relationshipToVictim}</Text>
         </View>
 

@@ -14,7 +14,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCase } from "@/services/cases";
+import { fetchCase, discoverCaseEvidence } from "@/services/cases";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { findEvidenceView } from "@/utils/evidence-presentation";
@@ -255,6 +255,22 @@ export default function EvidenceScreen() {
       cancelled = true;
     };
   }, [reloadKey, caseId]);
+
+  /** İnceleme = keşif: Solve ekranında delil görünsün. */
+  useEffect(() => {
+    if (!caseData || !evidenceId) return;
+    if (!caseData.evidence.some((item) => item.id === evidenceId)) return;
+
+    let cancelled = false;
+    void discoverCaseEvidence(caseData.meta.id, evidenceId).catch(() => {
+      // Sessiz: inceleme UI'sı yine de açılsın; kayıt tekrarı güvenli.
+      if (cancelled) return;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [caseData, evidenceId]);
 
   const evidence = useMemo(() => {
     if (!caseData || !evidenceId) return null;

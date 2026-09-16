@@ -108,6 +108,37 @@ export async function fetchInvestigationState(
   return data as InvestigationState;
 }
 
+/** Delil incelemesi — Investigation State'e keşif kaydı. */
+export async function discoverCaseEvidence(
+  caseId: string,
+  evidenceId: string
+): Promise<InvestigationState> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/investigation/${encodeURIComponent(caseId)}/evidence`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ evidenceId }),
+    }
+  );
+
+  const data = (await response.json()) as
+    | InvestigationState
+    | { error?: string };
+
+  if (!response.ok) {
+    const message =
+      "error" in data && data.error
+        ? data.error
+        : `Delil kaydı başarısız (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data as InvestigationState;
+}
+
 export async function submitCaseSolve(
   caseId: string,
   input: SolveCaseRequest

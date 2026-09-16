@@ -16,9 +16,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCase } from "@/services/cases";
+import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
-import { resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
 import type { Case, Evidence, Suspect } from "@/types/case";
 
 function SectionHeader({
@@ -96,7 +97,7 @@ function SuspectCard({
         </Text>
 
         <View style={styles.suspectMetaBlock}>
-          <Text style={styles.metaLabel}>KURBANLA BAĞ</Text>
+          <Text style={styles.metaLabel}>BAĞLANTI</Text>
           <Text style={styles.metaValue}>{suspect.relationshipToVictim}</Text>
         </View>
 
@@ -356,12 +357,19 @@ export default function CaseInvestigationScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ caseId?: string | string[] }>();
   const caseId = resolveCaseId(params.caseId);
+  const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    if (!playable) {
+      setCaseData(null);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
     setError(null);
     setCaseData(null);
@@ -379,7 +387,7 @@ export default function CaseInvestigationScreen() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, caseId]);
+  }, [reloadKey, caseId, playable]);
 
   return (
     <View style={styles.root}>
@@ -421,7 +429,12 @@ export default function CaseInvestigationScreen() {
         <Text style={styles.backText}>←</Text>
       </Pressable>
 
-      {(!caseData && !error) ? (
+      {!playable ? (
+        <ErrorState
+          message="Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor."
+          onRetry={() => router.replace("/cases")}
+        />
+      ) : !caseData && !error ? (
         <LoadingState />
       ) : error ? (
         <ErrorState

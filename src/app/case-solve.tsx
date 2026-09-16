@@ -27,10 +27,11 @@ import {
   fetchInvestigationState,
   submitCaseSolve,
 } from "@/services/cases";
+import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
-import { resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
 import type { Case, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { InvestigationState } from "@/types/investigation";
@@ -54,6 +55,24 @@ const MOTIVE_HYPOTHESES_BY_CASE: Record<string, readonly string[]> = {
 
 function motiveHypothesesFor(caseId: string): readonly string[] {
   return MOTIVE_HYPOTHESES_BY_CASE[caseId] ?? MOTIVE_HYPOTHESES_DEFAULT;
+}
+
+/** Cinayet / hırsızlık vakalarına göre solve metinleri. */
+function solveCopyFor(caseId: string) {
+  if (caseId === "case-002") {
+    return {
+      lead: "Sorumluyu seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.",
+      suspectTitle: "Sorumlu seçimi",
+      suspectHint: "Şüphelilerden birini suçla",
+      ctaHint: "Sorumlu, motif ve en az bir delil seç",
+    };
+  }
+  return {
+    lead: "Katili seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.",
+    suspectTitle: "Katil seçimi",
+    suspectHint: "Şüphelilerden birini suçla",
+    ctaHint: "Katil, motif ve en az bir delil seç",
+  };
 }
 
 function LoadingState() {
@@ -216,6 +235,7 @@ export default function CaseSolveScreen() {
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const params = useLocalSearchParams<{ caseId?: string | string[] }>();
   const caseId = resolveCaseId(params.caseId);
+  const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [investigation, setInvestigation] = useState<InvestigationState | null>(
@@ -233,6 +253,16 @@ export default function CaseSolveScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!playable) {
+      setLoading(false);
+      setLoadError(
+        "Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor."
+      );
+      setCaseData(null);
+      setInvestigation(null);
+      return;
+    }
+
     setLoading(true);
     setLoadError(null);
     try {
@@ -252,7 +282,7 @@ export default function CaseSolveScreen() {
     } finally {
       setLoading(false);
     }
-  }, [caseId]);
+  }, [caseId, playable]);
 
   useEffect(() => {
     void load();
@@ -345,6 +375,8 @@ export default function CaseSolveScreen() {
     );
   }
 
+  const copy = solveCopyFor(caseData.meta.id);
+
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
@@ -406,7 +438,7 @@ export default function CaseSolveScreen() {
               <Text style={styles.screenKicker}>{caseData.meta.id.toUpperCase()}</Text>
               <Text style={styles.screenTitle}>Vakayı çöz</Text>
               <Text style={styles.screenLead}>
-                Katili seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.
+                {copy.lead}
               </Text>
               </View>
             </View>
@@ -414,8 +446,8 @@ export default function CaseSolveScreen() {
 
           <SectionHeader
             index="01"
-            title="Katil seçimi"
-            hint="Şüphelilerden birini suçla"
+            title={copy.suspectTitle}
+            hint={copy.suspectHint}
           />
           {caseData.suspects.map((suspect, index) => (
             <SuspectPick
@@ -562,7 +594,7 @@ export default function CaseSolveScreen() {
           <Text style={styles.ctaHint}>
             {canSubmit
               ? `${selectedEvidenceIds.length} delil · motif hazır`
-              : "Katil, motif ve en az bir delil seç"}
+              : copy.ctaHint}
           </Text>
         </View>
       </KeyboardAvoidingView>
