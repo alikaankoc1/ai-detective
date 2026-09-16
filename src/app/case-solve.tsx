@@ -76,14 +76,14 @@ function solveCopyFor(caseId: string) {
     caseId === "case-003"
   ) {
     return {
-      lead: "Sorumluyu seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.",
+      lead: "Sorumluyu ve motifi seç; sonra suçlamayı kanıtlayan delilleri işaretle.",
       suspectTitle: "Sorumlu seçimi",
       suspectHint: "Şüphelilerden birini suçla",
       ctaHint: "Sorumlu, motif ve en az bir delil seç",
     };
   }
   return {
-    lead: "Katili seç, motifini yaz, keşfettiğin delillerle dosyayı kilitle.",
+    lead: "Katili ve motifi seç; sonra suçlamayı kanıtlayan delilleri işaretle.",
     suspectTitle: "Katil seçimi",
     suspectHint: "Şüphelilerden birini suçla",
     ctaHint: "Katil, motif ve en az bir delil seç",
@@ -290,7 +290,9 @@ export default function CaseSolveScreen() {
       setSubmitError(null);
     } catch (error) {
       setLoadError(
-        error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu."
+        error instanceof Error
+          ? error.message
+          : "Beklenmeyen bir hata oluştu. Bağlantını kontrol et."
       );
     } finally {
       setLoading(false);
@@ -518,10 +520,25 @@ export default function CaseSolveScreen() {
             title="Deliller"
             hint={
               discoveredEvidence.length > 0
-                ? `${discoveredEvidence.length} keşfedilmiş delil`
+                ? "Delilleri seç — suçlamayı kanıtlayanları işaretle"
                 : "Henüz keşfedilmiş delil yok"
             }
           />
+          {discoveredEvidence.length > 0 ? (
+            <Animated.View entering={FadeIn.delay(280).duration(450)}>
+              <View style={styles.evidenceHintBox}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={18}
+                  color={t.colors.goldSoft}
+                />
+                <Text style={styles.evidenceHintText}>
+                  Keşfetmek yetmez: dosyayı kilitlemek için burada delilleri
+                  seçmen gerekir ({discoveredEvidence.length} hazır).
+                </Text>
+              </View>
+            </Animated.View>
+          ) : null}
           {discoveredEvidence.length === 0 ? (
             <Animated.View entering={FadeIn.delay(320).duration(500)}>
               <View style={styles.emptyEvidence}>
@@ -973,6 +990,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     textAlign: "center",
+  },
+  evidenceHintBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: t.spacing.sm,
+    marginBottom: t.spacing.md,
+    paddingVertical: t.spacing.md,
+    paddingHorizontal: t.spacing.md,
+    borderWidth: 1,
+    borderColor: "rgba(201, 162, 39, 0.35)",
+    backgroundColor: "rgba(201, 162, 39, 0.08)",
+    borderRadius: t.radius.sm,
+  },
+  evidenceHintText: {
+    flex: 1,
+    fontFamily: t.typography.body,
+    fontSize: 13,
+    lineHeight: 19,
+    color: t.colors.creamMuted,
   },
   submitErrorBox: {
     borderWidth: 1,

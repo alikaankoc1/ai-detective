@@ -389,7 +389,7 @@ function InterrogationRoom({
         {
           id: `err-${Date.now()}`,
           role: "system",
-          text: `Bağlantı hatası: ${message} Soruyu yeniden deneyebilirsin.`,
+          text: `${message} Soruyu yeniden deneyebilirsin.`,
         },
       ]);
     } finally {
@@ -480,7 +480,7 @@ function InterrogationRoom({
         {
           id: `err-${Date.now()}`,
           role: "system",
-          text: `Bağlantı hatası: ${message} Delili yeniden deneyebilirsin.`,
+          text: `${message} Delili yeniden deneyebilirsin.`,
         },
       ]);
     } finally {

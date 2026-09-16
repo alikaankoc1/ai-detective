@@ -64,7 +64,15 @@ function parsePositiveInt(
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
-function presentationFor(kind: SolveResultKind): ResultPresentation {
+/**
+ * Skor anlamı (backend solve):
+ * 100 perfect · 60–85 correct · 35 doğru katil+motif ama yetersiz delil ·
+ * 20 kısmi · 0 yanlış
+ */
+function presentationFor(
+  kind: SolveResultKind,
+  score: number
+): ResultPresentation {
   switch (kind) {
     case "perfect":
       return {
@@ -89,12 +97,36 @@ function presentationFor(kind: SolveResultKind): ResultPresentation {
         icon: "shield-checkmark",
       };
     case "wrong":
+      if (score >= 35) {
+        return {
+          tone: "failed",
+          badge: "YETERSİZ DELİL",
+          title: "Neredeyse kapandı",
+          description:
+            "Doğru şüpheli ve motif tutuyor; ama suçlamada yeterli delili seçmedin. Keşfettiğin delilleri çözüm ekranında işaretlemen gerekiyor — sadece bulmak yetmez.",
+          closingNote:
+            "Dosya yeniden açıldı. Delil zincirini güçlendirip tekrar suçla.",
+          icon: "alert-circle",
+        };
+      }
+      if (score >= 20) {
+        return {
+          tone: "failed",
+          badge: "EKSİK SUÇLAMA",
+          title: "Yön doğru, dosya değil",
+          description:
+            "Doğru yöne yakınsın ama motif veya suçlama tam oturmadı. İfadeleri ve izleri yeniden bağla.",
+          closingNote:
+            "Bir gece daha. Motifi netleştir, delilleri yeniden seç.",
+          icon: "help-circle",
+        };
+      }
       return {
         tone: "failed",
         badge: "FAILED",
         title: "Dosya kapanmadı",
         description:
-          "Suçlama yetersiz kaldı. İzler yeniden incelenmeli.",
+          "Suçlama kabul edilmedi. Yanlış sorumlu veya deliller suçlamayı desteklemiyor. Çelişkileri ve ifadeleri yeniden incele.",
         closingNote:
           "Yağmur hâlâ camlara vuruyor. Yanlış yön, boşa giden bir gece — ama dosya henüz kapanmış değil.",
         icon: "close-circle",
@@ -164,13 +196,12 @@ export default function CaseResultScreen() {
   const [loadingCase, setLoadingCase] = useState(true);
 
   const kind = parseResultKind(firstParam(params.result));
-  const copy = presentationFor(kind);
-  const colors = toneColors(copy.tone);
-
   const score = parsePositiveInt(
     firstParam(params.score),
     kind === "perfect" ? 100 : kind === "correct" ? 75 : 20
   );
+  const copy = presentationFor(kind, score);
+  const colors = toneColors(copy.tone);
   const xpEarned = useMemo(() => xpRewardForSolveResult(kind), [kind]);
   const evidenceCount = parsePositiveInt(firstParam(params.evidence), 3);
   const contradictionCount = parsePositiveInt(

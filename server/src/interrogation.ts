@@ -253,11 +253,11 @@ function formatGeminiError(error: unknown): string {
     lower.includes("rate-limit") ||
     lower.includes("rate limit")
   ) {
-    return "Gemini günlük ücretsiz kotası doldu. Birkaç dakika sonra tekrar dene veya Google AI Studio'da kotanı / planını kontrol et.";
+    return "Sorgu servisi kotası doldu. Birkaç dakika sonra tekrar dene.";
   }
 
   if (lower.includes("api key") || lower.includes("permission")) {
-    return "Gemini API anahtarı geçersiz veya yetkisiz. server/.env içindeki GEMINI_API_KEY değerini kontrol et.";
+    return "Sorgu servisi şu an kullanılamıyor. Kısa süre sonra tekrar dene.";
   }
 
   // Ham JSON'u oyuncuya gösterme
