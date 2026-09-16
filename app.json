@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ai-detective",
+    "name": "AI Detective",
     "slug": "ai-detective",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,11 +8,13 @@
     "scheme": "aidetective",
     "userInterfaceStyle": "dark",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.aidetective.app"
     },
     "android": {
+      "package": "com.aidetective.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#05070D",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
