@@ -45,3 +45,45 @@ export function getSupabaseAdmin(): SupabaseClient {
 
   return supabaseAdmin;
 }
+
+export type SupabaseConnectionStatus = {
+  configured: boolean;
+  connected: boolean;
+  error?: string;
+};
+
+/**
+ * Tablo/auth/migration olmadan bağlantı doğrulama.
+ * Service role ile hafif Auth Admin çağrısı; yanıt/log'a secret koyulmaz.
+ */
+export async function testSupabaseConnection(): Promise<SupabaseConnectionStatus> {
+  if (!isSupabaseConfigured()) {
+    return {
+      configured: false,
+      connected: false,
+      error:
+        "Supabase yapılandırılmamış. server/.env içinde SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY tanımlayın.",
+    };
+  }
+
+  try {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 });
+
+    if (error) {
+      return {
+        configured: true,
+        connected: false,
+        error: "Supabase bağlantısı başarısız. URL ve service role key değerlerini kontrol edin.",
+      };
+    }
+
+    return { configured: true, connected: true };
+  } catch {
+    return {
+      configured: true,
+      connected: false,
+      error: "Supabase bağlantısı başarısız. URL ve service role key değerlerini kontrol edin.",
+    };
+  }
+}
