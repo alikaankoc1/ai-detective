@@ -1,3 +1,16 @@
+import { getCaseCover } from "@/constants/images";
+import { detectiveTheme as t } from "@/constants/theme";
+import { fetchCase } from "@/services/cases";
+import { applyCaseResultProgress } from "@/store/playerProgress";
+import type { PlayerSafeCase } from "@/types/case";
+import type { SolveResultKind } from "@/types/solve";
+import { resolveCaseId } from "@/utils/caseRoute";
+import { xpRewardForSolveResult } from "@/utils/progression";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,28 +21,13 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "expo-status-bar";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
   ZoomIn,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
-import { fetchCase } from "@/services/cases";
-import {
-  applyCaseResultProgress,
-} from "@/store/playerProgress";
-import { detectiveTheme as t } from "@/constants/theme";
-import { getCaseCover } from "@/constants/images";
-import { resolveCaseId } from "@/utils/caseRoute";
-import { xpRewardForSolveResult } from "@/utils/progression";
-import type { PlayerSafeCase } from "@/types/case";
-import type { SolveResultKind } from "@/types/solve";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ResultTone = "perfect" | "solved" | "failed";
 
@@ -50,15 +48,14 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 function parseResultKind(raw: string | undefined): SolveResultKind {
   const value = (raw ?? "correct").toLowerCase();
   if (value === "perfect" || value === "mukemmel") return "perfect";
-  if (value === "wrong" || value === "failed" || value === "yanlis") return "wrong";
-  if (value === "solved" || value === "correct" || value === "dogru") return "correct";
+  if (value === "wrong" || value === "failed" || value === "yanlis")
+    return "wrong";
+  if (value === "solved" || value === "correct" || value === "dogru")
+    return "correct";
   return "correct";
 }
 
-function parsePositiveInt(
-  raw: string | undefined,
-  fallback: number
-): number {
+function parsePositiveInt(raw: string | undefined, fallback: number): number {
   if (!raw) return fallback;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n >= 0 ? n : fallback;
@@ -71,13 +68,13 @@ function parsePositiveInt(
  */
 function presentationFor(
   kind: SolveResultKind,
-  score: number
+  score: number,
 ): ResultPresentation {
   switch (kind) {
     case "perfect":
       return {
         tone: "perfect",
-        badge: "PERFECT",
+        badge: "KUSURSUZ",
         title: "Kusursuz çözüm",
         description:
           "Suçlama, motif ve delil zinciri birleşti. Dosya mühürlendi.",
@@ -88,8 +85,8 @@ function presentationFor(
     case "correct":
       return {
         tone: "solved",
-        badge: "SOLVED",
-        title: "Vaka çözüldü",
+        badge: "ÇÖZÜLDÜ",
+        title: "Vaka Çözüldü",
         description:
           "Doğru suçlama kabul edildi. Bazı detaylar eksik kalmış olabilir.",
         closingNote:
@@ -123,7 +120,7 @@ function presentationFor(
       }
       return {
         tone: "failed",
-        badge: "FAILED",
+        badge: "BAŞARISIZ",
         title: "Dosya kapanmadı",
         description:
           "Suçlama kabul edilmedi. Yanlış sorumlu veya deliller suçlamayı desteklemiyor. Çelişkileri ve ifadeleri yeniden incele.",
@@ -198,7 +195,7 @@ export default function CaseResultScreen() {
   const kind = parseResultKind(firstParam(params.result));
   const score = parsePositiveInt(
     firstParam(params.score),
-    kind === "perfect" ? 100 : kind === "correct" ? 75 : 20
+    kind === "perfect" ? 100 : kind === "correct" ? 75 : 20,
   );
   const copy = presentationFor(kind, score);
   const colors = toneColors(copy.tone);
@@ -206,7 +203,7 @@ export default function CaseResultScreen() {
   const evidenceCount = parsePositiveInt(firstParam(params.evidence), 3);
   const contradictionCount = parsePositiveInt(
     firstParam(params.contradictions),
-    kind === "wrong" ? 0 : 2
+    kind === "wrong" ? 0 : 2,
   );
   const caseIdParam = firstParam(params.caseId);
   const resolvedCaseId = resolveCaseId(params.caseId);
@@ -244,11 +241,11 @@ export default function CaseResultScreen() {
 
   const caseTitle = useMemo(
     () => caseData?.meta.title ?? "Vaka Dosyası",
-    [caseData]
+    [caseData],
   );
   const caseId = useMemo(
     () => caseIdParam ?? caseData?.meta.id ?? resolvedCaseId,
-    [caseIdParam, caseData, resolvedCaseId]
+    [caseIdParam, caseData, resolvedCaseId],
   );
 
   if (loadingCase) {
@@ -324,7 +321,9 @@ export default function CaseResultScreen() {
               ]}
             >
               <Ionicons name={copy.icon} size={16} color={colors.badgeText} />
-              <Text style={[styles.resultBadgeText, { color: colors.badgeText }]}>
+              <Text
+                style={[styles.resultBadgeText, { color: colors.badgeText }]}
+              >
                 {copy.badge}
               </Text>
             </View>
@@ -403,7 +402,9 @@ export default function CaseResultScreen() {
                 <Text style={styles.summaryTitle}>Kısa çözüm notu</Text>
                 <Text style={styles.summaryText}>{copy.closingNote}</Text>
                 {caseData?.meta.summary ? (
-                  <Text style={styles.summaryCase}>{caseData.meta.summary}</Text>
+                  <Text style={styles.summaryCase}>
+                    {caseData.meta.summary}
+                  </Text>
                 ) : null}
               </View>
             </View>

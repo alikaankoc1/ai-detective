@@ -107,7 +107,7 @@ function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
         ...item,
         locked: false,
         solved: isSolved,
-        statusLabel: isSolved ? "çözüldü" : "GİZLİ SORUŞTURMA",
+        statusLabel: isSolved ? "ÇÖZÜLDÜ" : "GİZLİ SORUŞTURMA",
         ctaLabel: isSolved ? "DOSYAYI AÇ" : "VAKAYI İNCELE",
       };
     }
@@ -127,7 +127,7 @@ function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
       ...item,
       locked: false,
       solved: isSolved,
-      statusLabel: isSolved ? "çözüldü" : "YENİ DOSYA",
+      statusLabel: isSolved ? "ÇÖZÜLDÜ" : "YENİ DOSYA",
       ctaLabel: "VAKAYI İNCELE",
       summary: item.summary,
     };
@@ -214,7 +214,7 @@ function CaseFileRow({
           {item.solved ? (
             <View style={styles.solvedPill}>
               <Ionicons name="shield-checkmark" size={12} color={t.colors.void} />
-              <Text style={styles.solvedPillText}>çözüldü</Text>
+              <Text style={styles.solvedPillText}>ÇÖZÜLDÜ</Text>
             </View>
           ) : (
             <View style={styles.statusPill}>

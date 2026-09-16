@@ -120,8 +120,8 @@ export default function ProfileScreen() {
   const solvedCount = solvedInLibrary.length;
   /**
    * Outcome kırılımı store'da yok.
-   * Başarılı kapanışlar = solvedCaseIds (PERFECT veya SOLVED sonucu).
-   * PERFECT / FAILED ayrı tutulmadığı için SOLVED sütununda gösterilir.
+   * Başarılı kapanışlar = solvedCaseIds (perfect veya correct sonucu).
+   * Perfect / failed ayrı tutulmadığı için çözüldü sütununda gösterilir.
    */
   const outcomeSolved = solvedCount;
   const outcomePerfect = 0;
@@ -271,21 +271,22 @@ export default function ProfileScreen() {
         >
           <View style={styles.outcomeTile}>
             <Text style={styles.outcomeValue}>{outcomePerfect}</Text>
-            <Text style={styles.outcomeLabel}>PERFECT</Text>
+            <Text style={styles.outcomeLabel}>KUSURSUZ</Text>
           </View>
           <View style={[styles.outcomeTile, styles.outcomeTileAccent]}>
             <Text style={[styles.outcomeValue, { color: t.colors.goldSoft }]}>
               {outcomeSolved}
             </Text>
-            <Text style={styles.outcomeLabel}>SOLVED</Text>
+            <Text style={styles.outcomeLabel}>ÇÖZÜLDÜ</Text>
           </View>
           <View style={styles.outcomeTile}>
             <Text style={styles.outcomeValue}>{outcomeFailed}</Text>
-            <Text style={styles.outcomeLabel}>FAILED</Text>
+            <Text style={styles.outcomeLabel}>BAŞARISIZ</Text>
           </View>
         </Animated.View>
         <Text style={styles.outcomeHint}>
-          PERFECT / FAILED ayrı tutulmuyor; başarılı kapanışlar SOLVED altında.
+          Kusursuz / başarısız ayrı tutulmuyor; başarılı kapanışlar çözüldü
+          altında.
         </Text>
 
         <Animated.View
@@ -325,7 +326,7 @@ export default function ProfileScreen() {
                           size={12}
                           color={t.colors.void}
                         />
-                        <Text style={styles.solvedBadgeText}>SOLVED</Text>
+                        <Text style={styles.solvedBadgeText}>ÇÖZÜLDÜ</Text>
                       </View>
                     ) : (
                       <Text style={styles.archivePending}>Açık / kilitli</Text>
