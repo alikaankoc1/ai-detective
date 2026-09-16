@@ -19,7 +19,7 @@ import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { findEvidenceView } from "@/utils/evidence-presentation";
 import { resolveCaseId } from "@/utils/caseRoute";
-import type { Case } from "@/types/case";
+import type { PlayerSafeCase } from "@/types/case";
 import type { EvidenceCategory, EvidenceView } from "@/types/evidence-view";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -108,7 +108,7 @@ function EvidenceContent({
   caseData,
   evidence,
 }: {
-  caseData: Case;
+  caseData: PlayerSafeCase;
   evidence: EvidenceView;
 }) {
   const insets = useSafeAreaInsets();
@@ -232,7 +232,7 @@ export default function EvidenceScreen() {
     : params.evidenceId;
   const caseId = resolveCaseId(params.caseId);
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 

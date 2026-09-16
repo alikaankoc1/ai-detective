@@ -1,6 +1,6 @@
 import type { Case, CaseEnding } from "../../../src/types/case";
 import type { SolveCaseRequest, SolveCaseResponse } from "../../../src/types/solve";
-import { getSupportedCase } from "../interrogation";
+import { getMotiveKeywords, getSupportedCase } from "../cases/registry";
 import {
   getInvestigationState,
   markSuspectInterrogated,
@@ -21,32 +21,9 @@ function normalizeText(value: string): string {
 }
 
 /**
- * Vaka bazlı motive anahtarları.
- * Oyuncu metni canon motive ile anlamlı kelimeleri paylaşmalı; tam metin sızdırılmaz.
+ * Motive eşlemesi: oyuncu metni canon motive ile anlamlı kelimeleri paylaşmalı.
+ * Anahtarlar case registry'den gelir; tam motive metni sızdırılmaz.
  */
-const MOTIVE_KEYWORDS_BY_CASE: Record<string, readonly string[]> = {
-  "case-001": [
-    "sponsor",
-    "usulsuz",
-    "usb",
-    "yayin",
-    "aciga",
-    "kanit",
-    "hesap",
-    "engelle",
-  ],
-  "case-002": [
-    "kasa",
-    "anahtar",
-    "borc",
-    "cal",
-    "para",
-    "aidat",
-    "nakit",
-    "kart",
-  ],
-};
-
 function isMotiveAccepted(
   playerMotive: string,
   canonMotive: string,
@@ -56,7 +33,7 @@ function isMotiveAccepted(
   if (player.length < 8) return false;
 
   const canon = normalizeText(canonMotive);
-  const keywords = MOTIVE_KEYWORDS_BY_CASE[caseId] ?? [];
+  const keywords = getMotiveKeywords(caseId);
   if (keywords.length === 0) return false;
 
   const presentInCanon = keywords.filter((k) => canon.includes(k));

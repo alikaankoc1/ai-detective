@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { gameImages, getCaseCover } from "@/constants/images";
+import { isCasePlayable } from "@/utils/caseRoute";
 
 type CaseFileBase = {
   id: string;
@@ -71,11 +72,12 @@ const CASE_LIBRARY: CaseFileBase[] = [
 
 function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
   const solved = new Set(solvedIds);
-  const case001Solved = solved.has("case-001");
 
   return CASE_LIBRARY.map((item) => {
+    const unlocked = isCasePlayable(item.id, solvedIds);
+    const isSolved = solved.has(item.id);
+
     if (item.id === "case-001") {
-      const isSolved = case001Solved;
       return {
         ...item,
         locked: false,
@@ -85,32 +87,24 @@ function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
       };
     }
 
-    if (item.id === "case-002") {
-      const unlocked = case001Solved;
+    if (!unlocked) {
       return {
         ...item,
-        locked: !unlocked,
-        solved: solved.has("case-002"),
-        statusLabel: unlocked
-          ? solved.has("case-002")
-            ? "SOLVED"
-            : "YENİ DOSYA"
-          : "KİLİTLİ",
+        locked: true,
+        solved: false,
+        statusLabel: "KİLİTLİ",
         ctaLabel: "VAKAYI İNCELE",
-        summary: unlocked
-          ? item.summary
-          : (item.lockHint ?? "Önceki vakayı çözerek açılır."),
+        summary: item.lockHint ?? item.summary,
       };
     }
 
-    // case-003 — şimdilik kilitli
     return {
       ...item,
-      locked: true,
-      solved: false,
-      statusLabel: "KİLİTLİ",
+      locked: false,
+      solved: isSolved,
+      statusLabel: isSolved ? "SOLVED" : "YENİ DOSYA",
       ctaLabel: "VAKAYI İNCELE",
-      summary: item.lockHint ?? item.summary,
+      summary: item.summary,
     };
   });
 }
@@ -344,12 +338,11 @@ export default function CasesScreen() {
               index={index}
               onOpen={() => {
                 if (item.locked) return;
-                if (item.id === "case-001" || item.id === "case-002") {
-                  router.push({
-                    pathname: "/case-story",
-                    params: { caseId: item.id },
-                  });
-                }
+                if (!isCasePlayable(item.id, getSolvedCaseIds())) return;
+                router.push({
+                  pathname: "/case-story",
+                  params: { caseId: item.id },
+                });
               }}
             />
           ))}

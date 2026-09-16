@@ -24,7 +24,7 @@ import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
-import type { Case } from "@/types/case";
+import type { PlayerSafeCase } from "@/types/case";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -135,7 +135,7 @@ function CaseStoryContent({
   data,
   onInvestigate,
 }: {
-  data: Case;
+  data: PlayerSafeCase;
   onInvestigate: () => void;
 }) {
   const { width } = useWindowDimensions();
@@ -267,7 +267,7 @@ export default function CaseStoryScreen() {
   const caseId = resolveCaseId(params.caseId);
   const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 

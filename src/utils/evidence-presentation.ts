@@ -1,4 +1,4 @@
-import type { Case, Evidence } from "@/types/case";
+import type { PlayerSafeCase, PlayerSafeEvidence } from "@/types/case";
 import type { EvidenceCategory, EvidenceView } from "@/types/evidence-view";
 
 const CATEGORY_LABELS: Record<EvidenceCategory, string> = {
@@ -39,8 +39,8 @@ function catalogNumber(order: number): string {
  * `isRedHerring`, katil, motivasyon ve gizli timeline ASLA dahil edilmez.
  */
 export function toEvidenceView(
-  caseData: Case,
-  evidence: Evidence,
+  caseData: PlayerSafeCase,
+  evidence: PlayerSafeEvidence,
   order: number
 ): EvidenceView {
   const category = resolveCategory(evidence.id);
@@ -67,14 +67,14 @@ export function toEvidenceView(
   };
 }
 
-export function buildEvidenceViews(caseData: Case): EvidenceView[] {
+export function buildEvidenceViews(caseData: PlayerSafeCase): EvidenceView[] {
   return caseData.evidence.map((item, index) =>
     toEvidenceView(caseData, item, index + 1)
   );
 }
 
 export function findEvidenceView(
-  caseData: Case,
+  caseData: PlayerSafeCase,
   evidenceId: string
 ): EvidenceView | null {
   const index = caseData.evidence.findIndex((item) => item.id === evidenceId);

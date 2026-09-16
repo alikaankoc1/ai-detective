@@ -37,7 +37,7 @@ import { getLevelProgress, type LevelProgress } from "@/utils/progression";
 import { detectiveTheme as t } from "@/constants/theme";
 import { gameImages, getCaseCover } from "@/constants/images";
 import { DEFAULT_CASE_ID } from "@/utils/caseRoute";
-import type { Case } from "@/types/case";
+import type { PlayerSafeCase } from "@/types/case";
 import type { InvestigationState } from "@/types/investigation";
 
 /** Yerel demo profil metinleri — XP/level store'dan gelir. */
@@ -243,7 +243,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [investigation, setInvestigation] =
     useState<InvestigationState | null>(null);
   const [error, setError] = useState<string | null>(null);

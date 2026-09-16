@@ -30,7 +30,7 @@ import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { resolveCaseId } from "@/utils/caseRoute";
 import { xpRewardForSolveResult } from "@/utils/progression";
-import type { Case } from "@/types/case";
+import type { PlayerSafeCase } from "@/types/case";
 import type { SolveResultKind } from "@/types/solve";
 
 type ResultTone = "perfect" | "solved" | "failed";
@@ -162,7 +162,7 @@ export default function CaseResultScreen() {
     caseId?: string | string[];
   }>();
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [loadingCase, setLoadingCase] = useState(true);
 
   const kind = parseResultKind(firstParam(params.result));

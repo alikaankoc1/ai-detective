@@ -195,3 +195,26 @@ export interface Case {
   endings: readonly CaseEnding[];
   progress: PlayerProgress;
 }
+
+/**
+ * Mobil / public API vaka paketi.
+ * Canon, isRedHerring ve ending çözüm gereksinimleri taşınmaz.
+ */
+export type PlayerSafeEvidence = Omit<Evidence, "isRedHerring">;
+
+export type PlayerSafeEnding = Pick<
+  CaseEnding,
+  "id" | "type" | "title" | "description"
+>;
+
+export type PlayerSafeCase = {
+  meta: CaseMeta;
+  story: string;
+  scene: CrimeScene;
+  time: CaseTimeFrame;
+  suspects: readonly Suspect[];
+  evidence: readonly PlayerSafeEvidence[];
+  clues: readonly Clue[];
+  statements: readonly SuspectStatement[];
+  endings: readonly PlayerSafeEnding[];
+};

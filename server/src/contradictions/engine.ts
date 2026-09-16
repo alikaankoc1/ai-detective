@@ -1,27 +1,17 @@
-import { case001Contradictions } from "./case001";
-import { case002Contradictions } from "./case002";
-import {
-  toCheckResult,
-  type ContradictionDefinition,
-} from "./types";
+import { getRegisteredContradictions } from "../cases/registry";
+import { toCheckResult } from "./types";
 import type { ContradictionCheckResult } from "../../../src/types/contradiction";
-
-const contradictionRegistry: Record<
-  string,
-  readonly ContradictionDefinition[]
-> = {
-  "case-001": case001Contradictions,
-  "case-002": case002Contradictions,
-};
+import type { ContradictionDefinition } from "./types";
 
 /**
  * Case Engine'den bağımsız, backend'de tanımlı Contradiction Engine.
  * Gemini çıktısına bakmaz; yalnızca kayıtlı (suspectId + evidenceId) eşleşmelerine bakar.
+ * Çelişki listeleri `server/src/cases/registry.ts` üzerinden gelir.
  */
 export function getContradictionsForCase(
   caseId: string
 ): readonly ContradictionDefinition[] {
-  return contradictionRegistry[caseId] ?? [];
+  return getRegisteredContradictions(caseId);
 }
 
 export function findContradiction(

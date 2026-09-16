@@ -1,12 +1,8 @@
 import type { Case, Suspect } from "../../src/types/case";
-import { case001 } from "./cases/case001";
-import { case002 } from "./cases/case002";
+import { getSupportedCase } from "./cases/registry";
 import { getGeminiClient } from "./gemini";
 
-const SUPPORTED_CASES: Record<string, Case> = {
-  "case-001": case001,
-  "case-002": case002,
-};
+export { getSupportedCase } from "./cases/registry";
 
 export type InterrogationRequest = {
   caseId: string;
@@ -33,10 +29,6 @@ type PlayerSafeEvidence = {
   relatedSuspectIds: readonly string[];
   examinationNotes: readonly string[];
 };
-
-export function getSupportedCase(caseId: string): Case | null {
-  return SUPPORTED_CASES[caseId] ?? null;
-}
 
 function toPlayerSafeEvidence(
   caseData: Case,

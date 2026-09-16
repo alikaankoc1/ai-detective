@@ -1,11 +1,13 @@
 import { API_BASE_URL } from "@/constants/api";
-import type { Case } from "@/types/case";
+import type { PlayerSafeCase } from "@/types/case";
 import type { ContradictionCheckResult } from "@/types/contradiction";
 import type { InvestigationState } from "@/types/investigation";
 import type { SolveCaseRequest, SolveCaseResponse } from "@/types/solve";
 import { DEFAULT_CASE_ID } from "@/utils/caseRoute";
 
-export async function fetchCase(caseId: string = DEFAULT_CASE_ID): Promise<Case> {
+export async function fetchCase(
+  caseId: string = DEFAULT_CASE_ID
+): Promise<PlayerSafeCase> {
   const response = await fetch(
     `${API_BASE_URL}/api/cases/${encodeURIComponent(caseId)}`
   );
@@ -14,11 +16,11 @@ export async function fetchCase(caseId: string = DEFAULT_CASE_ID): Promise<Case>
     throw new Error(`Vaka alınamadı (${response.status})`);
   }
 
-  return response.json() as Promise<Case>;
+  return response.json() as Promise<PlayerSafeCase>;
 }
 
 /** @deprecated Prefer fetchCase(caseId) */
-export async function fetchCase001(): Promise<Case> {
+export async function fetchCase001(): Promise<PlayerSafeCase> {
   return fetchCase(DEFAULT_CASE_ID);
 }
 

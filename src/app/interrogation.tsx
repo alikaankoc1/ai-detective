@@ -23,7 +23,7 @@ import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
 import { resolveCaseId } from "@/utils/caseRoute";
-import type { Case, Suspect } from "@/types/case";
+import type { PlayerSafeCase, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { PlayerSafeContradiction } from "@/types/contradiction";
 
@@ -81,7 +81,7 @@ function DossierPanel({
   caseData,
   suspect,
 }: {
-  caseData: Case;
+  caseData: PlayerSafeCase;
   suspect: Suspect;
 }) {
   const relatedEvidence = caseData.evidence.filter((item) =>
@@ -329,7 +329,7 @@ function InterrogationRoom({
   caseData,
   suspect,
 }: {
-  caseData: Case;
+  caseData: PlayerSafeCase;
   suspect: Suspect;
 }) {
   const insets = useSafeAreaInsets();
@@ -627,7 +627,7 @@ export default function InterrogationScreen() {
     : params.suspectId;
   const caseId = resolveCaseId(params.caseId);
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 

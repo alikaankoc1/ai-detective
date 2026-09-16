@@ -1,4 +1,4 @@
-import { getSupportedCase } from "../interrogation";
+import { getSupportedCase } from "../cases/registry";
 import {
   getOrCreateInvestigationState,
   investigationStore,

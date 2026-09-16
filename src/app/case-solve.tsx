@@ -32,7 +32,7 @@ import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
 import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
-import type { Case, Suspect } from "@/types/case";
+import type { PlayerSafeCase, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { InvestigationState } from "@/types/investigation";
 
@@ -237,7 +237,7 @@ export default function CaseSolveScreen() {
   const caseId = resolveCaseId(params.caseId);
   const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [investigation, setInvestigation] = useState<InvestigationState | null>(
     null
   );

@@ -3,6 +3,7 @@ import { config } from "dotenv";
 import path from "path";
 import { runGeminiTest } from "./gemini";
 import { getSupportedCase, runInterrogation } from "./interrogation";
+import { toPlayerSafeCase } from "./cases/toPlayerSafeCase";
 import { checkContradiction } from "./contradictions";
 import {
   discoverContradiction,
@@ -123,7 +124,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // GET /api/cases/:caseId
+  // GET /api/cases/:caseId — oyuncu güvenli (canon yok)
   const caseGetMatch = pathname.match(/^\/api\/cases\/([^/]+)$/);
   if (req.method === "GET" && caseGetMatch) {
     const caseId = decodeURIComponent(caseGetMatch[1] ?? "");
@@ -132,7 +133,7 @@ const server = http.createServer(async (req, res) => {
       sendJson(res, 404, { error: "Bu vaka henüz desteklenmiyor." });
       return;
     }
-    sendJson(res, 200, caseData);
+    sendJson(res, 200, toPlayerSafeCase(caseData));
     return;
   }
 

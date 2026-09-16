@@ -9,6 +9,15 @@ export function firstRouteParam(
 /** Varsayılan / öne çıkan vaka (ana ekran). */
 export const DEFAULT_CASE_ID = "case-001";
 
+/**
+ * Vaka kilit önkoşulları.
+ * Case 003+: buraya `"case-003": ["case-002"]` ekle.
+ */
+export const CASE_UNLOCK_REQUIRES: Record<string, readonly string[]> = {
+  "case-001": [],
+  "case-002": ["case-001"],
+};
+
 /** Route paramından caseId çöz; yoksa Case 001. */
 export function resolveCaseId(
   value: string | string[] | undefined
@@ -19,15 +28,18 @@ export function resolveCaseId(
 
 /**
  * Vaka erişim kapısı (UI kilidiyle uyumlu).
- * Case 002 yalnızca Case 001 çözüldükten sonra oynanır.
+ * Bilinmeyen / katalogda olmayan vakalar oynanamaz.
  */
 export function isCasePlayable(
   caseId: string,
   solvedCaseIds: readonly string[]
 ): boolean {
-  if (caseId === DEFAULT_CASE_ID || caseId === "case-001") return true;
-  if (caseId === "case-002") {
-    return solvedCaseIds.includes("case-001");
-  }
-  return false;
+  const required = CASE_UNLOCK_REQUIRES[caseId];
+  if (!required) return false;
+  return required.every((id) => solvedCaseIds.includes(id));
+}
+
+/** Katalogda bilinen (henüz kilitli olsa da) vaka mı? */
+export function isKnownCaseId(caseId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(CASE_UNLOCK_REQUIRES, caseId);
 }

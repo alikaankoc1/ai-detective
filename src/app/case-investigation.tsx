@@ -20,7 +20,7 @@ import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
-import type { Case, Evidence, Suspect } from "@/types/case";
+import type { PlayerSafeCase, PlayerSafeEvidence, Suspect } from "@/types/case";
 
 function SectionHeader({
   index,
@@ -120,7 +120,7 @@ function EvidenceCard({
   delay,
   onPress,
 }: {
-  evidence: Evidence;
+  evidence: PlayerSafeEvidence;
   order: number;
   delay: number;
   onPress: () => void;
@@ -188,7 +188,7 @@ function InvestigationContent({
   onExamineEvidence,
   onSolve,
 }: {
-  data: Case;
+  data: PlayerSafeCase;
   onInterrogate: (suspectId: string) => void;
   onExamineEvidence: (evidenceId: string) => void;
   onSolve: () => void;
@@ -359,7 +359,7 @@ export default function CaseInvestigationScreen() {
   const caseId = resolveCaseId(params.caseId);
   const playable = isCasePlayable(caseId, getSolvedCaseIds());
 
-  const [caseData, setCaseData] = useState<Case | null>(null);
+  const [caseData, setCaseData] = useState<PlayerSafeCase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
