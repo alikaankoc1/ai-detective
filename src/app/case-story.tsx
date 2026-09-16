@@ -23,7 +23,7 @@ import { fetchCase } from "@/services/cases";
 import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
-import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId, caseUnlockMessage } from "@/utils/caseRoute";
 import type { PlayerSafeCase } from "@/types/case";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -114,16 +114,20 @@ function ErrorState({
   );
 }
 
-function LockedCaseState({ onBack }: { onBack: () => void }) {
+function LockedCaseState({
+  message,
+  onBack,
+}: {
+  message: string;
+  onBack: () => void;
+}) {
   return (
     <View style={styles.stateCenter}>
       <Ionicons name="lock-closed" size={28} color={t.colors.goldSoft} />
       <Text style={[styles.errorTitle, { marginTop: t.spacing.md }]}>
         Dosya kilitli
       </Text>
-      <Text style={styles.errorBody}>
-        Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor.
-      </Text>
+      <Text style={styles.errorBody}>{message}</Text>
       <Pressable onPress={onBack} style={styles.retryButton}>
         <Text style={styles.retryText}>Vakalara dön</Text>
       </Pressable>
@@ -346,6 +350,7 @@ export default function CaseStoryScreen() {
 
       {!playable ? (
         <LockedCaseState
+          message={caseUnlockMessage(caseId)}
           onBack={() => {
             router.replace("/cases");
           }}

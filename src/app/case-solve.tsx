@@ -31,7 +31,7 @@ import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
 import { buildEvidenceViews } from "@/utils/evidence-presentation";
-import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId, caseUnlockMessage } from "@/utils/caseRoute";
 import type { PlayerSafeCase, Suspect } from "@/types/case";
 import type { EvidenceView } from "@/types/evidence-view";
 import type { InvestigationState } from "@/types/investigation";
@@ -269,9 +269,7 @@ export default function CaseSolveScreen() {
   const load = useCallback(async () => {
     if (!playable) {
       setLoading(false);
-      setLoadError(
-        "Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor."
-      );
+      setLoadError(caseUnlockMessage(caseId));
       setCaseData(null);
       setInvestigation(null);
       return;

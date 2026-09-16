@@ -19,7 +19,7 @@ import { fetchCase } from "@/services/cases";
 import { getSolvedCaseIds } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
-import { isCasePlayable, resolveCaseId } from "@/utils/caseRoute";
+import { isCasePlayable, resolveCaseId, caseUnlockMessage } from "@/utils/caseRoute";
 import type { PlayerSafeCase, PlayerSafeEvidence, Suspect } from "@/types/case";
 
 function SectionHeader({
@@ -431,7 +431,7 @@ export default function CaseInvestigationScreen() {
 
       {!playable ? (
         <ErrorState
-          message="Bu vakayı açmak için önce Case 001 dosyasını çözmen gerekiyor."
+          message={caseUnlockMessage(caseId)}
           onRetry={() => router.replace("/cases")}
         />
       ) : !caseData && !error ? (

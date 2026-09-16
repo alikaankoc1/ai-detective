@@ -45,3 +45,15 @@ export function isCasePlayable(
 export function isKnownCaseId(caseId: string): boolean {
   return Object.prototype.hasOwnProperty.call(CASE_UNLOCK_REQUIRES, caseId);
 }
+
+/** UI kilit mesajı — önkoşul vakasını doğru gösterir. */
+export function caseUnlockMessage(caseId: string): string {
+  const required = CASE_UNLOCK_REQUIRES[caseId];
+  if (!required || required.length === 0) {
+    return "Bu vaka şu an inceleme için açık.";
+  }
+  const labels = required
+    .map((id) => id.replace(/^case-/i, "CASE-").toUpperCase())
+    .join(", ");
+  return `Bu vakayı açmak için önce ${labels} dosyasını çözmen gerekiyor.`;
+}
