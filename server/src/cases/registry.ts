@@ -11,7 +11,12 @@ import { case004Contradictions } from "../contradictions/case004";
 
 /**
  * Tek vaka kayıt defteri.
- * Yeni vaka (Case 004+): case dosyası + contradictions + motiveKeywords buraya eklenir.
+ * Yeni vaka (Case 005+): case dosyası + contradictions + motiveKeywords buraya eklenir.
+ *
+ * Delil `relatedSuspectIds` dengesi:
+ * - case-001..007: öğretici/orta — daha net bağ OK.
+ * - case-008+: aynı şüpheli, delillerin yarısından fazlasında görünmesin
+ *   (örn. 4 delilde en fazla 2). Registry startup'ta kontrol eder.
  */
 export type RegisteredCase = {
   caseData: Case;
@@ -85,6 +90,43 @@ const CASE_REGISTRY: Record<string, RegisteredCase> = {
   },
 };
 
+function caseNumberFromId(caseId: string): number | null {
+  const match = /^case-(\d+)$/i.exec(caseId.trim());
+  if (!match) return null;
+  return Number.parseInt(match[1] ?? "", 10);
+}
+
+/**
+ * case-008+: aynı şüpheli, delillerin yarısından fazlasında relatedSuspectIds'te olmasın.
+ * Örn. 4 delil → en fazla 2. (001–007 muaf — öğretici eğri.)
+ */
+function assertEvidenceSuspectBalance(caseId: string, entry: RegisteredCase): void {
+  const num = caseNumberFromId(caseId);
+  if (num === null || num < 8) return;
+
+  const evidence = entry.caseData.evidence;
+  if (evidence.length === 0) return;
+
+  const maxAllowed = Math.floor(evidence.length / 2);
+  const counts = new Map<string, number>();
+
+  for (const item of evidence) {
+    const unique = [...new Set(item.relatedSuspectIds)];
+    for (const suspectId of unique) {
+      counts.set(suspectId, (counts.get(suspectId) ?? 0) + 1);
+    }
+  }
+
+  for (const [suspectId, count] of counts) {
+    if (count > maxAllowed) {
+      throw new Error(
+        `Case ${caseId}: suspect ${suspectId} appears on ${count}/${evidence.length} evidence ` +
+          `(max ${maxAllowed} for case-008+). Spread relatedSuspectIds — too obvious.`
+      );
+    }
+  }
+}
+
 function assertRegistryIntegrity(registry: Record<string, RegisteredCase>): void {
   const evidenceIds = new Set<string>();
   const suspectIds = new Set<string>();
@@ -120,6 +162,8 @@ function assertRegistryIntegrity(registry: Record<string, RegisteredCase>): void
       }
       statementIds.add(statement.id);
     }
+
+    assertEvidenceSuspectBalance(caseId, entry);
 
     const caseSuspects = new Set(entry.caseData.suspects.map((s) => s.id));
     const caseEvidence = new Set(entry.caseData.evidence.map((e) => e.id));

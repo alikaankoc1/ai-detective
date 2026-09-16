@@ -82,6 +82,10 @@ export interface Evidence {
   name: string;
   description: string;
   discoveryLocation: string;
+  /**
+   * UI “bağlantılı kişiler”.
+   * case-001..007 öğretici/orta yoğunluk OK; case-008+ dengeli tut (AGENTS.md).
+   */
   relatedSuspectIds: readonly SuspectId[];
   /** Yanıltıcı kanıt mı (gerçek, kilitlenince değişmez) */
   isRedHerring: boolean;
