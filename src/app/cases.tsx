@@ -65,8 +65,8 @@ const CASE_LIBRARY: CaseFileBase[] = [
     fileLabel: "DOSYA CASE-003",
     title: "Kırık Çini",
     summary:
-      "Konya Karatay'da soğuk bir gece, Selçuklu çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
-    location: "Konya, Karatay",
+      "Kütahya'da soğuk bir gece, çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
+    location: "Kütahya",
     difficulty: "ORTA",
     lockHint: "Önceki vakayı çözerek açılır.",
     cover: getCaseCover("case-003"),
@@ -82,6 +82,17 @@ const CASE_LIBRARY: CaseFileBase[] = [
     lockHint: "Önceki vakayı çözerek açılır.",
     cover: getCaseCover("case-004"),
   },
+  {
+    id: "case-005",
+    fileLabel: "DOSYA CASE-005",
+    title: "Karatay Mührü",
+    summary:
+      "Konya Karatay'da gece, medrese müzesinden Selçuklu arşiv mührü kaybolur. Üç kişi, kamera boşluğu ve balmumu lekesi.",
+    location: "Konya, Karatay",
+    difficulty: "ORTA-ZOR",
+    lockHint: "Önceki vakayı çözerek açılır.",
+    cover: getCaseCover("case-005"),
+  },
 ];
 
 function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
@@ -96,7 +107,7 @@ function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
         ...item,
         locked: false,
         solved: isSolved,
-        statusLabel: isSolved ? "SOLVED" : "GİZLİ SORUŞTURMA",
+        statusLabel: isSolved ? "çözüldü" : "GİZLİ SORUŞTURMA",
         ctaLabel: isSolved ? "DOSYAYI AÇ" : "VAKAYI İNCELE",
       };
     }
@@ -116,7 +127,7 @@ function buildCaseViews(solvedIds: readonly string[]): CaseFileView[] {
       ...item,
       locked: false,
       solved: isSolved,
-      statusLabel: isSolved ? "SOLVED" : "YENİ DOSYA",
+      statusLabel: isSolved ? "çözüldü" : "YENİ DOSYA",
       ctaLabel: "VAKAYI İNCELE",
       summary: item.summary,
     };
@@ -203,7 +214,7 @@ function CaseFileRow({
           {item.solved ? (
             <View style={styles.solvedPill}>
               <Ionicons name="shield-checkmark" size={12} color={t.colors.void} />
-              <Text style={styles.solvedPillText}>SOLVED</Text>
+              <Text style={styles.solvedPillText}>çözüldü</Text>
             </View>
           ) : (
             <View style={styles.statusPill}>
@@ -325,7 +336,6 @@ export default function CasesScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(80).duration(700)}>
-          <Text style={styles.kicker}>CASE FILES</Text>
           <Text style={styles.title}>Vaka Dosyaları</Text>
           <Text style={styles.solvedLine}>
             Çözülen: {solvedCount} / {totalCases}
@@ -403,13 +413,6 @@ const styles = StyleSheet.create({
     color: t.colors.goldSoft,
     fontSize: 13,
     letterSpacing: 0.6,
-  },
-  kicker: {
-    fontFamily: t.typography.labelStrong,
-    fontSize: 12,
-    letterSpacing: t.typeRhythm.kickerTracking + 2,
-    color: t.colors.gold,
-    marginBottom: 8,
   },
   title: {
     fontFamily: t.typography.hero,

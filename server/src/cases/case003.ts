@@ -3,7 +3,7 @@ import type { Case } from "../../../src/types/case";
 /**
  * Case #003 — "Kırık Çini"
  * Orta: 3 şüpheli, nöbet defteri + iz delilleri, net çelişkiler.
- * Konum: Konya, Karatay (restorasyon atölyesi — Alaaddin civarı).
+ * Konum: Kütahya (çini restorasyon atölyesi — çarşı civarı).
  * Gerçekler `canon` içinde kilitlidir (`factsLocked: true`).
  */
 export const case003: Case = {
@@ -11,7 +11,7 @@ export const case003: Case = {
     id: "case-003",
     title: "Kırık Çini",
     summary:
-      "Konya Karatay'da soğuk bir gece, Selçuklu çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
+      "Kütahya'da soğuk bir gece, çini restorasyon atölyesinden nadir bir parça kaybolur. Üç şüpheli, nöbet defteri ve ayakkabıdaki mavi toz.",
     locale: "tr",
     schemaVersion: 1,
     createdAt: "2026-09-16T14:00:00.000Z",
@@ -19,10 +19,10 @@ export const case003: Case = {
   },
 
   story:
-    "Konya'nın Karatay semtinde hava keskindir; Alaaddin Tepesi'nin silüeti uzakta, sokak lambaları mavi-beyaz yanar. Küçük bir restorasyon atölyesinde, 13. yüzyıldan kalma nadir bir Selçuklu çini paneli parçası gece boyunca kaybolur. Atölye sorumlusu Leyla Demir sabah dolabı zorlanmış bulur; vitrindeki parça yerinde yoktur. O gece sahada üç kişi anılır: gece bekçisi Cem Yıldırım, Ankara'dan gelen araştırmacı Bahar Elçi ve genç restoratör Aylin Koç. Nöbet defterindeki tek satır ile ayakkabı tabanındaki çini tozu, ifadeleri birbirine düşürür.",
+    "Kütahya'nın eski çarşı tarafında hava keskindir; sokak lambaları mavi-beyaz yanar, uzaktan fırın bacalarının kokusu gelir. Küçük bir restorasyon atölyesinde, nadir bir Osmanlı-Kütahya çini paneli parçası gece boyunca kaybolur. Atölye sorumlusu Leyla Demir sabah dolabı zorlanmış bulur; vitrindeki parça yerinde yoktur. O gece sahada üç kişi anılır: gece bekçisi Cem Yıldırım, Ankara'dan gelen araştırmacı Bahar Elçi ve genç restoratör Aylin Koç. Nöbet defterindeki tek satır ile ayakkabı tabanındaki çini tozu, ifadeleri birbirine düşürür.",
 
   scene: {
-    name: "Karatay restorasyon atölyesi — Konya",
+    name: "Çini restorasyon atölyesi — Kütahya",
     description:
       "Taş avluya bakan dar atölye. İş tezgâhlarında pigment kavanozları, eldivenler, büyütücü lamba. Arka duvarda kilitli cam dolap; dolabın kilidi zorlanmış, iç rafta boş bir kadife yastık.",
     details:
@@ -33,7 +33,7 @@ export const case003: Case = {
     dateLabel: "24 Eylül 2026, Perşembe gecesi",
     timeOfCrime: "22:05–22:20 civarı",
     atmosphere:
-      "Soğuk Konya gecesi — kuru rüzgâr, uzak ezan sonrası sessizlik, atölyede tutkal ve kil kokusu",
+      "Soğuk Kütahya gecesi — kuru rüzgâr, çarşı sonrası sessizlik, atölyede tutkal ve kil kokusu",
   },
 
   suspects: [
@@ -55,7 +55,7 @@ export const case003: Case = {
       age: 34,
       occupation: "Sanat tarihçisi / misafir araştırmacı",
       biography:
-        "Ankara'dan Selçuklu çini motifleri için kısa süreli araştırma izniyle gelmiş. Not defteri dolu, dikkatli konuşur; saatleri net hatırlar.",
+        "Ankara'dan Kütahya çini motifleri için kısa süreli araştırma izniyle gelmiş. Not defteri dolu, dikkatli konuşur; saatleri net hatırlar.",
       relationshipToVictim:
         "Leyla'nın davetlisi; envanter ve fotoğraf çekimi için gündüz atölyedeydi.",
       claimedAlibi:
@@ -67,7 +67,7 @@ export const case003: Case = {
       age: 26,
       occupation: "Junior restoratör",
       biography:
-        "Karatay ekibinde ikinci yılı. Titiz, endişeli; dolap prosedürüne bağlı. Sabah ilk o fark etmiş.",
+        "Kütahya atölyesinde ikinci yılı. Titiz, endişeli; dolap prosedürüne bağlı. Sabah ilk o fark etmiş.",
       relationshipToVictim:
         "Leyla'nın asistanı; parçanın kadife yastığını her akşam yerleştirir.",
       claimedAlibi:
@@ -180,10 +180,10 @@ export const case003: Case = {
   canon: {
     victimName: "Leyla Demir",
     victimDescription:
-      "42 yaşında restorasyon atölyesi sorumlusu. Gece kaybolan parça, sergilenecek nadir Selçuklu çini panelinin kritik bir bölümüydü.",
+      "42 yaşında restorasyon atölyesi sorumlusu. Gece kaybolan parça, sergilenecek nadir Kütahya çini panelinin kritik bir bölümüydü.",
     killerSuspectId: "suspect-c4-cem",
     motive:
-      "Cem Yıldırım, karaborsa alıcıya satmak ve sahte ihracat belgesi düzenletebilmek için Selçuklu çini parçasını çaldı. Borç baskısı altında parçayı gece teslim etmesi gerekiyordu.",
+      "Cem Yıldırım, karaborsa alıcıya satmak ve sahte ihracat belgesi düzenletebilmek için Kütahya çini parçasını çaldı. Borç baskısı altında parçayı gece teslim etmesi gerekiyordu.",
     methodOfCrime:
       "21:15 kilidinden sonra Cem 22:10'da atölyeye girdi (nöbet defterine yazdı), yedek anahtarla dolabı zorladı/açtı, çini parçasını aldı. Eldiveni lavaboya bıraktı; botunda çini tozu kaldı. Bahar'ın gündüz düşen kartı yanıltıcı kaldı.",
     realTimeline: [
