@@ -22,9 +22,7 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCase } from "@/services/cases";
 import {
-  buildCaseResultXpAwardKey,
-  claimCaseResultXp,
-  markCaseSolved,
+  applyCaseResultProgress,
 } from "@/store/playerProgress";
 import { detectiveTheme as t } from "@/constants/theme";
 import { getCaseCover } from "@/constants/images";
@@ -202,13 +200,13 @@ export default function CaseResultScreen() {
 
   useEffect(() => {
     const caseKey = caseIdParam ?? caseData?.meta.id ?? resolvedCaseId;
-    const awardKey = buildCaseResultXpAwardKey(caseKey, kind, score);
-    claimCaseResultXp(awardKey, xpEarned);
-
-    if (kind === "perfect" || kind === "correct") {
-      markCaseSolved(caseKey);
-    }
-  }, [caseIdParam, caseData?.meta.id, kind, score, xpEarned, resolvedCaseId]);
+    applyCaseResultProgress({
+      caseId: caseKey,
+      result: kind,
+      xpAmount: xpEarned,
+      markSolved: kind === "perfect" || kind === "correct",
+    });
+  }, [caseIdParam, caseData?.meta.id, kind, xpEarned, resolvedCaseId]);
 
   const horizontal = Math.max(t.spacing.lg, width * 0.05);
   const heroHeight = Math.min(Math.max(height * 0.34, 240), 320);
