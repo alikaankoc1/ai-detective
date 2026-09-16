@@ -18,7 +18,6 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  FadeInRight,
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
@@ -88,21 +87,6 @@ const TABS: TabItem[] = [
     iconActive: "storefront",
   },
 ];
-
-function Stars({ value, max = 5 }: { value: number; max?: number }) {
-  return (
-    <View style={styles.starRow}>
-      {Array.from({ length: max }).map((_, index) => (
-        <Ionicons
-          key={index}
-          name={index < value ? "star" : "star-outline"}
-          size={11}
-          color={index < value ? t.colors.gold : t.colors.mist}
-        />
-      ))}
-    </View>
-  );
-}
 
 function LivePulse() {
   const opacity = useSharedValue(0.45);
@@ -356,10 +340,10 @@ export default function HomeScreen() {
               }}
               showsVerticalScrollIndicator={false}
             >
-            {/* Full-bleed opening plane */}
+            {/* Brand-only hero — vaka kapağı değil */}
             <View style={[styles.heroPlane, { height: heroHeight }]}>
               <Image
-                source={getCaseCover(caseData.meta.id)}
+                source={gameImages.homeHeader}
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
                 transition={500}
@@ -399,7 +383,7 @@ export default function HomeScreen() {
                 <Text style={styles.heroEyebrow}>GECE VARDİYASI</Text>
                 <Text style={styles.heroTitle}>Gizemi çöz.</Text>
                 <Text style={styles.heroLead}>
-                  Kadıköy’ün yağmurlu sokaklarında bir dosya seni bekliyor.
+                  Arşiv açık. Tek bir dosya seç, izleri takip et.
                 </Text>
               </Animated.View>
             </View>
@@ -453,18 +437,20 @@ export default function HomeScreen() {
                 <XpBar progress={xpBarProgress} />
               </Animated.View>
 
-              {/* Günün Vakası */}
+              {/* Tek akıllı CTA: devam et VEYA öne çıkan dosya */}
               <Animated.View
                 entering={FadeInUp.delay(320).duration(750)}
                 style={styles.sectionHead}
               >
                 <View>
-                  <Text style={styles.sectionKicker}>01 · ÖNE ÇIKAN</Text>
-                  <Text style={styles.sectionTitle}>Günün Vakası</Text>
-                </View>
-                <View style={styles.difficultyPill}>
-                  <Text style={styles.difficultyPillText}>ZOR</Text>
-                  <Stars value={4} />
+                  <Text style={styles.sectionKicker}>
+                    {hasActiveInvestigation ? "01 · AKTİF DOSYA" : "01 · ÖNE ÇIKAN"}
+                  </Text>
+                  <Text style={styles.sectionTitle}>
+                    {hasActiveInvestigation
+                      ? "Soruşturmaya Dön"
+                      : "Öne Çıkan Vaka"}
+                  </Text>
                 </View>
               </Animated.View>
 
@@ -475,8 +461,10 @@ export default function HomeScreen() {
                 <Pressable
                   onPress={() =>
                     router.push({
-                      pathname: "/case-story",
-                      params: { caseId: "case-001" },
+                      pathname: hasActiveInvestigation
+                        ? "/case-investigation"
+                        : "/case-story",
+                      params: { caseId: caseData.meta.id },
                     })
                   }
                   style={({ pressed }) => [
@@ -498,11 +486,13 @@ export default function HomeScreen() {
                   <View style={styles.dayCaseTop}>
                     <View style={styles.dayBadge}>
                       <Ionicons
-                        name="moon"
+                        name={hasActiveInvestigation ? "play" : "moon"}
                         size={12}
                         color={t.colors.void}
                       />
-                      <Text style={styles.dayBadgeText}>GÜNÜN VAKASI</Text>
+                      <Text style={styles.dayBadgeText}>
+                        {hasActiveInvestigation ? "DEVAM ET" : "ÖNE ÇIKAN"}
+                      </Text>
                     </View>
                     <Text style={styles.dayCaseId}>
                       {caseData.meta.id.toUpperCase()}
@@ -512,247 +502,69 @@ export default function HomeScreen() {
                   <View style={styles.dayCaseBody}>
                     <Text style={styles.dayCaseTitle}>{caseData.meta.title}</Text>
                     <Text style={styles.dayCaseSummary} numberOfLines={3}>
-                      {caseData.meta.summary}
-                    </Text>
-                    <View style={styles.dayCaseMeta}>
-                      <View style={styles.metaChip}>
-                        <Ionicons
-                          name="location-outline"
-                          size={12}
-                          color={t.colors.gold}
-                        />
-                        <Text style={styles.metaChipText} numberOfLines={1}>
-                          {caseData.scene.name}
-                        </Text>
-                      </View>
-                      <View style={styles.metaChip}>
-                        <Ionicons
-                          name="time-outline"
-                          size={12}
-                          color={t.colors.gold}
-                        />
-                        <Text style={styles.metaChipText}>
-                          {caseData.time.timeOfCrime}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.ctaRow}>
-                      <LinearGradient
-                        colors={[t.colors.goldSoft, t.colors.gold, "#A8841A"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.primaryCta}
-                      >
-                        <Text style={styles.primaryCtaText}>VAKAYI AÇ</Text>
-                        <Ionicons
-                          name="arrow-forward"
-                          size={16}
-                          color={t.colors.void}
-                        />
-                      </LinearGradient>
-                    </View>
-                  </View>
-                </Pressable>
-              </Animated.View>
-
-              {/* Devam eden soruşturma */}
-              <Animated.View
-                entering={FadeInUp.delay(440).duration(700)}
-                style={styles.sectionHead}
-              >
-                <View>
-                  <Text style={styles.sectionKicker}>02 · AKTİF</Text>
-                  <Text style={styles.sectionTitle}>Devam Eden Soruşturma</Text>
-                </View>
-              </Animated.View>
-
-              <Animated.View entering={FadeInRight.delay(480).duration(700)}>
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/case-investigation",
-                      params: { caseId: DEFAULT_CASE_ID },
-                    })
-                  }
-                  style={({ pressed }) => [
-                    styles.continuePlane,
-                    pressed && styles.pressed,
-                  ]}
-                >
-                  <LinearGradient
-                    colors={[
-                      "rgba(26, 39, 68, 0.95)",
-                      "rgba(10, 18, 36, 0.98)",
-                    ]}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View style={styles.continueAccent} />
-                  <View style={styles.continueBody}>
-                    <View style={styles.continueTop}>
-                      <Text style={styles.continueStatus}>
-                        {hasActiveInvestigation
-                          ? "DEVAM EDİYOR"
-                          : "HAZIR · BAŞLANMADI"}
-                      </Text>
-                      <Ionicons
-                        name="chevron-forward"
-                        size={18}
-                        color={t.colors.goldSoft}
-                      />
-                    </View>
-                    <Text style={styles.continueTitle}>{caseData.meta.title}</Text>
-                    <Text style={styles.continueLead} numberOfLines={2}>
                       {hasActiveInvestigation
-                        ? "Dosyaya dön; şüpheliler ve deliller seni bekliyor."
-                        : "Soruşturmayı başlat — ifadeler, deliller ve çelişkiler seni bekliyor."}
+                        ? "Şüpheliler, deliller ve çelişkiler seni bekliyor. Dosyaya dön."
+                        : caseData.meta.summary}
                     </Text>
-                    <View style={styles.progressGrid}>
-                      <View style={styles.progressCell}>
-                        <Text style={styles.progressValue}>
-                          {progress.evidence}/{progress.totalEvidence}
-                        </Text>
-                        <Text style={styles.progressLabel}>DELİL</Text>
+                    {hasActiveInvestigation ? (
+                      <View style={styles.progressGrid}>
+                        <View style={styles.progressCell}>
+                          <Text style={styles.progressValue}>
+                            {progress.evidence}/{progress.totalEvidence}
+                          </Text>
+                          <Text style={styles.progressLabel}>DELİL</Text>
+                        </View>
+                        <View style={styles.progressDivider} />
+                        <View style={styles.progressCell}>
+                          <Text style={styles.progressValue}>
+                            {progress.suspects}/{progress.totalSuspects}
+                          </Text>
+                          <Text style={styles.progressLabel}>SORGU</Text>
+                        </View>
+                        <View style={styles.progressDivider} />
+                        <View style={styles.progressCell}>
+                          <Text style={styles.progressValue}>
+                            {progress.contradictions}
+                          </Text>
+                          <Text style={styles.progressLabel}>ÇELİŞKİ</Text>
+                        </View>
                       </View>
-                      <View style={styles.progressDivider} />
-                      <View style={styles.progressCell}>
-                        <Text style={styles.progressValue}>
-                          {progress.suspects}/{progress.totalSuspects}
-                        </Text>
-                        <Text style={styles.progressLabel}>SORGU</Text>
+                    ) : (
+                      <View style={styles.dayCaseMeta}>
+                        <View style={styles.metaChip}>
+                          <Ionicons
+                            name="location-outline"
+                            size={12}
+                            color={t.colors.gold}
+                          />
+                          <Text style={styles.metaChipText} numberOfLines={1}>
+                            {caseData.scene.name}
+                          </Text>
+                        </View>
+                        <View style={styles.metaChip}>
+                          <Ionicons
+                            name="time-outline"
+                            size={12}
+                            color={t.colors.gold}
+                          />
+                          <Text style={styles.metaChipText}>
+                            {caseData.time.timeOfCrime}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={styles.progressDivider} />
-                      <View style={styles.progressCell}>
-                        <Text style={styles.progressValue}>
-                          {progress.contradictions}
-                        </Text>
-                        <Text style={styles.progressLabel}>ÇELİŞKİ</Text>
-                      </View>
-                    </View>
+                    )}
                   </View>
                 </Pressable>
               </Animated.View>
 
-              {/* Hızlı erişim */}
               <Animated.View
-                entering={FadeInUp.delay(540).duration(700)}
-                style={styles.sectionHead}
-              >
-                <View>
-                  <Text style={styles.sectionKicker}>03 · ERİŞİM</Text>
-                  <Text style={styles.sectionTitle}>Hızlı Erişim</Text>
-                </View>
-              </Animated.View>
-
-              <View style={styles.quickGrid}>
-                <Animated.View
-                  entering={FadeInUp.delay(580).duration(600)}
-                  style={styles.quickWideWrap}
-                >
-                  <Pressable
-                    onPress={() =>
-                    router.push({
-                      pathname: "/case-investigation",
-                      params: { caseId: DEFAULT_CASE_ID },
-                    })
-                  }
-                    style={({ pressed }) => [
-                      styles.quickWide,
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <Image
-                      source={gameImages.homeHeader}
-                      style={StyleSheet.absoluteFill}
-                      contentFit="cover"
-                    />
-                    <LinearGradient
-                      colors={[
-                        "rgba(5, 7, 13, 0.15)",
-                        "rgba(5, 7, 13, 0.55)",
-                        "rgba(5, 7, 13, 0.88)",
-                      ]}
-                      locations={[0, 0.45, 1]}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Ionicons
-                      name="search"
-                      size={22}
-                      color={t.colors.goldSoft}
-                    />
-                    <Text style={styles.quickWideTitle}>Soruşturma</Text>
-                    <Text style={styles.quickWideHint}>
-                      Şüpheliler · Deliller
-                    </Text>
-                  </Pressable>
-                </Animated.View>
-
-                <Animated.View
-                  entering={FadeInUp.delay(640).duration(600)}
-                  style={styles.quickHalf}
-                >
-                  <Pressable
-                    onPress={() =>
-                    router.push({
-                      pathname: "/case-story",
-                      params: { caseId: "case-001" },
-                    })
-                  }
-                    style={({ pressed }) => [
-                      styles.quickTile,
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={["rgba(26, 39, 68, 0.98)", "rgba(8, 14, 28, 1)"]}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Ionicons
-                      name="book-outline"
-                      size={20}
-                      color={t.colors.gold}
-                    />
-                    <Text style={styles.quickTileTitle}>Hikaye</Text>
-                    <Text style={styles.quickTileHint}>Dosyayı oku</Text>
-                  </Pressable>
-                </Animated.View>
-
-                <Animated.View
-                  entering={FadeInUp.delay(700).duration(600)}
-                  style={styles.quickHalf}
-                >
-                  <Pressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/case-solve",
-                        params: { caseId: DEFAULT_CASE_ID },
-                      })
-                    }
-                    style={({ pressed }) => [
-                      styles.quickTile,
-                      styles.quickTileAccent,
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={[
-                        "rgba(201, 162, 39, 0.22)",
-                        "rgba(18, 28, 51, 0.98)",
-                      ]}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Ionicons name="flash" size={20} color={t.colors.goldSoft} />
-                    <Text style={styles.quickTileTitle}>Vakayı Çöz</Text>
-                    <Text style={styles.quickTileHint}>Suçlamayı kilitle</Text>
-                  </Pressable>
-                </Animated.View>
-              </View>
-
-              <Animated.View
-                entering={FadeIn.delay(780).duration(700)}
+                entering={FadeIn.delay(480).duration(700)}
                 style={styles.footerSeal}
               >
                 <View style={styles.footerLine} />
-                <Text style={styles.footerText}>AI DETECTIVE · CASE UNIT</Text>
+                <Text style={styles.footerText}>
+                  DAHA FAZLASI · VAKALAR SEKMESİ
+                </Text>
                 <View style={styles.footerLine} />
               </Animated.View>
             </View>
